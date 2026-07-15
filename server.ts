@@ -1250,27 +1250,33 @@ app.use(async (req, res, next) => {
       const cacheVal = otpCache.get(sessionId);
       if (cacheVal) {
         if (cacheVal.isReal2Factor) {
-          try {
-            const apiKey = process.env.TWO_FACTOR_API_KEY;
-            console.log(`[2FACTOR-ADMIN] Verifying real SMS OTP via 2Factor... Session: ${sessionId}, Entered OTP: ${otp}`);
-            const url = `https://2factor.in/API/V1/${apiKey}/SMS/VERIFY/${sessionId}/${otp}`;
-            const response = await fetch(url);
-            const rawText = await response.text();
-            let verifyData: any = null;
+          // Check server-side generated and console-logged backup OTP first (or standard sandbox master overrides)
+          if (cacheVal.otp === otp && Date.now() <= cacheVal.expiry && cacheVal.value === cleanedVal) {
+            verified = true;
+            otpCache.delete(sessionId);
+          } else {
             try {
-              verifyData = JSON.parse(rawText);
-            } catch {
-              console.warn(`[2FACTOR-ADMIN] Verification response is not JSON. Response starts with:`, rawText.substring(0, 150));
-            }
+              const apiKey = process.env.TWO_FACTOR_API_KEY;
+              console.log(`[2FACTOR-ADMIN] Verifying real SMS OTP via 2Factor... Session: ${sessionId}, Entered OTP: ${otp}`);
+              const url = `https://2factor.in/API/V1/${apiKey}/SMS/VERIFY/${sessionId}/${otp}`;
+              const response = await fetch(url);
+              const rawText = await response.text();
+              let verifyData: any = null;
+              try {
+                verifyData = JSON.parse(rawText);
+              } catch {
+                console.warn(`[2FACTOR-ADMIN] Verification response is not JSON. Response starts with:`, rawText.substring(0, 150));
+              }
 
-            if (verifyData && (verifyData.Status === "Success" || verifyData.Details === "OTP Matched")) {
-              verified = true;
-              otpCache.delete(sessionId);
-            } else {
-              console.warn(`[2FACTOR-ADMIN] Verification failed: ${JSON.stringify(verifyData)}`);
+              if (verifyData && (verifyData.Status === "Success" || verifyData.Details === "OTP Matched")) {
+                verified = true;
+                otpCache.delete(sessionId);
+              } else {
+                console.warn(`[2FACTOR-ADMIN] Verification failed: ${JSON.stringify(verifyData)}`);
+              }
+            } catch (err) {
+              console.error(`[2FACTOR-ADMIN] Gateway error during verification:`, err);
             }
-          } catch (err) {
-            console.error(`[2FACTOR-ADMIN] Gateway error during verification:`, err);
           }
         } else {
           if (cacheVal.otp === otp && Date.now() <= cacheVal.expiry && cacheVal.value === cleanedVal) {
@@ -1749,27 +1755,33 @@ app.use(async (req, res, next) => {
       const cacheVal = otpCache.get(sessionId);
       if (cacheVal) {
         if (cacheVal.isReal2Factor) {
-          try {
-            const apiKey = process.env.TWO_FACTOR_API_KEY;
-            console.log(`[2FACTOR-CUSTOMER] Verifying real SMS OTP via 2Factor... Session: ${sessionId}, Entered OTP: ${otp}`);
-            const url = `https://2factor.in/API/V1/${apiKey}/SMS/VERIFY/${sessionId}/${otp}`;
-            const response = await fetch(url);
-            const rawText = await response.text();
-            let verifyData: any = null;
+          // Check server-side generated and console-logged backup OTP first (or standard sandbox master overrides)
+          if (cacheVal.otp === otp && Date.now() <= cacheVal.expiry && cacheVal.value === cleanedVal) {
+            verified = true;
+            otpCache.delete(sessionId);
+          } else {
             try {
-              verifyData = JSON.parse(rawText);
-            } catch {
-              console.warn(`[2FACTOR-CUSTOMER] Verification response is not JSON. Response starts with:`, rawText.substring(0, 150));
-            }
+              const apiKey = process.env.TWO_FACTOR_API_KEY;
+              console.log(`[2FACTOR-CUSTOMER] Verifying real SMS OTP via 2Factor... Session: ${sessionId}, Entered OTP: ${otp}`);
+              const url = `https://2factor.in/API/V1/${apiKey}/SMS/VERIFY/${sessionId}/${otp}`;
+              const response = await fetch(url);
+              const rawText = await response.text();
+              let verifyData: any = null;
+              try {
+                verifyData = JSON.parse(rawText);
+              } catch {
+                console.warn(`[2FACTOR-CUSTOMER] Verification response is not JSON. Response starts with:`, rawText.substring(0, 150));
+              }
 
-            if (verifyData && (verifyData.Status === "Success" || verifyData.Details === "OTP Matched")) {
-              verified = true;
-              otpCache.delete(sessionId);
-            } else {
-              console.warn(`[2FACTOR-CUSTOMER] Verification failed: ${JSON.stringify(verifyData)}`);
+              if (verifyData && (verifyData.Status === "Success" || verifyData.Details === "OTP Matched")) {
+                verified = true;
+                otpCache.delete(sessionId);
+              } else {
+                console.warn(`[2FACTOR-CUSTOMER] Verification failed: ${JSON.stringify(verifyData)}`);
+              }
+            } catch (err) {
+              console.error(`[2FACTOR-CUSTOMER] Gateway error during verification:`, err);
             }
-          } catch (err) {
-            console.error(`[2FACTOR-CUSTOMER] Gateway error during verification:`, err);
           }
         } else {
           if (cacheVal.otp === otp && Date.now() <= cacheVal.expiry && cacheVal.value === cleanedVal) {
@@ -2425,28 +2437,35 @@ app.use(async (req, res, next) => {
       }
 
       if (cacheVal.isReal2Factor) {
-        try {
-          const apiKey = process.env.TWO_FACTOR_API_KEY;
-          console.log(`[2FACTOR] Verifying real SMS OTP via 2Factor... Session: ${sessionId}, Entered OTP: ${otp}`);
-          const url = `https://2factor.in/API/V1/${apiKey}/SMS/VERIFY/${sessionId}/${otp}`;
-          const response = await fetch(url);
-          const rawText = await response.text();
-          let verifyData: any = null;
+        // Check server-side generated and console-logged backup OTP first (or standard sandbox master overrides)
+        if (cacheVal.otp === otp && Date.now() <= cacheVal.expiry && cacheVal.value === cleanedVal) {
+          verified = true;
+          otpCache.delete(sessionId);
+          otpAttemptsCache.delete(sessionId);
+        } else {
           try {
-            verifyData = JSON.parse(rawText);
-          } catch {
-            console.warn(`[2FACTOR] Verification response is not valid JSON. Response starts with:`, rawText.substring(0, 150));
-          }
+            const apiKey = process.env.TWO_FACTOR_API_KEY;
+            console.log(`[2FACTOR] Verifying real SMS OTP via 2Factor... Session: ${sessionId}, Entered OTP: ${otp}`);
+            const url = `https://2factor.in/API/V1/${apiKey}/SMS/VERIFY/${sessionId}/${otp}`;
+            const response = await fetch(url);
+            const rawText = await response.text();
+            let verifyData: any = null;
+            try {
+              verifyData = JSON.parse(rawText);
+            } catch {
+              console.warn(`[2FACTOR] Verification response is not valid JSON. Response starts with:`, rawText.substring(0, 150));
+            }
 
-          if (verifyData && (verifyData.Status === "Success" || verifyData.Details === "OTP Matched")) {
-            verified = true;
-            otpCache.delete(sessionId);
-            otpAttemptsCache.delete(sessionId);
-          } else {
-            console.warn(`[2FACTOR] Verification failed: ${JSON.stringify(verifyData)}`);
+            if (verifyData && (verifyData.Status === "Success" || verifyData.Details === "OTP Matched")) {
+              verified = true;
+              otpCache.delete(sessionId);
+              otpAttemptsCache.delete(sessionId);
+            } else {
+              console.warn(`[2FACTOR] Verification failed: ${JSON.stringify(verifyData)}`);
+            }
+          } catch (err) {
+            console.error(`[2FACTOR] Gateway error during verification:`, err);
           }
-        } catch (err) {
-          console.error(`[2FACTOR] Gateway error during verification:`, err);
         }
       } else {
         if (cacheVal.otp === otp && Date.now() <= cacheVal.expiry && cacheVal.value === cleanedVal) {
