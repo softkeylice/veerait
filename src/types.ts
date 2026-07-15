@@ -81,6 +81,9 @@ export interface Order {
   optInWhatsApp?: boolean;
   b2bReferralCode?: string; // B2B reseller code used
   b2bCommissionEarned?: number; // commission earned on this order
+  shippingAddress?: string;
+  shippingCity?: string;
+  shippingPin?: string;
 }
 
 export interface B2BReseller {

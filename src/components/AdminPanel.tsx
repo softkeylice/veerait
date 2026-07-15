@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, ShoppingCart, Tag, Smartphone, Layers, Key, Plus, Trash2, Edit, Save, ToggleLeft, ToggleRight, Check, RefreshCw, Eye, EyeOff, MessageSquare, Mail, AlertTriangle, Package, CheckCircle2, IndianRupee, Globe, Image as ImageIcon, Star, Sparkles, ChevronDown, ChevronRight, ExternalLink, HelpCircle, X, Search, Heart, Copy, Upload, AlertCircle, FileSpreadsheet, History, UserCheck, ShieldAlert, CheckSquare, CreditCard, Users, BarChart3, Settings, Sliders, FolderTree, ClipboardList, Send, Compass, Award, Database } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Tag, Smartphone, Layers, Key, Plus, Trash2, Edit, Save, ToggleLeft, ToggleRight, Check, RefreshCw, Eye, EyeOff, MessageSquare, Mail, AlertTriangle, Package, CheckCircle2, IndianRupee, Globe, Image as ImageIcon, Star, Sparkles, ChevronDown, ChevronRight, ExternalLink, HelpCircle, X, Search, Heart, Copy, Upload, AlertCircle, FileSpreadsheet, History, UserCheck, ShieldAlert, CheckSquare, CreditCard, Users, BarChart3, Settings, Sliders, FolderTree, ClipboardList, Send, Compass, Award, Database, MapPin } from 'lucide-react';
 import { Product, Order, Coupon, PromoBanner, LicenseKey, CategoryType, LicenseHistoryEntry, Category, B2BReseller, WalletTransaction } from '../types';
 import * as XLSX from 'xlsx';
 import ImageUploader from './ImageUploader';
@@ -6179,6 +6179,7 @@ export default function AdminPanel({
                         spend: number;
                         lastOrderDate: string;
                         orders: any[];
+                        addresses: { address: string; city: string; pin: string }[];
                       }> = {};
 
                       orders.forEach(o => {
@@ -6191,7 +6192,8 @@ export default function AdminPanel({
                             orderCount: 0, 
                             spend: 0,
                             lastOrderDate: o.createdAt,
-                            orders: [] 
+                            orders: [],
+                            addresses: []
                           };
                         }
                         
@@ -6200,6 +6202,20 @@ export default function AdminPanel({
                           emailGroups[email].name = o.customerName || emailGroups[email].name;
                           emailGroups[email].phone = o.customerPhone || emailGroups[email].phone;
                           emailGroups[email].lastOrderDate = o.createdAt;
+                        }
+
+                        if (o.shippingAddress) {
+                          const addrObj = {
+                            address: o.shippingAddress,
+                            city: o.shippingCity || '',
+                            pin: o.shippingPin || ''
+                          };
+                          const alreadyExists = emailGroups[email].addresses.some(
+                            a => a.address.toLowerCase().trim() === addrObj.address.toLowerCase().trim()
+                          );
+                          if (!alreadyExists) {
+                            emailGroups[email].addresses.push(addrObj);
+                          }
                         }
 
                         emailGroups[email].orderCount += 1;
@@ -6219,7 +6235,8 @@ export default function AdminPanel({
                         return (
                           c.email.toLowerCase().includes(query) ||
                           c.name.toLowerCase().includes(query) ||
-                          c.phone.toLowerCase().includes(query)
+                          c.phone.toLowerCase().includes(query) ||
+                          c.addresses.some(a => a.address.toLowerCase().includes(query) || a.city.toLowerCase().includes(query))
                         );
                       }).sort((a, b) => b.spend - a.spend);
 
@@ -6243,10 +6260,15 @@ export default function AdminPanel({
                               </div>
                               <div className="min-w-0">
                                 <h4 className="font-semibold text-slate-800 text-xs truncate">{c.name}</h4>
-                                <div className="flex flex-col sm:flex-row sm:items-center gap-x-3 gap-y-0.5 mt-0.5 text-[10px] text-slate-500">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-x-3 gap-y-0.5 mt-0.5 text-[10px] text-slate-500 flex-wrap">
                                   <span className="flex items-center gap-0.5 truncate"><Mail className="w-3 h-3 text-slate-400 flex-shrink-0" /> {c.email}</span>
                                   {c.phone !== 'N/A' && (
                                     <span className="flex items-center gap-0.5"><Smartphone className="w-3 h-3 text-slate-400 flex-shrink-0" /> {c.phone}</span>
+                                  )}
+                                  {c.addresses.length > 0 && (
+                                    <span className="flex items-center gap-0.5 text-indigo-600 font-medium truncate max-w-[280px]" title={`${c.addresses[0].address}, ${c.addresses[0].city} - ${c.addresses[0].pin}`}>
+                                      <MapPin className="w-3 h-3 text-indigo-400 flex-shrink-0" /> {c.addresses[0].address}, {c.addresses[0].city} {c.addresses.length > 1 && `(+${c.addresses.length - 1} more)`}
+                                    </span>
                                   )}
                                 </div>
                               </div>
@@ -6307,6 +6329,24 @@ export default function AdminPanel({
                     const totalSpend = customerOrders.reduce((sum, o) => sum + o.total, 0);
                     const customerName = latestOrder.customerName || 'Anonymous Customer';
                     const customerPhone = latestOrder.customerPhone || 'N/A';
+
+                    // Collect unique addresses for this customer
+                    const customerAddresses: { address: string; city: string; pin: string }[] = [];
+                    customerOrders.forEach(o => {
+                      if (o.shippingAddress) {
+                        const addrObj = {
+                          address: o.shippingAddress,
+                          city: o.shippingCity || '',
+                          pin: o.shippingPin || ''
+                        };
+                        const alreadyExists = customerAddresses.some(
+                          a => a.address.toLowerCase().trim() === addrObj.address.toLowerCase().trim()
+                        );
+                        if (!alreadyExists) {
+                          customerAddresses.push(addrObj);
+                        }
+                      }
+                    });
 
                     return (
                       <>
@@ -6384,6 +6424,48 @@ export default function AdminPanel({
                                     year: 'numeric'
                                   }) : 'N/A'}
                                 </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Customer Contact & Saved Shipping Addresses */}
+                          <div className="bg-slate-50 border border-slate-200 p-5 rounded-2xl space-y-4">
+                            <div className="flex items-center gap-2">
+                              <MapPin className="w-4.5 h-4.5 text-indigo-600" />
+                              <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
+                                Customer Contact & Saved Shipping Addresses
+                              </h4>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="bg-white p-4 rounded-xl border border-slate-150 space-y-2 text-xs">
+                                <p className="font-bold text-slate-700 border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                                  <Smartphone className="w-3.5 h-3.5 text-slate-400" /> Primary Contact Details
+                                </p>
+                                <div className="space-y-1.5 mt-2">
+                                  <p className="text-slate-500">Name: <span className="font-semibold text-slate-850">{customerName}</span></p>
+                                  <p className="text-slate-500">Email ID: <span className="font-mono text-slate-850 font-semibold">{selectedCustomerEmail}</span></p>
+                                  <p className="text-slate-500">Mobile Number: <span className="font-mono text-slate-850 font-bold">{customerPhone !== 'N/A' ? `+91 ${customerPhone}` : 'N/A'}</span></p>
+                                </div>
+                              </div>
+
+                              <div className="bg-white p-4 rounded-xl border border-slate-150 space-y-2 text-xs">
+                                <p className="font-bold text-slate-700 border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                                  <MapPin className="w-3.5 h-3.5 text-slate-400" /> Saved Shipping Addresses ({customerAddresses.length})
+                                </p>
+                                {customerAddresses.length > 0 ? (
+                                  <div className="space-y-2.5 max-h-[140px] overflow-y-auto pr-1 mt-2">
+                                    {customerAddresses.map((addr, idx) => (
+                                      <div key={idx} className="bg-slate-50 p-2.5 rounded-lg border border-slate-150 relative">
+                                        <span className="absolute top-1 right-1.5 text-[9px] bg-slate-200 text-slate-600 px-1 py-0.5 rounded font-mono font-bold">#{idx + 1}</span>
+                                        <p className="font-semibold text-slate-800 pr-10">{addr.address}</p>
+                                        <p className="text-[10px] text-slate-500 mt-1 font-medium">{addr.city} {addr.pin ? `- ${addr.pin}` : ''}</p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <p className="text-slate-400 italic mt-4 text-center">No shipping addresses logged (usually software license purchases or Guest checkouts).</p>
+                                )}
                               </div>
                             </div>
                           </div>

@@ -520,6 +520,9 @@ export default function App() {
               courier_name: o.courierName || null,
               b2b_referral_code: o.b2bReferralCode || null,
               opt_in_whatsapp: o.optInWhatsApp || false,
+              shipping_address: o.shippingAddress || null,
+              shipping_city: o.shippingCity || null,
+              shipping_pin: o.shippingPin || null,
               created_at: o.createdAt
             });
 
@@ -844,6 +847,9 @@ export default function App() {
               courierName: o.courier_name || undefined,
               b2bReferralCode: o.b2b_referral_code || undefined,
               optInWhatsApp: o.opt_in_whatsapp || false,
+              shippingAddress: o.shipping_address || undefined,
+              shippingCity: o.shipping_city || undefined,
+              shippingPin: o.shipping_pin || undefined,
               createdAt: o.created_at
             };
           }));

@@ -4091,7 +4091,7 @@ app.use(async (req, res, next) => {
           templateName,
           recipientPhone: recipientPhone.replace(/\D/g, ""),
           variables,
-          status: waRes.ok ? "delivered" : "failed",
+          status: waRes.ok ? "success" : "failed",
           attempts: 1,
           error: waRes.ok ? undefined : (waData.error?.message || JSON.stringify(waData)),
         });
