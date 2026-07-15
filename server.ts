@@ -1143,8 +1143,14 @@ app.use(async (req, res, next) => {
     } else {
       const users = readUsers();
       const u = users.find(u => {
-        if (type === "email") return u.email.toLowerCase() === cleanedVal;
-        return u.phone.replace(/\D/g, "") === cleanedVal;
+        if (type === "email") return u.email && u.email.toLowerCase() === cleanedVal;
+        if (!u.phone) return false;
+        const uClean = u.phone.replace(/\D/g, "");
+        const loginClean = cleanedVal;
+        if (uClean.length >= 10 && loginClean.length >= 10) {
+          return uClean.slice(-10) === loginClean.slice(-10);
+        }
+        return uClean === loginClean;
       });
       if (u && u.role === "admin") isAdmin = true;
     }
@@ -1356,8 +1362,14 @@ app.use(async (req, res, next) => {
 
     const users = readUsers();
     let userLocal = users.find(u => {
-      if (type === "email") return u.email.toLowerCase() === cleanedVal;
-      return u.phone.replace(/\D/g, "") === cleanedVal;
+      if (type === "email") return u.email && u.email.toLowerCase() === cleanedVal;
+      if (!u.phone) return false;
+      const uClean = u.phone.replace(/\D/g, "");
+      const loginClean = cleanedVal;
+      if (uClean.length >= 10 && loginClean.length >= 10) {
+        return uClean.slice(-10) === loginClean.slice(-10);
+      }
+      return uClean === loginClean;
     });
 
     if (!userLocal) {
@@ -1623,8 +1635,14 @@ app.use(async (req, res, next) => {
     } else {
       const users = readUsers();
       const u = users.find(u => {
-        if (type === "email") return u.email.toLowerCase() === cleanedVal;
-        return u.phone.replace(/\D/g, "") === cleanedVal;
+        if (type === "email") return u.email && u.email.toLowerCase() === cleanedVal;
+        if (!u.phone) return false;
+        const uClean = u.phone.replace(/\D/g, "");
+        const loginClean = cleanedVal;
+        if (uClean.length >= 10 && loginClean.length >= 10) {
+          return uClean.slice(-10) === loginClean.slice(-10);
+        }
+        return uClean === loginClean;
       });
       if (u) {
         userExists = true;
@@ -1848,8 +1866,14 @@ app.use(async (req, res, next) => {
 
     const users = readUsers();
     let userLocal = users.find(u => {
-      if (type === "email") return u.email.toLowerCase() === cleanedVal;
-      return u.phone.replace(/\D/g, "") === cleanedVal;
+      if (type === "email") return u.email && u.email.toLowerCase() === cleanedVal;
+      if (!u.phone) return false;
+      const uClean = u.phone.replace(/\D/g, "");
+      const loginClean = cleanedVal;
+      if (uClean.length >= 10 && loginClean.length >= 10) {
+        return uClean.slice(-10) === loginClean.slice(-10);
+      }
+      return uClean === loginClean;
     });
 
     if (!userLocal) {
@@ -2581,6 +2605,7 @@ app.use(async (req, res, next) => {
       const users = readUsers();
       let userLocal = users.find(u => {
         if (type === "mobile") {
+          if (!u.phone) return false;
           const uPhoneClean = u.phone.replace(/\D/g, "");
           const loginPhoneClean = cleanedVal;
           if (uPhoneClean.length >= 10 && loginPhoneClean.length >= 10) {
@@ -2588,7 +2613,7 @@ app.use(async (req, res, next) => {
           }
           return uPhoneClean === loginPhoneClean;
         } else {
-          return u.email.toLowerCase() === cleanedVal;
+          return u.email && u.email.toLowerCase() === cleanedVal;
         }
       });
 
@@ -2677,9 +2702,15 @@ app.use(async (req, res, next) => {
     const users = readUsers();
     const user = users.find(u => {
       if (identity.includes("@")) {
-        return u.email.toLowerCase() === cleanedVal;
+        return u.email && u.email.toLowerCase() === cleanedVal;
       } else {
-        return u.phone.replace(/\D/g, "") === cleanedVal;
+        if (!u.phone) return false;
+        const uClean = u.phone.replace(/\D/g, "");
+        const loginClean = cleanedVal;
+        if (uClean.length >= 10 && loginClean.length >= 10) {
+          return uClean.slice(-10) === loginClean.slice(-10);
+        }
+        return uClean === loginClean;
       }
     });
 
