@@ -16,7 +16,8 @@ import {
   DEFAULT_TEMPLATES,
   saveTemplatesToCache,
   getExpectedParamCount,
-  setWhatsAppSettingsInMemory
+  setWhatsAppSettingsInMemory,
+  addWhatsAppLog
 } from "./src/lib/whatsapp";
 
 const supabaseUrl = process.env.SUPABASE_URL || "";
@@ -1580,26 +1581,63 @@ app.use(async (req, res, next) => {
 
     const cleanedVal = type === "email" ? value.toLowerCase().trim() : value.replace(/\D/g, "");
 
+    let userExists = false;
     let isAdmin = false;
+
     if (isSupabaseConfigured && supabaseServer) {
       try {
-        const { data: profile } = await supabaseServer
-          .from("profiles")
-          .select("role")
-          .eq("email", cleanedVal)
-          .single();
-        if (profile?.role === "admin") isAdmin = true;
-      } catch {
-        // Profile does not exist yet
+        if (type === "mobile" || type === "whatsapp") {
+          const { data: profiles } = await supabaseServer
+            .from("profiles")
+            .select("id, email, phone_number, role");
+
+          if (profiles) {
+            const found = profiles.find((p: any) => {
+              if (!p.phone_number) return false;
+              const pClean = p.phone_number.replace(/\D/g, "");
+              const loginClean = cleanedVal;
+              if (pClean.length >= 10 && loginClean.length >= 10) {
+                return pClean.slice(-10) === loginClean.slice(-10);
+              }
+              return pClean === loginClean;
+            });
+            if (found) {
+              userExists = true;
+              if (found.role === "admin") isAdmin = true;
+            }
+          }
+        } else {
+          const { data: profile } = await supabaseServer
+            .from("profiles")
+            .select("role")
+            .eq("email", cleanedVal)
+            .maybeSingle();
+          if (profile) {
+            userExists = true;
+            if (profile.role === "admin") isAdmin = true;
+          }
+        }
+      } catch (err) {
+        console.error("[SUPABASE OTP CHECK] Error checking profile:", err);
       }
     } else {
       const users = readUsers();
-      const u = users.find(u => u.email.toLowerCase() === cleanedVal);
-      if (u && u.role === "admin") isAdmin = true;
+      const u = users.find(u => {
+        if (type === "email") return u.email.toLowerCase() === cleanedVal;
+        return u.phone.replace(/\D/g, "") === cleanedVal;
+      });
+      if (u) {
+        userExists = true;
+        if (u.role === "admin") isAdmin = true;
+      }
     }
 
     if (isAdmin) {
       return res.status(403).json({ error: "Access denied. Admin profiles cannot use Customer OTP authentication. Please log in through the Admin Portal." });
+    }
+
+    if (!userExists) {
+      return res.status(404).json({ error: "No account found with this details. Please register first to login." });
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -1769,49 +1807,7 @@ app.use(async (req, res, next) => {
         }
 
         if (!loggedInUser) {
-          // Auto-register user in Supabase
-          const defaultUsername = ((type === "mobile" || type === "whatsapp") ? "user_" + cleanedVal : cleanedVal.split("@")[0]) + Math.floor(100 + Math.random() * 900);
-          const defaultEmail = type === "email" ? cleanedVal : `cust_${type}_${cleanedVal}@example.com`;
-          const defaultPhone = (type === "mobile" || type === "whatsapp") ? cleanedVal : "9876543210";
-          const defaultName = (type === "mobile" || type === "whatsapp") ? "Mobile Customer" : cleanedVal.split("@")[0];
-
-          const { data: signUpData, error: signUpError } = await supabaseServer.auth.admin.createUser({
-            email: defaultEmail,
-            password: "social_otp_login_fallback",
-            email_confirm: true,
-            user_metadata: { full_name: defaultName, phone_number: defaultPhone }
-          });
-
-          if (signUpError) {
-            console.warn("[SUPABASE CUSTOMER OTP] signup failed, trying to fallback to existing email:", signUpError.message);
-            const { data: existingProfile } = await supabaseServer
-              .from("profiles")
-              .select("id, email, full_name, phone_number, role")
-              .eq("email", defaultEmail)
-              .maybeSingle();
-            loggedInUser = existingProfile;
-          } else {
-            const supabaseUserId = signUpData.user?.id;
-            if (supabaseUserId) {
-              const role = "customer";
-              await supabaseServer
-                .from("profiles")
-                .update({
-                  full_name: defaultName,
-                  phone_number: defaultPhone,
-                  role: role
-                })
-                .eq("id", supabaseUserId);
-              
-              loggedInUser = {
-                id: supabaseUserId,
-                email: defaultEmail,
-                full_name: defaultName,
-                phone_number: defaultPhone,
-                role: role
-              };
-            }
-          }
+          return res.status(404).json({ error: "No account found with this email/mobile number. Please register first." });
         }
 
         if (loggedInUser) {
@@ -1857,19 +1853,7 @@ app.use(async (req, res, next) => {
     });
 
     if (!userLocal) {
-      const defaultUsername = (type === "email" ? cleanedVal.split("@")[0] : "user_" + cleanedVal) + Math.floor(100 + Math.random() * 900);
-      userLocal = {
-        id: "usr-" + Math.random().toString(36).substring(2, 11),
-        username: defaultUsername,
-        name: type === "email" ? cleanedVal.split("@")[0] : "Mobile Customer",
-        email: type === "email" ? cleanedVal : `cust_mobile_${cleanedVal}@example.com`,
-        phone: type === "email" ? "9876543210" : cleanedVal,
-        passwordHash: hashPassword("social_otp_login_fallback"),
-        cart: [],
-        role: "customer"
-      };
-      users.push(userLocal);
-      writeUsers(users);
+      return res.status(404).json({ error: "No account found with this email/mobile number. Please register first." });
     }
 
     const role = userLocal.role || "customer";
@@ -4102,7 +4086,6 @@ app.use(async (req, res, next) => {
 
       // Also log this custom dispatch to whatsapp_logs_db
       try {
-        const { addWhatsAppLog } = require("./src/lib/whatsapp");
         addWhatsAppLog({
           eventType: "custom_admin_broadcast",
           templateName,
