@@ -1,0 +1,6 @@
+{
+  "name": "Software License & Hardware Store",
+  "description": "A production-ready e-commerce platform for purchasing software license keys and computer hardware, featuring simulated payments, order tracking, and an administrative dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
