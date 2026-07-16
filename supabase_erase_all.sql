@@ -1,18 +1,19 @@
 -- ==============================================================================
--- CLEAN SLATE - COMPLETE ERASE & RESET SCRIPT FOR SUPABASE DB & STORAGE BUCKETS
+-- CLEAN SLATE - COMPLETE ERASE & RESET SCRIPT FOR SUPABASE DATABASE
 -- ==============================================================================
 
--- 1. CLEAN STORAGE BUCKETS & OBJECTS
--- This deletes all files and buckets in the storage schema cleanly.
-DELETE FROM storage.objects WHERE bucket_id = 'product-images';
-DELETE FROM storage.buckets WHERE id = 'product-images';
+-- NOTE ON STORAGE BUCKETS:
+-- Direct SQL deletion of buckets & objects is restricted by Supabase's protect_delete() 
+-- trigger to prevent orphaned files in physical storage (AWS S3/MinIO).
+-- Please delete/empty the 'product-images' bucket directly through your 
+-- Supabase Storage web UI with a single click.
 
--- 2. DROP ALL FUNCTIONS & TRIGGERS (With CASCADE to clean up references)
+-- 1. DROP ALL FUNCTIONS & TRIGGERS (With CASCADE to clean up references)
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users CASCADE;
 DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
 DROP FUNCTION IF EXISTS public.is_admin() CASCADE;
 
--- 3. DROP ALL WORKSPACE TABLES (With CASCADE)
+-- 2. DROP ALL WORKSPACE TABLES (With CASCADE)
 DROP TABLE IF EXISTS public.wallet_transactions CASCADE;
 DROP TABLE IF EXISTS public.b2b_resellers CASCADE;
 DROP TABLE IF EXISTS public.coupon_usage CASCADE;
@@ -31,7 +32,7 @@ DROP TABLE IF EXISTS public.banners CASCADE;
 DROP TABLE IF EXISTS public.notifications CASCADE;
 DROP TABLE IF EXISTS public.settings CASCADE;
 
--- 4. DROP CUSTOM TYPES & ENUMS (With CASCADE)
+-- 3. DROP CUSTOM TYPES & ENUMS (With CASCADE)
 DROP TYPE IF EXISTS category_type CASCADE;
 DROP TYPE IF EXISTS license_key_status CASCADE;
 DROP TYPE IF EXISTS license_action_type CASCADE;
@@ -45,5 +46,5 @@ DROP TYPE IF EXISTS wallet_tx_type CASCADE;
 DROP TYPE IF EXISTS wallet_tx_status_type CASCADE;
 
 -- ==============================================================================
--- ERASE COMPLETED - YOUR SUPABASE INSTANCE IS NOW AN ABSOLUTE BLANK CANVAS
+-- ERASE COMPLETED - YOUR SUPABASE DATABASE IS NOW AN ABSOLUTE BLANK CANVAS
 -- ==============================================================================

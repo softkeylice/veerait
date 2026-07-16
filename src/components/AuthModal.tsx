@@ -212,6 +212,7 @@ export default function AuthModal({
     } else {
       // Clear B2B specific fields if registering as retail customer
       setGstin('');
+      setBusinessName('');
     }
 
     setLoading(true);
@@ -1108,18 +1109,20 @@ export default function AuthModal({
                     </div>
                   </div>
 
-                  {/* Business Name */}
-                  <div>
-                    <label className="block text-[13px] font-bold text-slate-700 mb-1.5">Business Name {registerType === 'b2b' && '*'}</label>
-                    <input
-                      type="text"
-                      required={registerType === 'b2b'}
-                      value={businessName}
-                      onChange={(e) => setBusinessName(e.target.value)}
-                      placeholder="Enter business name"
-                      className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-900 outline-none focus:border-blue-600 transition-all"
-                    />
-                  </div>
+                  {/* Business Name - Only for B2B Resellers */}
+                  {registerType === 'b2b' && (
+                    <div>
+                      <label className="block text-[13px] font-bold text-slate-700 mb-1.5">Business Name *</label>
+                      <input
+                        type="text"
+                        required
+                        value={businessName}
+                        onChange={(e) => setBusinessName(e.target.value)}
+                        placeholder="Enter business name"
+                        className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-900 outline-none focus:border-blue-600 transition-all"
+                      />
+                    </div>
+                  )}
 
                   {/* Email Id */}
                   <div>

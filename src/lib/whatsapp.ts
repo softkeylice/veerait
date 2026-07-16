@@ -546,7 +546,11 @@ export async function dispatchWhatsAppTemplate(
       (t: any) => t.name === templateName && t.status === "APPROVED"
     );
     if (!isApproved && templateName !== "order_confirmation") {
-      const isEligibleForFallback = eventType !== "registration" && eventType !== "login_otp";
+      const isEligibleForFallback = 
+        eventType === "order_confirmation" || 
+        eventType === "license_key_delivery" || 
+        eventType === "payment_success" || 
+        eventType === "new_order_notifications";
       
       if (isEligibleForFallback) {
         console.log(`[WHATSAPP-PREEMPTIVE-FALLBACK] Template '${templateName}' is not approved/found in the cache. Silently routing to approved 'order_confirmation'...`);
@@ -697,7 +701,6 @@ export async function dispatchWhatsAppTemplate(
         console.log(`[WHATSAPP-DISPATCH] Success! Msg ID:`, responsePayload.messages?.[0]?.id);
       } else {
         lastError = responsePayload.error?.message || responsePayload.error || JSON.stringify(responsePayload);
-        console.warn(`[WHATSAPP-DISPATCH] Failed on attempt ${attempt}:`, lastError);
 
         // Check if the template does not exist in their translation (Error Code 132001) or if param mismatch occurred (Error Code 132000)
         const isTemplateMissingError = 
@@ -710,10 +713,21 @@ export async function dispatchWhatsAppTemplate(
           lastError.includes("parameters does not match") ||
           lastError.includes("expected number of params");
 
-        const isEligibleForFallback = true;
+        const isEligibleForFallback = 
+          eventType === "order_confirmation" || 
+          eventType === "license_key_delivery" || 
+          eventType === "payment_success" || 
+          eventType === "new_order_notifications";
+        const willFallback = isEligibleForFallback && (isTemplateMissingError || isParamMismatchError) && payload.template.name !== "order_confirmation";
 
-        if (isEligibleForFallback && (isTemplateMissingError || isParamMismatchError) && payload.template.name !== "order_confirmation") {
-          console.log(`[WHATSAPP-FALLBACK] Template '${payload.template.name}' failed. Falling back to approved 'order_confirmation' template...`);
+        if (willFallback) {
+          console.log(`[WHATSAPP-DISPATCH] Primary template ${templateName} not found or mismatch. Initiating fallback template flow...`);
+        } else {
+          console.warn(`[WHATSAPP-DISPATCH] Primary attempt ${attempt} returned:`, lastError);
+        }
+
+        if (willFallback) {
+          console.log(`[WHATSAPP-FALLBACK] Template '${payload.template.name}' needs fallback. Routing to approved 'order_confirmation' template...`);
           
           let fallbackVars = getFallbackOrderConfirmationVariables(eventType, variablesData);
           

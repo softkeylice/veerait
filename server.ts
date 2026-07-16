@@ -598,14 +598,14 @@ async function syncNotificationSettingsFromSupabase(): Promise<NotificationSetti
         lastSyncTime = now;
         return localSettings;
       }
-      if (error.code === "42P01" || (error.message && (error.message.includes("relation") || error.message.includes("does not exist")))) {
-        console.warn("\n⚠️  [SUPABASE-SETTINGS] WARNING: The 'settings' table does not exist in your Supabase database.");
-        console.warn("👉 Action Required: Open 'supabase_schema.sql', copy its contents, and run it in your Supabase SQL Editor to initialize the tables.\n");
+      if (error.code === "42P01" || error.code === "42501" || error.code === "PGRST205" || (error.message && (error.message.includes("relation") || error.message.includes("does not exist") || error.message.includes("permission denied") || error.message.includes("schema cache")))) {
+        console.warn("\n⚠️  [SUPABASE-SETTINGS] WARNING: The 'settings' table does not exist or is not fully initialized in your Supabase database.");
+        console.warn("👉 Action Required: Run 'supabase_schema.sql' and then 'supabase_seed_all.sql' in your Supabase SQL Editor to initialize and seed all products, categories, and keys.\n");
         cachedNotificationSettings = localSettings;
         lastSyncTime = now;
         return localSettings;
       }
-      console.error("[SUPABASE-SETTINGS] Error fetching settings:", error);
+      console.error("[SUPABASE-SETTINGS] Error fetching settings:", JSON.stringify(error));
       return localSettings;
     }
 
