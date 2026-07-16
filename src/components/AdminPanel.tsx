@@ -1288,6 +1288,39 @@ export default function AdminPanel({
     addNotification('Status Updated', `Key is now marked as ${nextStatus}.`, 'info');
   };
 
+  // Delete license key manually from pool
+  const handleDeleteKey = (keyId: string) => {
+    const keyObj = licenseKeys.find(k => k.id === keyId);
+    if (!keyObj) return;
+
+    setLicenseKeys(prevKeys => prevKeys.filter(k => k.id !== keyId));
+
+    // Record to history
+    const newHistory: LicenseHistoryEntry = {
+      id: `lh-delete-${Date.now()}`,
+      keyId: keyId,
+      keyString: keyObj.key,
+      productId: keyObj.productId,
+      productName: keyObj.productName,
+      action: 'Revoked',
+      details: `License key deleted manually from pool by Administrator.`,
+      timestamp: new Date().toISOString()
+    };
+    setLicenseHistory(prevHistory => [newHistory, ...prevHistory]);
+
+    // Update product stock if it was available
+    if (keyObj.status === 'available') {
+      setProducts(prevProducts => prevProducts.map(p => {
+        if (p.id === keyObj.productId) {
+          return { ...p, stock: Math.max(0, p.stock - 1) };
+        }
+        return p;
+      }));
+    }
+
+    addNotification('Key Deleted', `License key was successfully deleted from the pool.`, 'success');
+  };
+
   // Calculations
   const grossRevenue = orders.reduce((sum, order) => sum + (order.paymentStatus === 'paid' ? order.total : 0), 0);
   const totalOrdersCount = orders.length;
@@ -4289,13 +4322,22 @@ export default function AdminPanel({
                                   </div>
                                 </td>
                                 <td className="py-3 text-right">
-                                  <button
-                                    onClick={() => handleToggleKeyStatus(keyObj.id, keyObj.status)}
-                                    className="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-250 rounded-xl text-[10px] font-semibold text-slate-600 hover:text-slate-800 shadow-sm transition-all cursor-pointer"
-                                    title="Toggle status manually"
-                                  >
-                                    Toggle State
-                                  </button>
+                                  <div className="flex items-center justify-end gap-1.5">
+                                    <button
+                                      onClick={() => handleToggleKeyStatus(keyObj.id, keyObj.status)}
+                                      className="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-250 rounded-xl text-[10px] font-semibold text-slate-600 hover:text-slate-800 shadow-sm transition-all cursor-pointer"
+                                      title="Toggle status manually"
+                                    >
+                                      Toggle State
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteKey(keyObj.id)}
+                                      className="p-1.5 text-rose-600 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 border border-rose-150 rounded-xl transition-all cursor-pointer"
+                                      title="Delete license key"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
                                 </td>
                               </tr>
                             ))}

@@ -2,9 +2,10 @@
 -- CLEAN SLATE - COMPLETE ERASE & RESET SCRIPT FOR SUPABASE DB & STORAGE BUCKETS
 -- ==============================================================================
 
--- 1. CLEAN STORAGE BUCKETS (Please clean up bucket 'product-images' from Supabase Storage dashboard manually if needed)
--- Note: Direct deletion from storage tables is restricted by Supabase's protect_delete trigger.
--- You can empty the 'product-images' bucket directly through the Supabase Storage web UI.
+-- 1. CLEAN STORAGE BUCKETS & OBJECTS
+-- This deletes all files and buckets in the storage schema cleanly.
+DELETE FROM storage.objects WHERE bucket_id = 'product-images';
+DELETE FROM storage.buckets WHERE id = 'product-images';
 
 -- 2. DROP ALL FUNCTIONS & TRIGGERS (With CASCADE to clean up references)
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users CASCADE;
