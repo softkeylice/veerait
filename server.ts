@@ -513,7 +513,7 @@ async function dispatchOrderNotifications(order: any) {
             <div>
               <h1 style="color: #2563eb; margin: 0; font-size: 22px; font-weight: 800;">SHRI SAPTASHRUNGI ENTERPRISES</h1>
               <p style="font-size: 11px; color: #64748b; margin: 5px 0 0 0;">Digital Activation Keys & Softwares</p>
-              <p style="font-size: 10px; color: #64748b; margin: 2px 0 0 0; font-family: monospace;">GSTIN: 27BQIPS8843LIZX</p>
+              <p style="font-size: 10px; color: #64748b; margin: 2px 0 0 0; font-family: monospace;">GSTIN: 27BQIPS8843L1ZX</p>
             </div>
             <div style="text-align: right;">
               <span style="background-color: #ecfdf5; color: #047857; padding: 4px 10px; border-radius: 99px; font-size: 10px; font-weight: bold; border: 1px solid #a7f3d0; text-transform: uppercase;">PAID</span>
@@ -4742,7 +4742,7 @@ app.use(async (req, res, next) => {
               <div style="text-align: center; margin-bottom: 25px; border-bottom: 2px solid #f1f5f9; padding-bottom: 20px;">
                 <h1 style="color: #2563eb; margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.5px;">SHRI SAPTASHRUNGI ENTERPRISES</h1>
                 <p style="color: #64748b; font-size: 12px; margin: 5px 0 0 0; text-transform: uppercase; font-weight: 600;">Transaction Invoice Receipt</p>
-                <p style="font-size: 10px; color: #64748b; margin: 4px 0 0 0; font-family: monospace;">GSTIN: 27BQIPS8843LIZX</p>
+                <p style="font-size: 10px; color: #64748b; margin: 4px 0 0 0; font-family: monospace;">GSTIN: 27BQIPS8843L1ZX</p>
               </div>
 
               <div style="margin-bottom: 25px; font-size: 14px;">

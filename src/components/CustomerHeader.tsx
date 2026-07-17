@@ -115,7 +115,7 @@ export default function CustomerHeader({
               <div>
                 <div className="flex items-baseline gap-1">
                   <span className="font-black text-xl tracking-tighter text-zinc-900 uppercase leading-none font-sans">
-                    SAPTASHRUNGI
+                    VEERAIT
                   </span>
                 </div>
                 <span className="text-[10px] font-mono font-bold tracking-[0.35em] uppercase text-[#8cc33f] block mt-0.5 pl-0.5">

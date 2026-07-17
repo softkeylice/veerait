@@ -2088,7 +2088,7 @@ export default function CustomerDashboard({
                       Shri Saptashrungi Enterprises
                     </h1>
                     <p className="text-[10px] text-slate-400 font-medium">Digital Activation Keys & Softwares</p>
-                    <p className="text-[9px] text-slate-400 leading-relaxed font-mono">GSTIN: 27BQIPS8843LIZX<br />P. No. 1-11-42, Krishna Mandir, Bansipura, Mama Chowk, Jalna, Maharashtra - 431203</p>
+                    <p className="text-[9px] text-slate-400 leading-relaxed font-mono">GSTIN: 27BQIPS8843L1ZX<br />P. No. 1-11-42, Krishna Mandir, Bansipura, Mama Chowk, Jalna, Maharashtra - 431203</p>
                   </div>
 
                   <div className="text-right space-y-1">
