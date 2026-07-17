@@ -432,7 +432,7 @@ async function dispatchOrderNotifications(order: any) {
   const customerName = order.customerName || "Customer";
   
   const productsList = order.items.map((it: any) => `${it.product?.name || "Product"} (x${it.quantity})`).join(", ");
-  const amount = `$${Number(order.total).toFixed(2)}`;
+  const amount = `₹${Number(order.total).toFixed(2)}`;
   
   const keysList = order.items
     .filter((it: any) => it.assignedKeys && it.assignedKeys.length > 0)
@@ -3063,7 +3063,7 @@ app.use(async (req, res, next) => {
 
     // Min spend validation
     if (subtotal < found.minSpend) {
-      return res.status(400).json({ error: `Minimum subtotal of $${found.minSpend} required to use this coupon.` });
+      return res.status(400).json({ error: `Minimum subtotal of ₹${found.minSpend} required to use this coupon.` });
     }
 
     // Calculate discount
@@ -4436,7 +4436,7 @@ app.use(async (req, res, next) => {
 
       const phone = order.customer_phone || order.customerPhone || "9876543210";
       const name = order.customer_name || order.customerName || "Customer";
-      const amt = refundAmount || `$${Number(order.total || order.amount || 0).toFixed(2)}`;
+      const amt = (refundAmount || `₹${Number(order.total || order.amount || 0).toFixed(2)}`).replace(/^\$/, "₹");
 
       if (status === "initiated") {
         await dispatchWhatsAppTemplate("refund_initiated", phone, {

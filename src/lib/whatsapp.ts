@@ -640,6 +640,16 @@ export async function dispatchWhatsAppTemplate(
     text: String(v).replace(/\r?\n/g, " | "), // Clean newlines to avoid Meta API rejection!
   }));
 
+  let templateLanguage = whatsappLanguage || "en";
+  if (approvedTemplates && approvedTemplates.length > 0) {
+    const cachedTemplate = approvedTemplates.find(
+      (t: any) => t.name === templateName && t.status === "APPROVED"
+    );
+    if (cachedTemplate && cachedTemplate.language) {
+      templateLanguage = cachedTemplate.language;
+    }
+  }
+
   const payload = {
     messaging_product: "whatsapp",
     recipient_type: "individual",
@@ -648,7 +658,7 @@ export async function dispatchWhatsAppTemplate(
     template: {
       name: templateName,
       language: {
-        code: whatsappLanguage || "en",
+        code: templateLanguage,
       },
       components: [
         {
