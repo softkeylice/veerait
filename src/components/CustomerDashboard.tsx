@@ -285,12 +285,12 @@ export default function CustomerDashboard({
     }
   };
 
-  const handleResendEmail = async () => {
-    if (!selectedWhatsAppOrder) {
-      addNotification('Selection Required', 'Please select an order to resend email invoice.', 'warning');
+  const handleResendEmailForOrder = async (orderId: string) => {
+    if (!orderId) {
+      addNotification('Selection Required', 'Please select an order to send email invoice.', 'warning');
       return;
     }
-    const orderObj = orders.find(o => o.id === selectedWhatsAppOrder);
+    const orderObj = orders.find(o => o.id === orderId);
     if (!orderObj) {
       addNotification('Order Not Found', 'The selected order could not be loaded.', 'error');
       return;
@@ -324,6 +324,10 @@ export default function CustomerDashboard({
     } finally {
       setIsResendingEmail(false);
     }
+  };
+
+  const handleResendEmail = async () => {
+    await handleResendEmailForOrder(selectedWhatsAppOrder);
   };
 
   const handleRegisterB2B = (e: React.FormEvent) => {
@@ -1076,17 +1080,33 @@ export default function CustomerDashboard({
                                   const waText = `🛒 *SoftKey Store Order Confirmation!*\n\n*Order ID:* ${selectedOrderForDetails.id}\n*Products:* ${productsList}\n*Total Paid:* ₹${selectedOrderForDetails.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}\n\n*Your License Key(s):*\n${keysList}\n\nThank you for shopping with us! If you need support, visit your Customer Dashboard.`;
                                   
                                   return (
-                                    <a
-                                      href={`https://wa.me/${cleanedPhone}?text=${encodeURIComponent(waText)}`}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-emerald-100 cursor-pointer font-sans text-xs text-center"
-                                    >
-                                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.262 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.717-1.456L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.42 9.863-9.864.001-2.63-1.019-5.101-2.875-6.958-1.855-1.855-4.329-2.876-6.962-2.877-5.438 0-9.863 4.42-9.866 9.864a9.79 9.79 0 0 0 1.502 5.125L1.914 21.8l4.733-1.241zm11.365-7.31c-.304-.153-1.8-.886-2.077-.988-.278-.102-.48-.153-.68.153-.2.304-.778 1.017-.953 1.22-.175.203-.35.229-.654.076-.304-.153-1.284-.473-2.446-1.51-1.002-.894-1.533-1.921-1.73-2.226-.197-.305-.02-.47.132-.622.137-.137.304-.355.457-.533.153-.178.203-.305.304-.508.102-.203.051-.381-.025-.533-.076-.153-.68-1.637-.932-2.246-.247-.591-.497-.512-.68-.521-.177-.009-.38-.011-.583-.011-.203 0-.533.076-.813.381-.28.305-1.067 1.042-1.067 2.541s1.092 2.946 1.244 3.149c.152.203 2.15 3.284 5.21 4.601.727.314 1.294.502 1.737.643.731.233 1.396.2 1.922.121.587-.088 1.8-.737 2.054-1.448.254-.711.254-1.321.178-1.448-.076-.127-.278-.203-.583-.356z" />
-                                      </svg>
-                                      Receive License Keys on WhatsApp App/Web
-                                    </a>
+                                    <div className="space-y-2.5">
+                                      <a
+                                        href={`https://wa.me/${cleanedPhone}?text=${encodeURIComponent(waText)}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-emerald-100 cursor-pointer font-sans text-xs text-center"
+                                      >
+                                        <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                                          <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.262 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.717-1.456L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.42 9.863-9.864.001-2.63-1.019-5.101-2.875-6.958-1.855-1.855-4.329-2.876-6.962-2.877-5.438 0-9.863 4.42-9.866 9.864a9.79 9.79 0 0 0 1.502 5.125L1.914 21.8l4.733-1.241zm11.365-7.31c-.304-.153-1.8-.886-2.077-.988-.278-.102-.48-.153-.68.153-.2.304-.778 1.017-.953 1.22-.175.203-.35.229-.654.076-.304-.153-1.284-.473-2.446-1.51-1.002-.894-1.533-1.921-1.73-2.226-.197-.305-.02-.47.132-.622.137-.137.304-.355.457-.533.153-.178.203-.305.304-.508.102-.203.051-.381-.025-.533-.076-.153-.68-1.637-.932-2.246-.247-.591-.497-.512-.68-.521-.177-.009-.38-.011-.583-.011-.203 0-.533.076-.813.381-.28.305-1.067 1.042-1.067 2.541s1.092 2.946 1.244 3.149c.152.203 2.15 3.284 5.21 4.601.727.314 1.294.502 1.737.643.731.233 1.396.2 1.922.121.587-.088 1.8-.737 2.054-1.448.254-.711.254-1.321.178-1.448-.076-.127-.278-.203-.583-.356z" />
+                                        </svg>
+                                        Receive License Keys on WhatsApp App/Web
+                                      </a>
+
+                                      <button
+                                        type="button"
+                                        disabled={isResendingEmail}
+                                        onClick={() => handleResendEmailForOrder(selectedOrderForDetails.id)}
+                                        className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-100 cursor-pointer font-sans text-xs text-center"
+                                      >
+                                        {isResendingEmail ? (
+                                          <RefreshCw className="w-4 h-4 animate-spin" />
+                                        ) : (
+                                          <Mail className="w-4 h-4" />
+                                        )}
+                                        Send Order Details to My Email (Invoicing)
+                                      </button>
+                                    </div>
                                   );
                                 })()}
                               </div>

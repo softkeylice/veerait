@@ -1,0 +1,28 @@
+{
+  "whatsappToken": "",
+  "whatsappBusinessId": "",
+  "phoneNumberId": "",
+  "smtpHost": "smtp.gmail.com",
+  "smtpUser": "softkeylice@gmail.com",
+  "smtpPassword": "lssm oozb kuow yxvn",
+  "twoFactorApiKey": "",
+  "twoFactorTemplateName": "",
+  "adminPhone": "9689628814",
+  "whatsappLanguage": "en",
+  "whatsappTemplates": {
+    "login_otp": "softkey_login_otp_v1",
+    "registration": "softkey_welcome_v1",
+    "payment_failed": "softkey_payment_failed_v1",
+    "payment_success": "softkey_payment_success_v1",
+    "shipping_update": "softkey_shipping_update_v1",
+    "low_stock_alerts": "softkey_low_stock_alert_v1",
+    "refund_completed": "softkey_refund_complete_v1",
+    "refund_initiated": "softkey_refund_init_v1",
+    "software_download": "softkey_download_v1",
+    "order_confirmation": "order_confirmation",
+    "license_key_delivery": "softkey_license_delivery_v1",
+    "delivery_confirmation": "softkey_delivery_confirm_v1",
+    "custom_admin_broadcast": "order_confirmation",
+    "new_order_notifications": "softkey_new_order_notify_v1"
+  }
+}

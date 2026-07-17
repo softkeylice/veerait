@@ -610,8 +610,17 @@ async function syncNotificationSettingsFromSupabase(): Promise<NotificationSetti
     }
 
     if (data && data.value) {
-      const merged = { ...localSettings, ...data.value };
+      const merged = { ...localSettings };
+      for (const key of Object.keys(data.value) as Array<keyof NotificationSettings>) {
+        if (data.value[key] !== undefined && data.value[key] !== "") {
+          (merged as any)[key] = data.value[key];
+        } else if (localSettings[key] !== undefined && localSettings[key] !== "") {
+          // If Supabase has empty, but local has a value (like the SMTP we just configured), keep local and sync to Supabase!
+          (merged as any)[key] = localSettings[key];
+        }
+      }
       writeNotificationSettings(merged);
+      await saveNotificationSettingsToSupabase(merged);
       cachedNotificationSettings = merged;
       lastSyncTime = now;
       return merged;
