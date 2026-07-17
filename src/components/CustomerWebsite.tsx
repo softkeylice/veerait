@@ -209,10 +209,10 @@ export default function CustomerWebsite({
   const [uploadedReceipt, setUploadedReceipt] = useState('');
   const [storePaymentSettings, setStorePaymentSettings] = useState({
     bankName: 'Silicon Valley Bank (India)',
-    bankAccountName: 'SoftKey Technologies Private Limited',
+    bankAccountName: 'VeeraIT Technologies Private Limited',
     bankAccountNumber: '918273645019',
     ifscCode: 'SVBIN000283',
-    upiId: 'softkeytech@upi',
+    upiId: 'veerait@upi',
     upiQrCodeUrl: ''
   });
   const [razorpayPublicId, setRazorpayPublicId] = useState('');
@@ -3806,7 +3806,7 @@ export default function CustomerWebsite({
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="text-center max-w-xl mx-auto mb-12">
                 <span className="text-xs font-bold text-blue-600 uppercase tracking-widest font-mono">Our Quality Pledge</span>
-                <h2 className="text-3xl font-extrabold text-slate-900 mt-1 font-sans">Why SoftKey & Hardware?</h2>
+                <h2 className="text-3xl font-extrabold text-slate-900 mt-1 font-sans">Why VeeraIT & Hardware?</h2>
                 <p className="text-xs text-slate-500 mt-1">We bypass fake key vendors and unauthorized physical couriers.</p>
               </div>
 
@@ -3914,7 +3914,7 @@ export default function CustomerWebsite({
                     K
                   </div>
                   <span className="font-sans font-extrabold text-base tracking-tight text-white">
-                    SoftKey & Hardware Corp
+                    VeeraIT & Hardware Corp
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 max-w-sm leading-relaxed">
@@ -3949,7 +3949,7 @@ export default function CustomerWebsite({
                   <li>
                     <button onClick={() => {
                       if (setUser) {
-                        setUser({ email: 'softkeylice@gmail.com', name: 'SoftKey Licer' });
+                        setUser({ email: 'softkeylice@gmail.com', name: 'VeeraIT Licer' });
                       } else {
                         addNotification('Error', 'User login service unavailable.', 'error');
                       }
@@ -3978,7 +3978,7 @@ export default function CustomerWebsite({
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-500">
-              <p>© 2026 SoftKey & Hardware Corp. Sourced directly via standard wholesale licensing. All rights reserved.</p>
+              <p>© 2026 VeeraIT & Hardware Corp. Sourced directly via standard wholesale licensing. All rights reserved.</p>
               <p className="mt-2 sm:mt-0">Built with Antigravity AI Studio & React v19</p>
             </div>
           </footer>
@@ -4736,7 +4736,7 @@ export default function CustomerWebsite({
                 </div>
                 <div>
                   <h4 className="text-sm font-bold font-sans tracking-tight">Razorpay Secure Checkout</h4>
-                  <p className="text-[10px] text-slate-400">Merchant Account: SoftKey Sales Corp</p>
+                  <p className="text-[10px] text-slate-400">Merchant Account: VeeraIT Sales Corp</p>
                 </div>
               </div>
               <div className="text-right">

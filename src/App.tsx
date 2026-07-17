@@ -1130,7 +1130,7 @@ export default function App() {
         const threshold = parseInt(localStorage.getItem(`threshold_${item.product.id}`) || '5');
 
         if (remainingCount < threshold) {
-          const alertMessage = `⚠️ SoftKey Alert: Low stock alert for "${item.product.name}". Only ${remainingCount} keys left in the Supabase key pool (Threshold: ${threshold}). Please replenish the pool immediately.`;
+          const alertMessage = `⚠️ VeeraIT Alert: Low stock alert for "${item.product.name}". Only ${remainingCount} keys left in the Supabase key pool (Threshold: ${threshold}). Please replenish the pool immediately.`;
           
           // Save alert to alert logs in localStorage
           const savedAlertsStr = localStorage.getItem('supabase_whatsapp_alerts') || '[]';
@@ -1447,7 +1447,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
           <div className="flex items-center justify-center gap-2">
             <ShieldCheck className="w-5 h-5 text-blue-600" />
-            <span className="font-sans font-semibold text-slate-900">SoftKey & Hardware Corporate</span>
+            <span className="font-sans font-semibold text-slate-900">VeeraIT & Hardware Corporate</span>
           </div>
           <p className="text-xs max-w-md mx-auto leading-relaxed text-slate-500">
             A secure e-commerce environment featuring simulated Razorpay gateways, Supabase Auth instances, Node SMTP dispatch logs, and visual waybill timeline dashboards.

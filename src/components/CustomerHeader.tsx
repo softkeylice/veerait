@@ -115,7 +115,7 @@ export default function CustomerHeader({
               <div>
                 <div className="flex items-baseline gap-1">
                   <span className="font-black text-xl tracking-tighter text-zinc-900 uppercase leading-none font-sans">
-                    SOFTKEY
+                    VEERAIT
                   </span>
                 </div>
                 <span className="text-[10px] font-mono font-bold tracking-[0.35em] uppercase text-[#8cc33f] block mt-0.5 pl-0.5">
@@ -190,7 +190,7 @@ export default function CustomerHeader({
               {!user && (
                 <button
                   onClick={() => {
-                    setUser({ email: 'softkeylice@gmail.com', name: 'SoftKey Licer' });
+                    setUser({ email: 'softkeylice@gmail.com', name: 'VeeraIT Licer' });
                     addNotification('Demo Authenticated', 'Logged in as softkeylice@gmail.com', 'success');
                   }}
                   className="hidden lg:block text-[10px] text-slate-500 hover:text-blue-600 border border-dashed border-slate-300 px-2 py-1 rounded bg-slate-50 hover:bg-blue-50/50 transition-colors font-mono"

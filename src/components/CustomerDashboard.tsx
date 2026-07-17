@@ -459,7 +459,7 @@ export default function CustomerDashboard({
             </div>
             <div>
               <p className="text-xs text-blue-600 font-mono tracking-wider uppercase font-bold">Authenticated Account</p>
-              <h2 className="text-xl md:text-2xl font-sans font-bold text-slate-900 tracking-tight">{user?.name || 'SoftKey Customer'}</h2>
+              <h2 className="text-xl md:text-2xl font-sans font-bold text-slate-900 tracking-tight">{user?.name || 'VeeraIT Customer'}</h2>
               <p className="text-xs text-slate-500 mt-1">{user?.email}</p>
             </div>
           </div>
@@ -1077,7 +1077,7 @@ export default function CustomerDashboard({
                                     .join("\n") || "No software keys in this order (Hardware items pending dispatch)";
                                   const formattedPhone = (selectedOrderForDetails.customerPhone || '9876543210').replace(/\D/g, '');
                                   const cleanedPhone = formattedPhone.startsWith('91') && formattedPhone.length > 10 ? formattedPhone : `91${formattedPhone}`;
-                                  const waText = `🛒 *SoftKey Store Order Confirmation!*\n\n*Order ID:* ${selectedOrderForDetails.id}\n*Products:* ${productsList}\n*Total Paid:* ₹${selectedOrderForDetails.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}\n\n*Your License Key(s):*\n${keysList}\n\nThank you for shopping with us! If you need support, visit your Customer Dashboard.`;
+                                  const waText = `🛒 *VeeraIT Store Order Confirmation!*\n\n*Order ID:* ${selectedOrderForDetails.id}\n*Products:* ${productsList}\n*Total Paid:* ₹${selectedOrderForDetails.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}\n\n*Your License Key(s):*\n${keysList}\n\nThank you for shopping with us! If you need support, visit your Customer Dashboard.`;
                                   
                                   return (
                                     <div className="space-y-2.5">
@@ -1489,7 +1489,7 @@ export default function CustomerDashboard({
                             .join("\n") || "No software keys in this order (Hardware items pending dispatch)";
                           const formattedPhone = (user?.phone || '9876543210').replace(/\D/g, '');
                           const cleanedPhone = formattedPhone.startsWith('91') && formattedPhone.length > 10 ? formattedPhone : `91${formattedPhone}`;
-                          const waText = `🛒 *SoftKey Store Order Confirmation!*\n\n*Order ID:* ${orderObj.id}\n*Products:* ${productsList}\n*Total Paid:* ₹${orderObj.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}\n\n*Your License Key(s):*\n${keysList}\n\nThank you for shopping with us! If you need support, visit your Customer Dashboard.`;
+                          const waText = `🛒 *VeeraIT Store Order Confirmation!*\n\n*Order ID:* ${orderObj.id}\n*Products:* ${productsList}\n*Total Paid:* ₹${orderObj.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}\n\n*Your License Key(s):*\n${keysList}\n\nThank you for shopping with us! If you need support, visit your Customer Dashboard.`;
                           
                           return (
                             <a
@@ -1558,7 +1558,7 @@ export default function CustomerDashboard({
                             <span className="text-[10px] bg-white/20 text-white font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider font-mono">Reseller Program</span>
                             <h4 className="text-xl md:text-2xl font-black font-sans tracking-tight">Become a B2B Reseller & Earn Commission on Every Sale!</h4>
                             <p className="text-xs text-emerald-50 leading-relaxed">
-                              SoftKey's hybrid B2B/B2C pipeline allows you to either resell our digital items in bulk with a wholesale discount or share your referral key. When a retail customer buys through you, they receive a discount and your commission goes straight to your wallet!
+                              VeeraIT's hybrid B2B/B2C pipeline allows you to either resell our digital items in bulk with a wholesale discount or share your referral key. When a retail customer buys through you, they receive a discount and your commission goes straight to your wallet!
                             </p>
                           </div>
                         </div>
@@ -1670,7 +1670,7 @@ export default function CustomerDashboard({
                         </div>
                         <h4 className="text-base font-bold text-slate-900 font-sans">Partner Account Suspended</h4>
                         <p className="text-xs text-slate-500 mt-2 max-w-sm leading-relaxed">
-                          Your B2B Reseller account has been suspended by the system administrator due to regulatory policy updates. Please contact SoftKey B2B Support desk.
+                          Your B2B Reseller account has been suspended by the system administrator due to regulatory policy updates. Please contact VeeraIT B2B Support desk.
                         </p>
                       </div>
                     );
@@ -2085,7 +2085,7 @@ export default function CustomerDashboard({
                   <div className="space-y-1">
                     <h1 className="text-lg font-black tracking-tight text-blue-600 flex items-center gap-1.5">
                       <Key className="w-5 h-5 text-blue-600" />
-                      SoftKey India
+                      VeeraIT India
                     </h1>
                     <p className="text-[10px] text-slate-400 font-medium">Digital Activation Keys & Softwares</p>
                     <p className="text-[9px] text-slate-400 leading-relaxed font-mono">GSTIN: 09AAFCS8361H1Z2<br />Connaught Place, New Delhi - 110001</p>
@@ -2104,9 +2104,9 @@ export default function CustomerDashboard({
                 <div className="grid grid-cols-2 gap-8 border-y border-slate-150 py-5 text-[11px] text-slate-500">
                   <div className="space-y-1">
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">BILLING FROM</span>
-                    <strong className="text-slate-800 font-bold font-sans">SoftKey Licenses Ltd</strong>
+                    <strong className="text-slate-800 font-bold font-sans">VeeraIT Licenses Ltd</strong>
                     <p>Regd Office Connaught Place, Tech Suite 4</p>
-                    <p>support@softkey.com | India</p>
+                    <p>support@veerait.com | India</p>
                   </div>
                   <div className="space-y-1">
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">BILLING TO</span>

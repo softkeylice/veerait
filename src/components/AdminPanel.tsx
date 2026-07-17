@@ -82,10 +82,10 @@ export default function AdminPanel({
 
   // Payment configuration states
   const [bankName, setBankName] = useState('Silicon Valley Bank (India)');
-  const [bankAccountName, setBankAccountName] = useState('SoftKey Technologies Private Limited');
+  const [bankAccountName, setBankAccountName] = useState('VeeraIT Technologies Private Limited');
   const [bankAccountNumber, setBankAccountNumber] = useState('918273645019');
   const [ifscCode, setIfscCode] = useState('SVBIN000283');
-  const [upiId, setUpiId] = useState('softkeytech@upi');
+  const [upiId, setUpiId] = useState('veerait@upi');
   const [upiQrCodeUrl, setUpiQrCodeUrl] = useState('');
   const [razorpayKeyId, setRazorpayKeyId] = useState('');
   const [razorpayConfigured, setRazorpayConfigured] = useState(false);
@@ -339,10 +339,10 @@ export default function AdminPanel({
       .then(data => {
         if (data.settings) {
           setBankName(data.settings.bankName || 'Silicon Valley Bank (India)');
-          setBankAccountName(data.settings.bankAccountName || 'SoftKey Technologies Private Limited');
+          setBankAccountName(data.settings.bankAccountName || 'VeeraIT Technologies Private Limited');
           setBankAccountNumber(data.settings.bankAccountNumber || '918273645019');
           setIfscCode(data.settings.ifscCode || 'SVBIN000283');
-          setUpiId(data.settings.upiId || 'softkeytech@upi');
+          setUpiId(data.settings.upiId || 'veerait@upi');
           setUpiQrCodeUrl(data.settings.upiQrCodeUrl || '');
         }
         if (data.razorpay) {
@@ -2040,8 +2040,8 @@ export default function AdminPanel({
   const [newCatIcon, setNewCatIcon] = useState('');
 
   // General Store Settings
-  const [storeName, setStoreName] = useState('SoftKey Sourcing & Reselling Hub');
-  const [storeEmail, setStoreEmail] = useState('support@softkeylice.com');
+  const [storeName, setStoreName] = useState('VeeraIT Sourcing & Reselling Hub');
+  const [storeEmail, setStoreEmail] = useState('support@veerait.com');
   const [storePhone, setStorePhone] = useState('+91 80 4123 5678');
   const [storeCurrency, setStoreCurrency] = useState('INR (₹)');
   const [lowStockThreshold, setLowStockThreshold] = useState(5);
@@ -2263,7 +2263,7 @@ export default function AdminPanel({
       <div className="md:hidden bg-slate-900 text-white flex items-center justify-between px-4 py-3 shrink-0 z-20">
         <div className="flex items-center gap-2">
           <Layers className="w-5 h-5 text-blue-500 animate-pulse" />
-          <span className="font-extrabold text-sm tracking-wider uppercase font-sans">SoftKey Admin</span>
+          <span className="font-extrabold text-sm tracking-wider uppercase font-sans">VeeraIT Admin</span>
         </div>
         <button 
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -2286,7 +2286,7 @@ export default function AdminPanel({
                 <Layers className="w-5 h-5 animate-pulse" />
               </div>
               <div>
-                <h2 className="text-sm font-black text-white tracking-wider uppercase">SoftKey</h2>
+                <h2 className="text-sm font-black text-white tracking-wider uppercase">VeeraIT</h2>
                 <p className="text-[10px] text-slate-500 font-bold uppercase font-mono tracking-widest">Admin Hub</p>
               </div>
             </div>
@@ -3473,14 +3473,14 @@ export default function AdminPanel({
                               </p>
                               <div className="p-4 bg-white border border-slate-200 rounded-xl shadow-sm text-left">
                                 <div className="text-[11px] text-slate-500 flex items-center gap-1">
-                                  <span>https://softkey.store</span>
+                                  <span>https://veerait.store</span>
                                   <span>›</span>
                                   <span className="truncate">products</span>
                                   <span>›</span>
                                   <span className="truncate font-mono">{editingProduct?.id || 'new-product'}</span>
                                 </div>
                                 <h4 className="text-sm font-semibold text-blue-800 hover:underline leading-tight mt-1 line-clamp-1">
-                                  {formSeoTitle || formName || 'New Product Catalog Listing'} - SoftKey Store
+                                  {formSeoTitle || formName || 'New Product Catalog Listing'} - VeeraIT Store
                                 </h4>
                                 <p className="text-[11px] text-slate-650 leading-relaxed mt-1 line-clamp-2">
                                   {formSeoDesc || formDesc || 'Genuine high-performance solution. Genuine professional premium grade solution. Instant digital validation delivery directly to your verified address.'}
