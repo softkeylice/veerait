@@ -2036,144 +2036,174 @@ export default function CustomerDashboard({
       </div>
 
       {/* INVOICE MODAL POP-UP */}
-      {showInvoiceModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-in fade-in duration-200 overflow-y-auto">
-          <div className="bg-white rounded-3xl w-full max-w-2xl border border-slate-350 shadow-2xl relative overflow-hidden my-8">
-            
-            {/* Header control buttons */}
-            <div className="bg-slate-50 border-b border-slate-150 px-6 py-4 flex justify-between items-center no-print">
-              <span className="text-xs font-mono font-bold text-slate-500">Official Invoice Receipt</span>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => window.print()}
-                  className="px-3 py-1.5 bg-blue-50 text-blue-600 border border-blue-150 hover:bg-blue-100 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer"
-                >
-                  <Printer className="w-3.5 h-3.5" />
-                  Print Page
-                </button>
-                <button
-                  onClick={() => setShowInvoiceModal(null)}
-                  className="p-1.5 hover:bg-slate-200 border border-slate-200 rounded-lg transition-colors cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
+      {showInvoiceModal && (() => {
+        const currentResellerForInvoice = resellers.find(r => r.email.toLowerCase() === showInvoiceModal.customerEmail.toLowerCase());
+        const invoiceGstin = currentResellerForInvoice?.gstin || showInvoiceModal.customerGst || '';
+        const invoiceState = currentResellerForInvoice?.state || showInvoiceModal.customerState || user?.address || 'Delhi';
+        
+        // Reverse GST (18% inclusive)
+        const totalAmountPaid = showInvoiceModal.total;
+        const basePrice = totalAmountPaid / 1.18;
+        const totalGstAmount = totalAmountPaid - basePrice;
+        
+        const cleanedState = invoiceState.toUpperCase();
+        const isDelhiOrUP = cleanedState === '' || cleanedState.includes('DELHI') || cleanedState.includes('DL') || cleanedState.includes('07') || cleanedState.includes('NEW DELHI');
+        
+        const cgstAmount = isDelhiOrUP ? totalGstAmount / 2 : 0;
+        const sgstAmount = isDelhiOrUP ? totalGstAmount / 2 : 0;
+        const igstAmount = isDelhiOrUP ? 0 : totalGstAmount;
 
-            {/* Actual Invoice Paper container */}
-            <div className="p-8 md:p-12 space-y-8" id="invoice-paper">
+        return (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-in fade-in duration-200 overflow-y-auto">
+            <div className="bg-white rounded-3xl w-full max-w-2xl border border-slate-350 shadow-2xl relative overflow-hidden my-8">
               
-              {/* Header company logo and meta */}
-              <div className="flex justify-between items-start">
-                <div className="space-y-1">
-                  <h1 className="text-lg font-black tracking-tight text-blue-600 flex items-center gap-1.5">
-                    <Key className="w-5 h-5 text-blue-600" />
-                    SoftKey India
-                  </h1>
-                  <p className="text-[10px] text-slate-400 font-medium">Digital Activation Keys & Softwares</p>
-                  <p className="text-[9px] text-slate-400 leading-relaxed font-mono">GSTIN: 09AAFCS8361H1Z2<br />Connaught Place, New Delhi - 110001</p>
-                </div>
-
-                <div className="text-right space-y-1">
-                  <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-150 rounded-full font-bold text-[9px] uppercase tracking-wider">
-                    {showInvoiceModal.paymentStatus}
-                  </span>
-                  <p className="text-[10px] font-bold text-slate-800 font-mono mt-1">Receipt: {showInvoiceModal.id}</p>
-                  <p className="text-[9px] text-slate-450">Date: {new Date(showInvoiceModal.createdAt).toLocaleDateString()}</p>
-                </div>
-              </div>
-
-              {/* Vendor & Client Details row */}
-              <div className="grid grid-cols-2 gap-8 border-y border-slate-150 py-5 text-[11px] text-slate-500">
-                <div className="space-y-1">
-                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">BILLING FROM</span>
-                  <strong className="text-slate-800 font-bold font-sans">SoftKey Licenses Ltd</strong>
-                  <p>Regd Office Connaught Place, Tech Suite 4</p>
-                  <p>support@softkey.com | India</p>
-                </div>
-                <div className="space-y-1">
-                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">BILLING TO</span>
-                  <strong className="text-slate-800 font-bold font-sans">{showInvoiceModal.customerName}</strong>
-                  <p className="font-mono">{showInvoiceModal.customerEmail}</p>
-                  <p className="font-mono">+91 {showInvoiceModal.customerPhone}</p>
-                  <p className="mt-1 font-medium text-slate-700">{user?.address || 'India'}</p>
+              {/* Header control buttons */}
+              <div className="bg-slate-50 border-b border-slate-150 px-6 py-4 flex justify-between items-center no-print">
+                <span className="text-xs font-mono font-bold text-slate-500">Official Invoice Receipt</span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => window.print()}
+                    className="px-3 py-1.5 bg-blue-50 text-blue-600 border border-blue-150 hover:bg-blue-100 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer"
+                  >
+                    <Printer className="w-3.5 h-3.5" />
+                    Print Page
+                  </button>
+                  <button
+                    onClick={() => setShowInvoiceModal(null)}
+                    className="p-1.5 hover:bg-slate-200 border border-slate-200 rounded-lg transition-colors cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
 
-              {/* Invoice items table */}
-              <div className="space-y-3">
-                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">INVOICED LINE ITEMS</span>
-                <div className="border border-slate-200 rounded-2xl overflow-hidden">
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead>
-                      <tr className="bg-slate-50 border-b border-slate-200 font-bold text-slate-500">
-                        <th className="p-3">Product Name</th>
-                        <th className="p-3 text-center">Qty</th>
-                        <th className="p-3 text-right">Rate</th>
-                        <th className="p-3 text-right">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-150 font-medium text-slate-700">
-                      {showInvoiceModal.items.map((item, idx) => (
-                        <tr key={idx}>
-                          <td className="p-3">
-                            <p className="font-bold text-slate-900">{item.product.name}</p>
-                            <span className="capitalize text-[9px] font-mono text-slate-450">{item.product.category} Activation License</span>
-                          </td>
-                          <td className="p-3 text-center font-mono">{item.quantity}</td>
-                          <td className="p-3 text-right font-mono">₹{item.product.price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                          <td className="p-3 text-right font-mono text-slate-900">₹{(item.product.price * item.quantity).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+              {/* Actual Invoice Paper container */}
+              <div className="p-8 md:p-12 space-y-8" id="invoice-paper">
+                
+                {/* Header company logo and meta */}
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                    <h1 className="text-lg font-black tracking-tight text-blue-600 flex items-center gap-1.5">
+                      <Key className="w-5 h-5 text-blue-600" />
+                      SoftKey India
+                    </h1>
+                    <p className="text-[10px] text-slate-400 font-medium">Digital Activation Keys & Softwares</p>
+                    <p className="text-[9px] text-slate-400 leading-relaxed font-mono">GSTIN: 09AAFCS8361H1Z2<br />Connaught Place, New Delhi - 110001</p>
+                  </div>
+
+                  <div className="text-right space-y-1">
+                    <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-150 rounded-full font-bold text-[9px] uppercase tracking-wider">
+                      {showInvoiceModal.paymentStatus}
+                    </span>
+                    <p className="text-[10px] font-bold text-slate-800 font-mono mt-1">Receipt: {showInvoiceModal.id}</p>
+                    <p className="text-[9px] text-slate-450">Date: {new Date(showInvoiceModal.createdAt).toLocaleDateString()}</p>
+                  </div>
+                </div>
+
+                {/* Vendor & Client Details row */}
+                <div className="grid grid-cols-2 gap-8 border-y border-slate-150 py-5 text-[11px] text-slate-500">
+                  <div className="space-y-1">
+                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">BILLING FROM</span>
+                    <strong className="text-slate-800 font-bold font-sans">SoftKey Licenses Ltd</strong>
+                    <p>Regd Office Connaught Place, Tech Suite 4</p>
+                    <p>support@softkey.com | India</p>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">BILLING TO</span>
+                    <strong className="text-slate-800 font-bold font-sans">{showInvoiceModal.customerName}</strong>
+                    <p className="font-mono">{showInvoiceModal.customerEmail}</p>
+                    <p className="font-mono">+91 {showInvoiceModal.customerPhone}</p>
+                    <p className="mt-1 font-medium text-slate-700">{invoiceState}</p>
+                    {invoiceGstin && (
+                      <p className="text-[10px] font-bold font-mono text-blue-600 mt-1">GSTIN: {invoiceGstin}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Invoice items table */}
+                <div className="space-y-3">
+                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">INVOICED LINE ITEMS</span>
+                  <div className="border border-slate-200 rounded-2xl overflow-hidden">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-slate-200 font-bold text-slate-500">
+                          <th className="p-3">Product Name</th>
+                          <th className="p-3 text-center">Qty</th>
+                          <th className="p-3 text-right">Rate</th>
+                          <th className="p-3 text-right">Total</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Totals Section */}
-              <div className="flex justify-end pt-2">
-                <div className="w-64 space-y-2 text-xs font-medium text-slate-500">
-                  <div className="flex justify-between">
-                    <span>Taxable Subtotal</span>
-                    <span className="font-mono">₹{showInvoiceModal.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                      </thead>
+                      <tbody className="divide-y divide-slate-150 font-medium text-slate-700">
+                        {showInvoiceModal.items.map((item, idx) => (
+                          <tr key={idx}>
+                            <td className="p-3">
+                              <p className="font-bold text-slate-900">{item.product.name}</p>
+                              <span className="capitalize text-[9px] font-mono text-slate-450">{item.product.category} Activation License</span>
+                            </td>
+                            <td className="p-3 text-center font-mono">{item.quantity}</td>
+                            <td className="p-3 text-right font-mono">₹{item.product.price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                            <td className="p-3 text-right font-mono text-slate-900">₹{(item.product.price * item.quantity).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                  {showInvoiceModal.discount > 0 && (
-                    <div className="flex justify-between text-emerald-600">
-                      <span>Promo Discount</span>
-                      <span className="font-mono">-₹{showInvoiceModal.discount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                </div>
+
+                {/* Totals Section */}
+                <div className="flex justify-end pt-2">
+                  <div className="w-64 space-y-2 text-xs font-medium text-slate-500">
+                    <div className="flex justify-between">
+                      <span>Taxable Subtotal (Base)</span>
+                      <span className="font-mono">₹{basePrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                     </div>
-                  )}
-                  <div className="flex justify-between text-slate-800">
-                    <span>CGST 9% (Simulated)</span>
-                    <span className="font-mono">₹0.00</span>
-                  </div>
-                  <div className="flex justify-between text-slate-800 font-medium">
-                    <span>SGST 9% (Simulated)</span>
-                    <span className="font-mono">₹0.00</span>
-                  </div>
-                  <div className="flex justify-between text-slate-950 font-extrabold text-sm pt-2 border-t border-dashed border-slate-200">
-                    <span>Final Amount Paid</span>
-                    <span className="font-mono text-blue-600">₹{showInvoiceModal.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                    {showInvoiceModal.discount > 0 && (
+                      <div className="flex justify-between text-emerald-600">
+                        <span>Promo Discount</span>
+                        <span className="font-mono">-₹{showInvoiceModal.discount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                      </div>
+                    )}
+                    {isDelhiOrUP ? (
+                      <>
+                        <div className="flex justify-between text-slate-800">
+                          <span>CGST (9%)</span>
+                          <span className="font-mono">₹{cgstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                        </div>
+                        <div className="flex justify-between text-slate-800 font-medium">
+                          <span>SGST (9%)</span>
+                          <span className="font-mono">₹{sgstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex justify-between text-slate-800 font-medium">
+                        <span>IGST (18%)</span>
+                        <span className="font-mono">₹{igstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-slate-950 font-extrabold text-sm pt-2 border-t border-dashed border-slate-200">
+                      <span>Final Amount Paid</span>
+                      <span className="font-mono text-blue-600">₹{showInvoiceModal.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Paid Rubber Stamp Overlay Graphic */}
-              <div className="pt-6 flex justify-between items-center border-t border-slate-150">
-                <div className="text-[10px] text-slate-400 font-mono italic leading-relaxed">
-                  * This is an electronically generated secure tax invoice. It does not require visual signatures or physical stamps.
+                {/* Paid Rubber Stamp Overlay Graphic */}
+                <div className="pt-6 flex justify-between items-center border-t border-slate-150">
+                  <div className="text-[10px] text-slate-400 font-mono italic leading-relaxed">
+                    * This is an electronically generated secure tax invoice. It does not require visual signatures or physical stamps.
+                  </div>
+
+                  <div className="border-4 border-emerald-600 text-emerald-600 rounded-xl px-4 py-1.5 text-center font-black uppercase tracking-widest text-sm font-sans transform -rotate-12 select-none">
+                    PAID STAMP
+                  </div>
                 </div>
 
-                <div className="border-4 border-emerald-600 text-emerald-600 rounded-xl px-4 py-1.5 text-center font-black uppercase tracking-widest text-sm font-sans transform -rotate-12 select-none">
-                  PAID STAMP
-                </div>
               </div>
 
             </div>
-
           </div>
-        </div>
-      )}
+        );
+      })()}
 
     </div>
   );

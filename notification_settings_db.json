@@ -1,13 +1,13 @@
 {
-  "whatsappToken": "",
-  "whatsappBusinessId": "",
-  "phoneNumberId": "",
+  "whatsappToken": "EAALI268eeIIBR9fU7u6RO0iciYr6aH9FRDQx8gtPGDZB4BZBqCyiuZBmeZAeclnkU8HTHDR6PFMEtYnnV4F7lLGsAeIY7SfMbH31vIqZCptrNKZBFrYun45t2Iz7uYnpZBlwtckXNiw1trtgBB6bgr7Kk0U8156knjTP5FMvtXQWV6ZCEd4ohrnbFHtZBZAcP5sABKFQZDZD",
+  "whatsappBusinessId": "2374910749705865",
+  "phoneNumberId": "1229675146889191",
   "smtpHost": "smtp.gmail.com",
   "smtpUser": "softkeylice@gmail.com",
   "smtpPassword": "lssm oozb kuow yxvn",
   "twoFactorApiKey": "",
   "twoFactorTemplateName": "",
-  "adminPhone": "9689628814",
+  "adminPhone": "9689677449",
   "whatsappLanguage": "en",
   "whatsappTemplates": {
     "login_otp": "softkey_login_otp_v1",

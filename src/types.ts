@@ -63,6 +63,8 @@ export interface Order {
   customerEmail: string;
   customerName: string;
   customerPhone: string;
+  customerGst?: string;
+  customerState?: string;
   items: {
     product: Product;
     quantity: number;

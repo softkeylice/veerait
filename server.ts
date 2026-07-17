@@ -58,7 +58,7 @@ interface User {
   alternatePhone?: string;
 }
 
-const PORT = 3000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 const DB_FILE = path.join(process.cwd(), "users_db.json");
 const PAYMENT_SETTINGS_FILE = path.join(process.cwd(), "payment_settings_db.json");
 const NOTIFICATION_SETTINGS_FILE = path.join(process.cwd(), "notification_settings_db.json");
@@ -183,6 +183,8 @@ async function savePaymentsToSupabase(payments: PaymentRecord[]): Promise<boolea
 async function fulfillOrderOnBackend(orderId: string, paymentId: string, paymentRecord: PaymentRecord) {
   const now = new Date().toISOString();
   let assignedItems: any[] = [];
+  let customerGst = "";
+  let customerState = "";
   
   if (isSupabaseConfigured && supabaseServer) {
     try {
@@ -191,10 +193,12 @@ async function fulfillOrderOnBackend(orderId: string, paymentId: string, payment
       let profileId: string | null = null;
       const { data: profiles } = await supabaseServer
         .from("profiles")
-        .select("id")
+        .select("id, gst_number, state")
         .eq("email", paymentRecord.customerEmail);
       if (profiles && profiles.length > 0) {
         profileId = profiles[0].id;
+        customerGst = profiles[0].gst_number || "";
+        customerState = profiles[0].state || "";
       }
 
       // 2. Create the Order
@@ -350,6 +354,8 @@ async function fulfillOrderOnBackend(orderId: string, paymentId: string, payment
         customerEmail: paymentRecord.customerEmail,
         customerName: paymentRecord.customerName,
         customerPhone: paymentRecord.customerPhone,
+        customerGst,
+        customerState,
         items: assignedItems,
         subtotal: paymentRecord.subtotal || paymentRecord.amount,
         discount: paymentRecord.discount || 0,
@@ -374,11 +380,18 @@ async function fulfillOrderOnBackend(orderId: string, paymentId: string, payment
   }
 
   // Fallback / local storage flow
+  const usersListLocal = readUsers();
+  const localUser = usersListLocal.find(u => u.email.toLowerCase() === paymentRecord.customerEmail.toLowerCase());
+  customerGst = localUser?.gstNumber || "";
+  customerState = localUser?.state || "";
+
   const compiledOrder = {
     id: orderId,
     customerEmail: paymentRecord.customerEmail,
     customerName: paymentRecord.customerName,
     customerPhone: paymentRecord.customerPhone,
+    customerGst,
+    customerState,
     items: paymentRecord.cart.map((item: any) => {
       const assignedKeys = item.product.category === "software" 
         ? Array.from({ length: item.quantity }, () => `GENUINE-${item.product.id.toUpperCase().substring(3)}-${Math.random().toString(36).substring(2, 7).toUpperCase()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`)
@@ -468,6 +481,24 @@ async function dispatchOrderNotifications(order: any) {
 
   // B. SMTP Email dispatch
   const { smtpHost, smtpUser, smtpPassword } = settings;
+  
+  // Real-time reverse GST calculations (18% GST Inclusive)
+  const gstRate = 0.18;
+  const totalPaid = Number(order.total) || 0;
+  const basePrice = totalPaid / (1 + gstRate);
+  const totalGst = totalPaid - basePrice;
+  
+  const customerState = order.customerState || "";
+  const customerGst = order.customerGst || "";
+  const cleanedState = customerState.toUpperCase();
+  
+  // Delhi/Intrastate check
+  const isIntrastate = cleanedState === "" || cleanedState.includes("DELHI") || cleanedState.includes("DL") || cleanedState.includes("07") || cleanedState.includes("NEW DELHI");
+  
+  const cgst = isIntrastate ? totalGst / 2 : 0;
+  const sgst = isIntrastate ? totalGst / 2 : 0;
+  const igst = isIntrastate ? 0 : totalGst;
+
   if (smtpHost && smtpUser && smtpPassword) {
     try {
       const transporter = nodemailer.createTransport({
@@ -478,13 +509,94 @@ async function dispatchOrderNotifications(order: any) {
       });
       const htmlInvoice = `
         <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff; color: #334155;">
-          <h1 style="color: #2563eb;">SOFTKEY STORE</h1>
-          <p>Hi ${customerName},</p>
-          <p>Thank you for your order! Your payment has been securely verified.</p>
-          <h3>Your Software License Key(s)</h3>
-          <pre style="background: #f1f5f9; padding: 12px; border-radius: 8px; font-family: monospace;">${keysList}</pre>
-          <p><strong>Order ID:</strong> ${orderId}</p>
-          <p><strong>Total Paid:</strong> ${amount}</p>
+          <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #f1f5f9; padding-bottom: 20px; margin-bottom: 20px;">
+            <div>
+              <h1 style="color: #2563eb; margin: 0; font-size: 24px;">SOFTKEY STORE</h1>
+              <p style="font-size: 11px; color: #64748b; margin: 5px 0 0 0;">Digital Activation Keys & Softwares</p>
+              <p style="font-size: 10px; color: #64748b; margin: 2px 0 0 0; font-family: monospace;">GSTIN: 09AAFCS8361H1Z2</p>
+            </div>
+            <div style="text-align: right;">
+              <span style="background-color: #ecfdf5; color: #047857; padding: 4px 10px; border-radius: 99px; font-size: 10px; font-weight: bold; border: 1px solid #a7f3d0; text-transform: uppercase;">PAID</span>
+              <p style="font-size: 11px; font-weight: bold; margin: 10px 0 0 0; font-family: monospace;">Order ID: ${orderId}</p>
+              <p style="font-size: 10px; color: #64748b; margin: 2px 0 0 0;">Date: ${new Date(order.createdAt || Date.now()).toLocaleDateString()}</p>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 25px;">
+            <p style="margin: 0 0 10px 0;">Hi <strong>${customerName}</strong>,</p>
+            <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #475569;">Thank you for your order! Your payment has been securely verified and your license keys are active and listed below.</p>
+          </div>
+
+          <div style="background-color: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 20px; margin-bottom: 25px;">
+            <h4 style="margin: 0 0 12px 0; font-size: 11px; color: #475569; letter-spacing: 0.05em; text-transform: uppercase;">🔐 Your Digital License Keys</h4>
+            <pre style="margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; font-size: 13px; line-height: 1.6; white-space: pre-wrap; font-weight: bold; color: #0f172a;">${keysList}</pre>
+          </div>
+
+          <h4 style="margin: 0 0 10px 0; font-size: 11px; color: #94a3b8; letter-spacing: 0.05em; text-transform: uppercase;">GST Tax Invoice Breakdown</h4>
+          <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
+            <thead>
+              <tr style="border-bottom: 1px solid #cbd5e1; font-weight: bold; color: #475569;">
+                <th style="padding: 8px 0; text-align: left;">Item</th>
+                <th style="padding: 8px 0; text-align: center; width: 60px;">Qty</th>
+                <th style="padding: 8px 0; text-align: right; width: 100px;">Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${order.items.map((it: any) => `
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                  <td style="padding: 8px 0; font-weight: bold; color: #1e293b;">${it.product?.name || "Product"}</td>
+                  <td style="padding: 8px 0; text-align: center; font-family: monospace;">${it.quantity}</td>
+                  <td style="padding: 8px 0; text-align: right; font-family: monospace;">₹${Number(it.product?.price || 0).toFixed(2)}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+
+          <div style="display: flex; justify-content: flex-end;">
+            <table style="width: 250px; font-size: 12px; line-height: 1.8;">
+              <tr>
+                <td style="color: #64748b;">Taxable Base:</td>
+                <td style="text-align: right; font-family: monospace;">₹${basePrice.toFixed(2)}</td>
+              </tr>
+              ${order.discount > 0 ? `
+                <tr style="color: #10b981;">
+                  <td>Promo Discount:</td>
+                  <td style="text-align: right; font-family: monospace;">-₹${Number(order.discount).toFixed(2)}</td>
+                </tr>
+              ` : ""}
+              ${isIntrastate ? `
+                <tr>
+                  <td style="color: #64748b;">CGST (9%):</td>
+                  <td style="text-align: right; font-family: monospace;">₹${cgst.toFixed(2)}</td>
+                </tr>
+                <tr>
+                  <td style="color: #64748b;">SGST (9%):</td>
+                  <td style="text-align: right; font-family: monospace;">₹${sgst.toFixed(2)}</td>
+                </tr>
+              ` : `
+                <tr>
+                  <td style="color: #64748b;">IGST (18%):</td>
+                  <td style="text-align: right; font-family: monospace;">₹${igst.toFixed(2)}</td>
+                </tr>
+              `}
+              <tr style="font-weight: bold; font-size: 14px; border-top: 1px dashed #cbd5e1; color: #1e293b;">
+                <td style="padding-top: 5px; color: #2563eb;">Total Paid:</td>
+                <td style="padding-top: 5px; text-align: right; font-family: monospace; color: #2563eb;">₹${totalPaid.toFixed(2)}</td>
+              </tr>
+            </table>
+          </div>
+
+          ${customerGst ? `
+          <div style="margin-top: 15px; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #f8fafc; font-size: 11px;">
+            <strong>Buyer GSTIN:</strong> <span style="font-family: monospace; font-weight: bold; color: #2563eb;">${customerGst}</span><br/>
+            <strong>Billing State:</strong> ${customerState || "Delhi"}
+          </div>
+          ` : ""}
+
+          <div style="border-top: 1px solid #f1f5f9; margin-top: 30px; padding-top: 15px; text-align: center; font-size: 10px; color: #94a3b8; line-height: 1.5;">
+            <p style="margin: 0;">This is a system-generated secure tax invoice from SoftKey Licenses Ltd.</p>
+            <p style="margin: 3px 0 0 0;">Need help? Contact support@softkey.com | Connaught Place, New Delhi - 110001</p>
+          </div>
         </div>
       `;
       await transporter.sendMail({
@@ -503,6 +615,18 @@ async function dispatchOrderNotifications(order: any) {
     console.log(`To: ${customerEmail}`);
     console.log(`Subject: 🛒 SoftKey Store Payment Confirmed - Order: ${orderId}`);
     console.log(`License Key(s): ${keysList}`);
+    console.log(`--- GST Breakdown ---`);
+    console.log(`Taxable Base: ₹${basePrice.toFixed(2)}`);
+    if (isIntrastate) {
+      console.log(`CGST (9%): ₹${cgst.toFixed(2)}`);
+      console.log(`SGST (9%): ₹${sgst.toFixed(2)}`);
+    } else {
+      console.log(`IGST (18%): ₹${igst.toFixed(2)}`);
+    }
+    console.log(`Grand Total Paid: ₹${totalPaid.toFixed(2)}`);
+    if (customerGst) {
+      console.log(`Buyer GSTIN: ${customerGst} (${customerState})`);
+    }
     console.log(`================================================================\n`);
     results.email = "simulated";
   }
@@ -3172,7 +3296,7 @@ app.use(async (req, res, next) => {
         dispatchWhatsAppTemplate("payment_failed", payment.customerPhone, {
           customerName: payment.customerName,
           orderId: razorpay_order_id,
-          amount: `$${Number(payment.amount).toFixed(2)}`,
+          amount: `₹${Number(payment.amount).toFixed(2)}`,
           reason: "Razorpay integration credentials are unconfigured on backend server."
         }).catch(err => console.error("[WHATSAPP-FAIL] payment_failed dispatch err:", err));
 
@@ -3206,7 +3330,7 @@ app.use(async (req, res, next) => {
         dispatchWhatsAppTemplate("payment_failed", payment.customerPhone, {
           customerName: payment.customerName,
           orderId: razorpay_order_id,
-          amount: `$${Number(payment.amount).toFixed(2)}`,
+          amount: `₹${Number(payment.amount).toFixed(2)}`,
           reason: "Signature verification failed. Potential transaction signature tampering detected."
         }).catch(err => console.error("[WHATSAPP-FAIL] payment_failed dispatch err:", err));
 
