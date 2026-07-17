@@ -492,8 +492,8 @@ async function dispatchOrderNotifications(order: any) {
   const customerGst = order.customerGst || "";
   const cleanedState = customerState.toUpperCase();
   
-  // Delhi/Intrastate check
-  const isIntrastate = cleanedState === "" || cleanedState.includes("DELHI") || cleanedState.includes("DL") || cleanedState.includes("07") || cleanedState.includes("NEW DELHI");
+  // Maharashtra/Intrastate check
+  const isIntrastate = cleanedState === "" || cleanedState.includes("MAHARASHTRA") || cleanedState.includes("MH") || cleanedState.includes("27");
   
   const cgst = isIntrastate ? totalGst / 2 : 0;
   const sgst = isIntrastate ? totalGst / 2 : 0;
@@ -511,9 +511,9 @@ async function dispatchOrderNotifications(order: any) {
         <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff; color: #334155;">
           <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #f1f5f9; padding-bottom: 20px; margin-bottom: 20px;">
             <div>
-              <h1 style="color: #2563eb; margin: 0; font-size: 24px;">VEERAIT STORE</h1>
+              <h1 style="color: #2563eb; margin: 0; font-size: 22px; font-weight: 800;">SHRI SAPTASHRUNGI ENTERPRISES</h1>
               <p style="font-size: 11px; color: #64748b; margin: 5px 0 0 0;">Digital Activation Keys & Softwares</p>
-              <p style="font-size: 10px; color: #64748b; margin: 2px 0 0 0; font-family: monospace;">GSTIN: 09AAFCS8361H1Z2</p>
+              <p style="font-size: 10px; color: #64748b; margin: 2px 0 0 0; font-family: monospace;">GSTIN: 27BQIPS8843LIZX</p>
             </div>
             <div style="text-align: right;">
               <span style="background-color: #ecfdf5; color: #047857; padding: 4px 10px; border-radius: 99px; font-size: 10px; font-weight: bold; border: 1px solid #a7f3d0; text-transform: uppercase;">PAID</span>
@@ -536,19 +536,26 @@ async function dispatchOrderNotifications(order: any) {
           <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
             <thead>
               <tr style="border-bottom: 1px solid #cbd5e1; font-weight: bold; color: #475569;">
-                <th style="padding: 8px 0; text-align: left;">Item</th>
+                <th style="padding: 8px 0; text-align: left;">Item Description</th>
                 <th style="padding: 8px 0; text-align: center; width: 60px;">Qty</th>
                 <th style="padding: 8px 0; text-align: right; width: 100px;">Price</th>
               </tr>
             </thead>
             <tbody>
-              ${order.items.map((it: any) => `
-                <tr style="border-bottom: 1px solid #f1f5f9;">
-                  <td style="padding: 8px 0; font-weight: bold; color: #1e293b;">${it.product?.name || "Product"}</td>
-                  <td style="padding: 8px 0; text-align: center; font-family: monospace;">${it.quantity}</td>
-                  <td style="padding: 8px 0; text-align: right; font-family: monospace;">₹${Number(it.product?.price || 0).toFixed(2)}</td>
-                </tr>
-              `).join("")}
+              ${order.items.map((it: any) => {
+                const isHardware = it.product?.category === "hardware";
+                const hsnCode = isHardware ? "8471" : "997331";
+                return `
+                  <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 8px 0; color: #1e293b;">
+                      <div style="font-weight: bold;">${it.product?.name || "Product"}</div>
+                      <div style="font-size: 10px; color: #64748b; margin-top: 2px;">HSN/SAC: ${hsnCode} (18% GST)</div>
+                    </td>
+                    <td style="padding: 8px 0; text-align: center; font-family: monospace;">${it.quantity}</td>
+                    <td style="padding: 8px 0; text-align: right; font-family: monospace;">₹${Number(it.product?.price || 0).toFixed(2)}</td>
+                  </tr>
+                `;
+              }).join("")}
             </tbody>
           </table>
 
@@ -589,20 +596,20 @@ async function dispatchOrderNotifications(order: any) {
           ${customerGst ? `
           <div style="margin-top: 15px; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #f8fafc; font-size: 11px;">
             <strong>Buyer GSTIN:</strong> <span style="font-family: monospace; font-weight: bold; color: #2563eb;">${customerGst}</span><br/>
-            <strong>Billing State:</strong> ${customerState || "Delhi"}
+            <strong>Billing State:</strong> ${customerState || "Maharashtra"}
           </div>
           ` : ""}
 
           <div style="border-top: 1px solid #f1f5f9; margin-top: 30px; padding-top: 15px; text-align: center; font-size: 10px; color: #94a3b8; line-height: 1.5;">
-            <p style="margin: 0;">This is a system-generated secure tax invoice from VeeraIT Licenses Ltd.</p>
-            <p style="margin: 3px 0 0 0;">Need help? Contact support@veerait.com | Connaught Place, New Delhi - 110001</p>
+            <p style="margin: 0;">This is a system-generated secure tax invoice from Shri Saptashrungi Enterprises.</p>
+            <p style="margin: 3px 0 0 0;">Need help? Contact support@shrisaptashrungi.com | Bansipura, Mama Chowk, Jalna, Maharashtra - 431203</p>
           </div>
         </div>
       `;
       await transporter.sendMail({
-        from: `"VeeraIT Sales" <${smtpUser}>`,
+        from: `"Shri Saptashrungi Enterprises" <${smtpUser}>`,
         to: customerEmail,
-        subject: `🛒 VeeraIT Store Payment Confirmed - Order: ${orderId}`,
+        subject: `🛒 Shri Saptashrungi Enterprises Payment Confirmed - Order: ${orderId}`,
         html: htmlInvoice
       });
       results.email = "sent";
@@ -613,7 +620,7 @@ async function dispatchOrderNotifications(order: any) {
     console.log(`\n================================================================`);
     console.log(`[BACKEND SMTP SIMULATED SUCCESS] DISPATCH LOG`);
     console.log(`To: ${customerEmail}`);
-    console.log(`Subject: 🛒 VeeraIT Store Payment Confirmed - Order: ${orderId}`);
+    console.log(`Subject: 🛒 Shri Saptashrungi Enterprises Payment Confirmed - Order: ${orderId}`);
     console.log(`License Key(s): ${keysList}`);
     console.log(`--- GST Breakdown ---`);
     console.log(`Taxable Base: ₹${basePrice.toFixed(2)}`);
@@ -800,11 +807,11 @@ function readPaymentSettings(): PaymentSettings {
     console.error("Error reading payment settings:", err);
   }
   return {
-    bankName: "Silicon Valley Bank (India)",
-    bankAccountName: "VeeraIT Technologies Private Limited",
+    bankName: "State Bank of India",
+    bankAccountName: "Shri Saptashrungi Enterprises",
     bankAccountNumber: "918273645019",
-    ifscCode: "SVBIN000283",
-    upiId: "veerait@upi",
+    ifscCode: "SBIN0001234",
+    upiId: "shrisaptashrungi@upi",
     upiQrCodeUrl: ""
   };
 }
@@ -3821,11 +3828,11 @@ app.use(async (req, res, next) => {
   // 9.4B RESET STORE PAYMENT CONFIGURATION
   app.post("/api/payment/settings/reset", authenticateJwt, requireAdmin, csrfProtection, (req, res) => {
     const defaultSettings: PaymentSettings = {
-      bankName: "Silicon Valley Bank (India)",
-      bankAccountName: "VeeraIT Technologies Private Limited",
+      bankName: "State Bank of India",
+      bankAccountName: "Shri Saptashrungi Enterprises",
       bankAccountNumber: "918273645019",
-      ifscCode: "SVBIN000283",
-      upiId: "veerait@upi",
+      ifscCode: "SBIN0001234",
+      upiId: "shrisaptashrungi@upi",
       upiQrCodeUrl: ""
     };
     writePaymentSettings(defaultSettings);
@@ -4715,11 +4722,27 @@ app.use(async (req, res, next) => {
             }
           });
 
+          // Real-time state-wise GST calculations (18% GST Inclusive)
+          const gstRate = 0.18;
+          const totalPaid = Number(order.total) || 0;
+          const basePrice = totalPaid / (1 + gstRate);
+          const totalGst = totalPaid - basePrice;
+          
+          const customerState = order.customerState || "";
+          const customerGst = order.customerGst || "";
+          const cleanedState = customerState.toUpperCase();
+          const isIntrastate = cleanedState === "" || cleanedState.includes("MAHARASHTRA") || cleanedState.includes("MH") || cleanedState.includes("27");
+          
+          const cgst = isIntrastate ? totalGst / 2 : 0;
+          const sgst = isIntrastate ? totalGst / 2 : 0;
+          const igst = isIntrastate ? 0 : totalGst;
+
           const htmlInvoice = `
             <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff; color: #334155;">
               <div style="text-align: center; margin-bottom: 25px; border-bottom: 2px solid #f1f5f9; padding-bottom: 20px;">
-                <h1 style="color: #2563eb; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">VEERAIT STORE</h1>
+                <h1 style="color: #2563eb; margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.5px;">SHRI SAPTASHRUNGI ENTERPRISES</h1>
                 <p style="color: #64748b; font-size: 12px; margin: 5px 0 0 0; text-transform: uppercase; font-weight: 600;">Transaction Invoice Receipt</p>
+                <p style="font-size: 10px; color: #64748b; margin: 4px 0 0 0; font-family: monospace;">GSTIN: 27BQIPS8843LIZX</p>
               </div>
 
               <div style="margin-bottom: 25px; font-size: 14px;">
@@ -4740,40 +4763,61 @@ app.use(async (req, res, next) => {
                   </tr>
                 </thead>
                 <tbody style="font-size: 13px;">
-                  ${order.items.map((it: any) => `
-                    <tr style="border-bottom: 1px solid #f1f5f9;">
-                      <td style="padding: 12px 10px; vertical-align: top;">
-                        <strong>${it.product.name}</strong>
-                        ${it.assignedKeys && it.assignedKeys.length > 0 ? `
-                          <div style="margin-top: 8px; padding: 8px; background-color: #f8fafc; border: 1px dashed #e2e8f0; border-radius: 8px; font-family: monospace; font-size: 12px; color: #0f172a; font-weight: bold;">
-                            🔑 KEY: ${it.assignedKeys.join(', ')}
-                          </div>
-                        ` : ''}
-                      </td>
-                      <td style="text-align: center; padding: 12px 10px; color: #64748b;">${it.quantity}</td>
-                      <td style="text-align: right; padding: 12px 10px; font-weight: 600; color: #0f172a;">₹${(it.product.price * it.quantity).toFixed(2)}</td>
-                    </tr>
-                  `).join("")}
+                  ${order.items.map((it: any) => {
+                    const isHardware = it.product?.category === "hardware";
+                    const hsnCode = isHardware ? "8471" : "997331";
+                    return `
+                      <tr style="border-bottom: 1px solid #f1f5f9;">
+                        <td style="padding: 12px 10px; vertical-align: top;">
+                          <strong>${it.product?.name || "Product"}</strong>
+                          <div style="font-size: 10px; color: #64748b; margin-top: 2px;">HSN/SAC: ${hsnCode} (18% GST)</div>
+                          ${it.assignedKeys && it.assignedKeys.length > 0 ? `
+                            <div style="margin-top: 8px; padding: 8px; background-color: #f8fafc; border: 1px dashed #e2e8f0; border-radius: 8px; font-family: monospace; font-size: 12px; color: #0f172a; font-weight: bold;">
+                              🔑 KEY: ${it.assignedKeys.join(', ')}
+                            </div>
+                          ` : ''}
+                        </td>
+                        <td style="text-align: center; padding: 12px 10px; color: #64748b;">${it.quantity}</td>
+                        <td style="text-align: right; padding: 12px 10px; font-weight: 600; color: #0f172a;">₹${(it.product?.price * it.quantity).toFixed(2)}</td>
+                      </tr>
+                    `;
+                  }).join("")}
                 </tbody>
               </table>
 
               <div style="margin-top: 25px; border-top: 1px solid #e2e8f0; padding-top: 15px; text-align: right; font-size: 13px; line-height: 1.6;">
                 <p style="margin: 2px 0; color: #64748b;">Subtotal: <span style="font-family: monospace; font-weight: 600; color: #0f172a; margin-left: 10px;">₹${Number(order.subtotal).toFixed(2)}</span></p>
                 ${order.discount ? `<p style="margin: 2px 0; color: #ef4444;">Discount Code (${order.couponCode || "COUPON"}): <span style="font-family: monospace; font-weight: 600; margin-left: 10px;">-₹${Number(order.discount).toFixed(2)}</span></p>` : ""}
+                
+                <p style="margin: 2px 0; color: #64748b;">Taxable Value: <span style="font-family: monospace; font-weight: 600; color: #0f172a; margin-left: 10px;">₹${basePrice.toFixed(2)}</span></p>
+                ${isIntrastate ? `
+                  <p style="margin: 2px 0; color: #64748b;">CGST (9%): <span style="font-family: monospace; font-weight: 600; color: #0f172a; margin-left: 10px;">₹${cgst.toFixed(2)}</span></p>
+                  <p style="margin: 2px 0; color: #64748b;">SGST (9%): <span style="font-family: monospace; font-weight: 600; color: #0f172a; margin-left: 10px;">₹${sgst.toFixed(2)}</span></p>
+                ` : `
+                  <p style="margin: 2px 0; color: #64748b;">IGST (18%): <span style="font-family: monospace; font-weight: 600; color: #0f172a; margin-left: 10px;">₹${igst.toFixed(2)}</span></p>
+                `}
+                
                 <p style="margin: 6px 0 0 0; font-size: 16px; font-weight: bold; color: #2563eb;">Total Paid: <span style="font-family: monospace; margin-left: 10px;">${amount}</span></p>
               </div>
 
+              ${customerGst ? `
+              <div style="margin-top: 15px; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #f8fafc; font-size: 11px; text-align: left;">
+                <strong>Buyer GSTIN:</strong> <span style="font-family: monospace; font-weight: bold; color: #2563eb;">${customerGst}</span><br/>
+                <strong>Billing State:</strong> ${customerState || "Maharashtra"}
+              </div>
+              ` : ""}
+
               <div style="margin-top: 35px; border-top: 2px solid #f1f5f9; padding-top: 20px; text-align: center; font-size: 11px; color: #94a3b8; line-height: 1.5;">
-                <p style="margin: 0;">This email serves as an official proof-of-purchase invoice.</p>
-                <p style="margin: 2px 0;">VeeraIT Technologies Private Limited. All Rights Reserved.</p>
+                <p style="margin: 0;">This email serves as an official proof-of-purchase invoice under the Centre Goods and Services Tax Act, 2017.</p>
+                <p style="margin: 2px 0;">Shri Saptashrungi Enterprises. All Rights Reserved.</p>
               </div>
             </div>
           `;
 
           await transporter.sendMail({
-            from: `"VeeraIT Store" <${smtpUser}>`,
+            from: `"Shri Saptashrungi Enterprises" <${smtpUser}>`,
             to: customerEmail,
-            subject: `VeeraIT Store Order Invoice - ${orderId}`,
+            subject: `Shri Saptashrungi Enterprises Order Invoice - ${orderId}`,
             text: `Thank you for your order! Order ID: ${orderId}. Total Amount: ${amount}. Your license keys have been dispatched successfully.`,
             html: htmlInvoice
           });

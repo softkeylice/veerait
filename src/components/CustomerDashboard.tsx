@@ -459,7 +459,7 @@ export default function CustomerDashboard({
             </div>
             <div>
               <p className="text-xs text-blue-600 font-mono tracking-wider uppercase font-bold">Authenticated Account</p>
-              <h2 className="text-xl md:text-2xl font-sans font-bold text-slate-900 tracking-tight">{user?.name || 'VeeraIT Customer'}</h2>
+              <h2 className="text-xl md:text-2xl font-sans font-bold text-slate-900 tracking-tight">{user?.name || 'Customer'}</h2>
               <p className="text-xs text-slate-500 mt-1">{user?.email}</p>
             </div>
           </div>
@@ -1077,7 +1077,7 @@ export default function CustomerDashboard({
                                     .join("\n") || "No software keys in this order (Hardware items pending dispatch)";
                                   const formattedPhone = (selectedOrderForDetails.customerPhone || '9876543210').replace(/\D/g, '');
                                   const cleanedPhone = formattedPhone.startsWith('91') && formattedPhone.length > 10 ? formattedPhone : `91${formattedPhone}`;
-                                  const waText = `🛒 *VeeraIT Store Order Confirmation!*\n\n*Order ID:* ${selectedOrderForDetails.id}\n*Products:* ${productsList}\n*Total Paid:* ₹${selectedOrderForDetails.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}\n\n*Your License Key(s):*\n${keysList}\n\nThank you for shopping with us! If you need support, visit your Customer Dashboard.`;
+                                  const waText = `🛒 *Shri Saptashrungi Enterprises Order Confirmation!*\n\n*Order ID:* ${selectedOrderForDetails.id}\n*Products:* ${productsList}\n*Total Paid:* ₹${selectedOrderForDetails.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}\n\n*Your License Key(s):*\n${keysList}\n\nThank you for shopping with us! If you need support, visit your Customer Dashboard.`;
                                   
                                   return (
                                     <div className="space-y-2.5">
@@ -1489,7 +1489,7 @@ export default function CustomerDashboard({
                             .join("\n") || "No software keys in this order (Hardware items pending dispatch)";
                           const formattedPhone = (user?.phone || '9876543210').replace(/\D/g, '');
                           const cleanedPhone = formattedPhone.startsWith('91') && formattedPhone.length > 10 ? formattedPhone : `91${formattedPhone}`;
-                          const waText = `🛒 *VeeraIT Store Order Confirmation!*\n\n*Order ID:* ${orderObj.id}\n*Products:* ${productsList}\n*Total Paid:* ₹${orderObj.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}\n\n*Your License Key(s):*\n${keysList}\n\nThank you for shopping with us! If you need support, visit your Customer Dashboard.`;
+                          const waText = `🛒 *Shri Saptashrungi Enterprises Order Confirmation!*\n\n*Order ID:* ${orderObj.id}\n*Products:* ${productsList}\n*Total Paid:* ₹${orderObj.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}\n\n*Your License Key(s):*\n${keysList}\n\nThank you for shopping with us! If you need support, visit your Customer Dashboard.`;
                           
                           return (
                             <a
@@ -1558,7 +1558,7 @@ export default function CustomerDashboard({
                             <span className="text-[10px] bg-white/20 text-white font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider font-mono">Reseller Program</span>
                             <h4 className="text-xl md:text-2xl font-black font-sans tracking-tight">Become a B2B Reseller & Earn Commission on Every Sale!</h4>
                             <p className="text-xs text-emerald-50 leading-relaxed">
-                              VeeraIT's hybrid B2B/B2C pipeline allows you to either resell our digital items in bulk with a wholesale discount or share your referral key. When a retail customer buys through you, they receive a discount and your commission goes straight to your wallet!
+                              Shri Saptashrungi's hybrid B2B/B2C pipeline allows you to either resell our digital items in bulk with a wholesale discount or share your referral key. When a retail customer buys through you, they receive a discount and your commission goes straight to your wallet!
                             </p>
                           </div>
                         </div>
@@ -1670,7 +1670,7 @@ export default function CustomerDashboard({
                         </div>
                         <h4 className="text-base font-bold text-slate-900 font-sans">Partner Account Suspended</h4>
                         <p className="text-xs text-slate-500 mt-2 max-w-sm leading-relaxed">
-                          Your B2B Reseller account has been suspended by the system administrator due to regulatory policy updates. Please contact VeeraIT B2B Support desk.
+                          Your B2B Reseller account has been suspended by the system administrator due to regulatory policy updates. Please contact Shri Saptashrungi B2B Support desk.
                         </p>
                       </div>
                     );
@@ -2039,7 +2039,7 @@ export default function CustomerDashboard({
       {showInvoiceModal && (() => {
         const currentResellerForInvoice = resellers.find(r => r.email.toLowerCase() === showInvoiceModal.customerEmail.toLowerCase());
         const invoiceGstin = currentResellerForInvoice?.gstin || showInvoiceModal.customerGst || '';
-        const invoiceState = currentResellerForInvoice?.state || showInvoiceModal.customerState || user?.address || 'Delhi';
+        const invoiceState = currentResellerForInvoice?.state || showInvoiceModal.customerState || user?.address || 'Maharashtra';
         
         // Reverse GST (18% inclusive)
         const totalAmountPaid = showInvoiceModal.total;
@@ -2047,11 +2047,11 @@ export default function CustomerDashboard({
         const totalGstAmount = totalAmountPaid - basePrice;
         
         const cleanedState = invoiceState.toUpperCase();
-        const isDelhiOrUP = cleanedState === '' || cleanedState.includes('DELHI') || cleanedState.includes('DL') || cleanedState.includes('07') || cleanedState.includes('NEW DELHI');
+        const isMaharashtraOrIntrastate = cleanedState === '' || cleanedState.includes('MAHARASHTRA') || cleanedState.includes('MH') || cleanedState.includes('27');
         
-        const cgstAmount = isDelhiOrUP ? totalGstAmount / 2 : 0;
-        const sgstAmount = isDelhiOrUP ? totalGstAmount / 2 : 0;
-        const igstAmount = isDelhiOrUP ? 0 : totalGstAmount;
+        const cgstAmount = isMaharashtraOrIntrastate ? totalGstAmount / 2 : 0;
+        const sgstAmount = isMaharashtraOrIntrastate ? totalGstAmount / 2 : 0;
+        const igstAmount = isMaharashtraOrIntrastate ? 0 : totalGstAmount;
 
         return (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-in fade-in duration-200 overflow-y-auto">
@@ -2085,10 +2085,10 @@ export default function CustomerDashboard({
                   <div className="space-y-1">
                     <h1 className="text-lg font-black tracking-tight text-blue-600 flex items-center gap-1.5">
                       <Key className="w-5 h-5 text-blue-600" />
-                      VeeraIT India
+                      Shri Saptashrungi Enterprises
                     </h1>
                     <p className="text-[10px] text-slate-400 font-medium">Digital Activation Keys & Softwares</p>
-                    <p className="text-[9px] text-slate-400 leading-relaxed font-mono">GSTIN: 09AAFCS8361H1Z2<br />Connaught Place, New Delhi - 110001</p>
+                    <p className="text-[9px] text-slate-400 leading-relaxed font-mono">GSTIN: 27BQIPS8843LIZX<br />P. No. 1-11-42, Krishna Mandir, Bansipura, Mama Chowk, Jalna, Maharashtra - 431203</p>
                   </div>
 
                   <div className="text-right space-y-1">
@@ -2104,9 +2104,9 @@ export default function CustomerDashboard({
                 <div className="grid grid-cols-2 gap-8 border-y border-slate-150 py-5 text-[11px] text-slate-500">
                   <div className="space-y-1">
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">BILLING FROM</span>
-                    <strong className="text-slate-800 font-bold font-sans">VeeraIT Licenses Ltd</strong>
-                    <p>Regd Office Connaught Place, Tech Suite 4</p>
-                    <p>support@veerait.com | India</p>
+                    <strong className="text-slate-800 font-bold font-sans">Shri Saptashrungi Enterprises</strong>
+                    <p>P. No. 1-11-42, Krishna Mandir, Bansipura, Mama Chowk, Jalna, Maharashtra, 431203</p>
+                    <p>support@shrisaptashrungi.com | India</p>
                   </div>
                   <div className="space-y-1">
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">BILLING TO</span>
@@ -2138,7 +2138,10 @@ export default function CustomerDashboard({
                           <tr key={idx}>
                             <td className="p-3">
                               <p className="font-bold text-slate-900">{item.product.name}</p>
-                              <span className="capitalize text-[9px] font-mono text-slate-450">{item.product.category} Activation License</span>
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                <span className="capitalize text-[9px] font-mono text-slate-450">{item.product.category} Activation License</span>
+                                <span className="text-[8px] bg-slate-100 text-slate-500 font-mono px-1 rounded border border-slate-200">HSN/SAC: {item.product.category === "hardware" ? "8471" : "997331"}</span>
+                              </div>
                             </td>
                             <td className="p-3 text-center font-mono">{item.quantity}</td>
                             <td className="p-3 text-right font-mono">₹{item.product.price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
@@ -2163,7 +2166,7 @@ export default function CustomerDashboard({
                         <span className="font-mono">-₹{showInvoiceModal.discount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                       </div>
                     )}
-                    {isDelhiOrUP ? (
+                    {isMaharashtraOrIntrastate ? (
                       <>
                         <div className="flex justify-between text-slate-800">
                           <span>CGST (9%)</span>

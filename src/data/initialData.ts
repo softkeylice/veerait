@@ -1363,7 +1363,7 @@ export const INITIAL_PRODUCTS: Product[] = [
 
 export const INITIAL_COUPONS: Coupon[] = [
   {
-    code: 'VEERAIT20',
+    code: 'SAPTASHRUNGI20',
     discountType: 'percentage',
     value: 20,
     minSpend: 1500.00,
@@ -1404,7 +1404,7 @@ export const INITIAL_BANNERS: PromoBanner[] = [
   {
     id: 'banner-1',
     title: 'Authentic Software License Keys',
-    subtitle: 'Get genuine Microsoft Windows & Office lifetime retail keys up to 80% off. Code: VEERAIT20',
+    subtitle: 'Get genuine Microsoft Windows & Office lifetime retail keys up to 80% off. Code: SAPTASHRUNGI20',
     image: '', // Will fall back to custom-generated store_hero_banner if empty or we can map it dynamically
     linkText: 'Shop Software Licenses',
     active: true,
