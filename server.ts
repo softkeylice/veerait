@@ -1195,7 +1195,8 @@ app.use(async (req, res, next) => {
           console.error("[ADMIN-WHATSAPP-OTP] Error calling official template API:", e);
         });
       } else if (type === "mobile") {
-        const apiKey = process.env.TWO_FACTOR_API_KEY;
+        const settings = await syncNotificationSettingsFromSupabase();
+        const apiKey = cleanConfigValue(settings.twoFactorApiKey, process.env.TWO_FACTOR_API_KEY);
         const isDummyKey = !apiKey || apiKey === "YOUR_2FACTOR_API_KEY" || apiKey.trim() === "";
 
         if (!isDummyKey) {
@@ -1265,7 +1266,8 @@ app.use(async (req, res, next) => {
             otpCache.delete(sessionId);
           } else {
             try {
-              const apiKey = process.env.TWO_FACTOR_API_KEY;
+              const settings = await syncNotificationSettingsFromSupabase();
+              const apiKey = cleanConfigValue(settings.twoFactorApiKey, process.env.TWO_FACTOR_API_KEY);
               console.log(`[2FACTOR-ADMIN] Verifying real SMS OTP via 2Factor... Session: ${sessionId}, Entered OTP: ${otp}`);
               const url = `https://2factor.in/API/V1/${apiKey}/SMS/VERIFY/${sessionId}/${otp}`;
               const response = await fetch(url);
@@ -1700,7 +1702,8 @@ app.use(async (req, res, next) => {
           console.error("[CUSTOMER-WHATSAPP-OTP] Error calling official template API:", e);
         });
       } else if (type === "mobile") {
-        const apiKey = process.env.TWO_FACTOR_API_KEY;
+        const settings = await syncNotificationSettingsFromSupabase();
+        const apiKey = cleanConfigValue(settings.twoFactorApiKey, process.env.TWO_FACTOR_API_KEY);
         const isDummyKey = !apiKey || apiKey === "YOUR_2FACTOR_API_KEY" || apiKey.trim() === "";
 
         if (!isDummyKey) {
@@ -1770,7 +1773,8 @@ app.use(async (req, res, next) => {
             otpCache.delete(sessionId);
           } else {
             try {
-              const apiKey = process.env.TWO_FACTOR_API_KEY;
+              const settings = await syncNotificationSettingsFromSupabase();
+              const apiKey = cleanConfigValue(settings.twoFactorApiKey, process.env.TWO_FACTOR_API_KEY);
               console.log(`[2FACTOR-CUSTOMER] Verifying real SMS OTP via 2Factor... Session: ${sessionId}, Entered OTP: ${otp}`);
               const url = `https://2factor.in/API/V1/${apiKey}/SMS/VERIFY/${sessionId}/${otp}`;
               const response = await fetch(url);
@@ -2343,7 +2347,8 @@ app.use(async (req, res, next) => {
       const cleanedPhone = value.replace(/\D/g, "");
 
       // 2Factor.in Integration
-      const apiKey = process.env.TWO_FACTOR_API_KEY;
+      const settings = await syncNotificationSettingsFromSupabase();
+      const apiKey = cleanConfigValue(settings.twoFactorApiKey, process.env.TWO_FACTOR_API_KEY);
       const isDummyKey = !apiKey || apiKey === "YOUR_2FACTOR_API_KEY" || apiKey.trim() === "";
 
       if (!isDummyKey) {
@@ -2453,7 +2458,8 @@ app.use(async (req, res, next) => {
           otpAttemptsCache.delete(sessionId);
         } else {
           try {
-            const apiKey = process.env.TWO_FACTOR_API_KEY;
+            const settings = await syncNotificationSettingsFromSupabase();
+            const apiKey = cleanConfigValue(settings.twoFactorApiKey, process.env.TWO_FACTOR_API_KEY);
             console.log(`[2FACTOR] Verifying real SMS OTP via 2Factor... Session: ${sessionId}, Entered OTP: ${otp}`);
             const url = `https://2factor.in/API/V1/${apiKey}/SMS/VERIFY/${sessionId}/${otp}`;
             const response = await fetch(url);
@@ -3754,7 +3760,7 @@ app.use(async (req, res, next) => {
 
   // 9.6 SAVE NOTIFICATION SETTINGS
   app.post("/api/notification/settings", authenticateJwt, requireAdmin, csrfProtection, async (req, res) => {
-    const { whatsappToken, whatsappBusinessId, phoneNumberId, smtpHost, smtpUser, smtpPassword, twoFactorTemplateName } = req.body;
+    const { whatsappToken, whatsappBusinessId, phoneNumberId, smtpHost, smtpUser, smtpPassword, twoFactorApiKey, twoFactorTemplateName } = req.body;
     
     try {
       const existing = await syncNotificationSettingsFromSupabase();
@@ -3767,6 +3773,7 @@ app.use(async (req, res, next) => {
         smtpHost: (smtpHost !== undefined && smtpHost !== "") ? smtpHost : existing.smtpHost,
         smtpUser: (smtpUser !== undefined && smtpUser !== "") ? smtpUser : existing.smtpUser,
         smtpPassword: (smtpPassword !== undefined && smtpPassword !== "") ? smtpPassword : existing.smtpPassword,
+        twoFactorApiKey: (twoFactorApiKey !== undefined && twoFactorApiKey !== "") ? twoFactorApiKey : existing.twoFactorApiKey,
         twoFactorTemplateName: (twoFactorTemplateName !== undefined && twoFactorTemplateName !== "") ? twoFactorTemplateName : existing.twoFactorTemplateName
       };
 
