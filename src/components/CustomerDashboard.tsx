@@ -314,6 +314,13 @@ export default function CustomerDashboard({
         throw new Error(data.error || 'SMTP email notification dispatch failed.');
       }
 
+      if (data.results?.email?.startsWith('connection_failed') || data.results?.email?.startsWith('error')) {
+        const errorDetail = data.results.email
+          .replace('connection_failed: ', '')
+          .replace('error: ', '');
+        throw new Error(errorDetail || 'SMTP connection failed. Please check your SMTP configuration.');
+      }
+
       const resMsg = data.results?.email?.includes('simulated')
         ? 'Simulated HTML invoice logged in terminal console successfully.'
         : 'HTML Invoice and license list delivered to your mailbox successfully!';

@@ -505,10 +505,12 @@ async function dispatchOrderNotifications(order: any) {
 
   if (smtpHost && smtpUser && smtpPassword) {
     try {
+      const smtpPort = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587;
+      const smtpSecure = process.env.SMTP_SECURE === "true" || smtpPort === 465;
       const transporter = nodemailer.createTransport({
         host: smtpHost,
-        port: 587,
-        secure: false,
+        port: smtpPort,
+        secure: smtpSecure,
         auth: { user: smtpUser, pass: smtpPassword }
       });
       const htmlInvoice = `
@@ -4730,10 +4732,12 @@ app.use(async (req, res, next) => {
       if (smtpHost && smtpUser && smtpPassword) {
         try {
           console.log(`[SMTP-NOTIFY] Spawning nodemailer SMTP transport on host: ${smtpHost} for buyer ${customerEmail}...`);
+          const smtpPort = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587;
+          const smtpSecure = process.env.SMTP_SECURE === "true" || smtpPort === 465;
           const transporter = nodemailer.createTransport({
             host: smtpHost,
-            port: 587,
-            secure: false, // TLS
+            port: smtpPort,
+            secure: smtpSecure,
             auth: {
               user: smtpUser,
               pass: smtpPassword
