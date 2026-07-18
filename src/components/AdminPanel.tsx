@@ -1741,30 +1741,62 @@ export default function AdminPanel({
     setSelectedShippingStatus(order.shippingStatus);
   };
 
-  const saveOrderEdits = (orderId: string) => {
-    setOrders(orders.map(o => {
-      if (o.id === orderId) {
-        return {
-          ...o,
-          shippingStatus: selectedShippingStatus,
+  const saveOrderEdits = async (orderId: string) => {
+    try {
+      const token = localStorage.getItem('session_token') || localStorage.getItem('admin_session_token') || '';
+      const csrfToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrf_token='))
+        ?.split('=')[1] || '';
+
+      const response = await fetch(`/api/admin/orders/${orderId}/shipping-status`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'X-CSRF-Token': csrfToken,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          status: selectedShippingStatus,
           courierName: selectedCourier,
           trackingId: selectedTrackingId
-        };
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setOrders(orders.map(o => {
+          if (o.id === orderId) {
+            return {
+              ...o,
+              shippingStatus: selectedShippingStatus,
+              courierName: selectedCourier,
+              trackingId: selectedTrackingId
+            };
+          }
+          return o;
+        }));
+        
+        setEditingOrderId(null);
+        addNotification('Order Updated', data.message || `Order ${orderId} successfully advanced to: ${selectedShippingStatus}`, 'success');
+        
+        const timeLog = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const newLogs = [
+          `[${timeLog}] Server Sync: Status for order "${orderId}" changed to "${selectedShippingStatus}".`,
+          `[${timeLog}] WhatsApp/SMTP: ${data.message || 'Notifications dispatched successfully'}`
+        ];
+        setSimulatedNotifyLogs([...newLogs, ...simulatedNotifyLogs]);
+        
+        // Refresh logs if available
+        fetchWhatsappLogs();
+      } else {
+        addNotification('Update Failed', data.error || 'Failed to update order status on server.', 'error');
       }
-      return o;
-    }));
-    
-    setEditingOrderId(null);
-    addNotification('Order Timeline Updated', `Shipping status for order ${orderId} changed to: ${selectedShippingStatus}`, 'success');
-    
-    // Simulate API webhook callbacks
-    const timeLog = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    const newLogs = [
-      `[${timeLog}] Webhook Dispatch: Order "${orderId}" advanced to state "${selectedShippingStatus}".`,
-      `[${timeLog}] SMS / WhatsApp Carrier API: Calling 2Factor with template payload... Delivered tracking info to customer.`,
-      `[${timeLog}] SMTP Invoice Engine: Updated dispatch itinerary sent.`
-    ];
-    setSimulatedNotifyLogs([...newLogs, ...simulatedNotifyLogs]);
+    } catch (err: any) {
+      console.error("[SAVE-ORDER-EDITS-ERROR]", err);
+      addNotification('Connection Error', err.message || 'Could not connect to the status update API.', 'error');
+    }
   };
 
   const verifyAlternativePayment = (orderId: string) => {

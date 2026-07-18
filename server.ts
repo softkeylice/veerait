@@ -4321,10 +4321,11 @@ app.use(async (req, res, next) => {
   // Business events test triggers (Shipping, Delivery, Refunds, Low Stock)
   app.post("/api/admin/orders/:id/shipping-status", authenticateJwt, requireAdmin, csrfProtection, async (req, res) => {
     const { id } = req.params;
-    const { status, courierName, trackingId } = req.body; // status: 'shipped' | 'delivered'
+    const { status, courierName, trackingId } = req.body; // status: 'pending' | 'processing' | 'shipped' | 'out_for_delivery' | 'delivered'
     
-    if (!status || !["shipped", "delivered"].includes(status)) {
-      return res.status(400).json({ error: "Status must be 'shipped' or 'delivered'." });
+    const allowedStatuses = ["pending", "processing", "shipped", "out_for_delivery", "delivered"];
+    if (!status || !allowedStatuses.includes(status)) {
+      return res.status(400).json({ error: `Status must be one of: ${allowedStatuses.join(", ")}` });
     }
 
     try {
@@ -4340,13 +4341,18 @@ app.use(async (req, res, next) => {
         order = data;
         if (order) {
           await supabaseServer
-            .from("orders")
-            .update({ 
-              shipping_status: status === "delivered" ? "delivered" : "shipped",
-              tracking_id: trackingId || order.tracking_id,
-              courier_name: courierName || order.courier_name
-            })
-            .eq("id", id);
+              .from("orders")
+              .update({ 
+                shipping_status: status,
+                tracking_id: trackingId !== undefined ? trackingId : order.tracking_id,
+                courier_name: courierName !== undefined ? courierName : order.courier_name
+              })
+              .eq("id", id);
+          
+          // Refresh order data
+          order.shipping_status = status;
+          if (trackingId !== undefined) order.tracking_id = trackingId;
+          if (courierName !== undefined) order.courier_name = courierName;
         }
       } else {
         // Fallback simulated order lookup from payments_db
@@ -4361,8 +4367,9 @@ app.use(async (req, res, next) => {
             total: payment.amount,
             trackingId: trackingId || "TRK" + Math.floor(10000000 + Math.random() * 90000000)
           };
-          (payment as any).shippingStatus = status === "delivered" ? "delivered" : "shipped";
+          (payment as any).shippingStatus = status;
           (payment as any).trackingId = order.trackingId;
+          if (courierName !== undefined) (payment as any).courierName = courierName;
           writePaymentsDb(payments);
           await savePaymentsToSupabase(payments);
         }
@@ -4376,6 +4383,7 @@ app.use(async (req, res, next) => {
       const name = order.customer_name || order.customerName || "Customer";
       const trkId = trackingId || order.tracking_id || order.trackingId || "TRK981273918";
 
+      let notifyMessage = "Status updated successfully.";
       if (status === "shipped") {
         await dispatchWhatsAppTemplate("shipping_update", phone, {
           customerName: name,
@@ -4383,17 +4391,21 @@ app.use(async (req, res, next) => {
           trackingId: trkId,
           estDelivery: "2-3 business days"
         });
-      } else {
+        notifyMessage = `Order status successfully updated to ${status} and Dispatch WhatsApp notification sent.`;
+      } else if (status === "delivered") {
         await dispatchWhatsAppTemplate("delivery_confirmation", phone, {
           customerName: name,
           orderId: id,
           deliveredAt: new Date().toLocaleString()
         });
+        notifyMessage = `Order status successfully updated to ${status} and Delivery WhatsApp notification sent.`;
+      } else {
+        notifyMessage = `Order status successfully updated to ${status}.`;
       }
 
       return res.json({
         success: true,
-        message: `Order shipping status successfully updated to ${status} and WhatsApp template dispatched.`
+        message: notifyMessage
       });
     } catch (err: any) {
       console.error("[SHIPPING-UPDATE-API] Error:", err);
