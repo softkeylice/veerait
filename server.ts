@@ -481,10 +481,10 @@ async function dispatchOrderNotifications(order: any) {
     results.whatsapp = `batch_error: ${err.message}`;
   }
 
-  // B. SMTP Email dispatch
-  const smtpHost = cleanConfigValue(settings.smtpHost, process.env.SMTP_HOST);
-  const smtpUser = cleanConfigValue(settings.smtpUser, process.env.SMTP_USER);
-  const smtpPassword = cleanConfigValue(settings.smtpPassword, process.env.SMTP_PASSWORD);
+  // B. SMTP Email dispatch (Support both SMTP_ and SMPT_ prefixes due to common user typo)
+  const smtpHost = cleanConfigValue(settings.smtpHost, process.env.SMTP_HOST || process.env.SMPT_HOST);
+  const smtpUser = cleanConfigValue(settings.smtpUser, process.env.SMTP_USER || process.env.SMPT_USER);
+  const smtpPassword = cleanConfigValue(settings.smtpPassword, process.env.SMTP_PASSWORD || process.env.SMPT_PASSWORD);
   
   // Real-time reverse GST calculations (18% GST Inclusive)
   const gstRate = 0.18;
@@ -505,8 +505,9 @@ async function dispatchOrderNotifications(order: any) {
 
   if (smtpHost && smtpUser && smtpPassword) {
     try {
-      const smtpPort = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587;
-      const smtpSecure = process.env.SMTP_SECURE === "true" || smtpPort === 465;
+      const envPort = process.env.SMTP_PORT || process.env.SMPT_PORT;
+      const smtpPort = envPort ? parseInt(envPort, 10) : 587;
+      const smtpSecure = process.env.SMTP_SECURE === "true" || process.env.SMPT_SECURE === "true" || smtpPort === 465;
       const transporter = nodemailer.createTransport({
         host: smtpHost,
         port: smtpPort,
@@ -692,9 +693,17 @@ function writeNotificationSettings(settings: NotificationSettings) {
 }
 
 function cleanConfigValue(val: string | undefined, envVal: string | undefined): string {
-  const v = (val || "").trim();
+  const stripQuotes = (str: string) => {
+    let s = str.trim();
+    if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+      s = s.slice(1, -1).trim();
+    }
+    return s;
+  };
+
+  const v = stripQuotes(val || "");
   if (!v || v.startsWith("YOUR_") || v.includes("PLACEHOLDER") || v === "null") {
-    return (envVal || "").trim();
+    return stripQuotes(envVal || "");
   }
   return v;
 }
@@ -4723,17 +4732,18 @@ app.use(async (req, res, next) => {
       }
     }
 
-    // B. SMTP Email dispatch
+    // B. SMTP Email dispatch (Support both SMTP_ and SMPT_ prefixes due to common user typo)
     if (channel === "all" || channel === "email") {
-      const smtpHost = cleanConfigValue(settings.smtpHost, process.env.SMTP_HOST);
-      const smtpUser = cleanConfigValue(settings.smtpUser, process.env.SMTP_USER);
-      const smtpPassword = cleanConfigValue(settings.smtpPassword, process.env.SMTP_PASSWORD);
+      const smtpHost = cleanConfigValue(settings.smtpHost, process.env.SMTP_HOST || process.env.SMPT_HOST);
+      const smtpUser = cleanConfigValue(settings.smtpUser, process.env.SMTP_USER || process.env.SMPT_USER);
+      const smtpPassword = cleanConfigValue(settings.smtpPassword, process.env.SMTP_PASSWORD || process.env.SMPT_PASSWORD);
 
       if (smtpHost && smtpUser && smtpPassword) {
         try {
           console.log(`[SMTP-NOTIFY] Spawning nodemailer SMTP transport on host: ${smtpHost} for buyer ${customerEmail}...`);
-          const smtpPort = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587;
-          const smtpSecure = process.env.SMTP_SECURE === "true" || smtpPort === 465;
+          const envPort = process.env.SMTP_PORT || process.env.SMPT_PORT;
+          const smtpPort = envPort ? parseInt(envPort, 10) : 587;
+          const smtpSecure = process.env.SMTP_SECURE === "true" || process.env.SMPT_SECURE === "true" || smtpPort === 465;
           const transporter = nodemailer.createTransport({
             host: smtpHost,
             port: smtpPort,
