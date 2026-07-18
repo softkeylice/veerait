@@ -58,7 +58,9 @@ interface User {
   alternatePhone?: string;
 }
 
-const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
+const PORT: string | number = process.env.PORT 
+  ? (isNaN(Number(process.env.PORT)) ? process.env.PORT : parseInt(process.env.PORT, 10))
+  : 3000;
 const DB_FILE = path.join(process.cwd(), "users_db.json");
 const PAYMENT_SETTINGS_FILE = path.join(process.cwd(), "payment_settings_db.json");
 const NOTIFICATION_SETTINGS_FILE = path.join(process.cwd(), "notification_settings_db.json");
@@ -480,7 +482,9 @@ async function dispatchOrderNotifications(order: any) {
   }
 
   // B. SMTP Email dispatch
-  const { smtpHost, smtpUser, smtpPassword } = settings;
+  const smtpHost = cleanConfigValue(settings.smtpHost, process.env.SMTP_HOST);
+  const smtpUser = cleanConfigValue(settings.smtpUser, process.env.SMTP_USER);
+  const smtpPassword = cleanConfigValue(settings.smtpPassword, process.env.SMTP_PASSWORD);
   
   // Real-time reverse GST calculations (18% GST Inclusive)
   const gstRate = 0.18;
@@ -4707,7 +4711,9 @@ app.use(async (req, res, next) => {
 
     // B. SMTP Email dispatch
     if (channel === "all" || channel === "email") {
-      const { smtpHost, smtpUser, smtpPassword } = settings;
+      const smtpHost = cleanConfigValue(settings.smtpHost, process.env.SMTP_HOST);
+      const smtpUser = cleanConfigValue(settings.smtpUser, process.env.SMTP_USER);
+      const smtpPassword = cleanConfigValue(settings.smtpPassword, process.env.SMTP_PASSWORD);
 
       if (smtpHost && smtpUser && smtpPassword) {
         try {
@@ -4869,9 +4875,15 @@ app.use(async (req, res, next) => {
           appType: "spa",
         }).then((vite) => {
           app.use(vite.middlewares);
-          app.listen(PORT, "0.0.0.0", () => {
-            console.log(`Server fully running on http://localhost:${PORT}`);
-          });
+          if (typeof PORT === "string") {
+            app.listen(PORT, () => {
+              console.log(`Server fully running on socket: ${PORT}`);
+            });
+          } else {
+            app.listen(PORT, "0.0.0.0", () => {
+              console.log(`Server fully running on http://localhost:${PORT}`);
+            });
+          }
         });
       });
     } else {
@@ -4880,8 +4892,14 @@ app.use(async (req, res, next) => {
       app.get("*", (req, res) => {
         res.sendFile(path.join(distPath, "index.html"));
       });
-      app.listen(PORT, "0.0.0.0", () => {
-        console.log(`Server fully running on http://localhost:${PORT}`);
-      });
+      if (typeof PORT === "string") {
+        app.listen(PORT, () => {
+          console.log(`Server fully running on socket: ${PORT}`);
+        });
+      } else {
+        app.listen(PORT, "0.0.0.0", () => {
+          console.log(`Server fully running on http://localhost:${PORT}`);
+        });
+      }
     }
   }
