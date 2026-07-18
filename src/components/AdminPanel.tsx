@@ -4511,7 +4511,7 @@ export default function AdminPanel({
                       <div className="space-y-1.5 flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-mono text-xs font-bold text-blue-600">{order.id}</span>
-                          <span className="text-[10px] text-slate-400">{new Date(order.createdAt).toLocaleDateString()}</span>
+                          <span className="text-[10px] text-slate-400 font-mono">Time: {new Date(order.createdAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}</span>
                           {order.paymentStatus === 'pending' ? (
                             <span className="bg-amber-100 border border-amber-200 text-amber-800 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider font-mono">
                               Pending Manual Verification
@@ -6738,7 +6738,7 @@ export default function AdminPanel({
                               >
                                 {customerOrders.map((o) => (
                                   <option key={o.id} value={o.id}>
-                                    Order #{o.id.slice(0, 8)} - ₹{o.total.toFixed(2)} ({new Date(o.createdAt).toLocaleDateString('en-IN')})
+                                    Order #{o.id.slice(0, 8)} - ₹{o.total.toFixed(2)} ({new Date(o.createdAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })})
                                   </option>
                                 ))}
                               </select>

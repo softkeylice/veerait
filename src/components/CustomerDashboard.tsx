@@ -981,7 +981,7 @@ export default function CustomerDashboard({
                             <div className="flex justify-between items-start">
                               <div>
                                 <p className="font-mono font-bold text-blue-600 text-[10px]">{order.id}</p>
-                                <p className="text-[10px] text-slate-450 mt-0.5">{new Date(order.createdAt).toLocaleDateString()}</p>
+                                <p className="text-[10px] text-slate-450 mt-0.5 font-mono">Time: {new Date(order.createdAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}</p>
                               </div>
                               <span className="font-bold font-mono text-slate-950">₹{order.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                             </div>
@@ -1227,7 +1227,7 @@ export default function CustomerDashboard({
                             <div>
                               <p className="text-[10px] font-mono font-bold text-blue-600 uppercase">HARDWARE SHIPMENT</p>
                               <h4 className="text-xs font-bold font-mono text-slate-900 mt-0.5">{order.id}</h4>
-                              <p className="text-[10px] text-slate-450">{new Date(order.createdAt).toLocaleDateString()}</p>
+                              <p className="text-[10px] text-slate-450 font-mono">Time: {new Date(order.createdAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}</p>
                             </div>
 
                             <span className="px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-100 text-[10px] font-bold rounded-lg uppercase font-mono">
@@ -1457,7 +1457,7 @@ export default function CustomerDashboard({
                           .filter(o => o.paymentStatus === 'paid')
                           .map(order => (
                             <option key={order.id} value={order.id}>
-                              Order Ref: {order.id} - ₹{order.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })} - {new Date(order.createdAt).toLocaleDateString()}
+                              Order Ref: {order.id} - ₹{order.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })} - {new Date(order.createdAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}
                             </option>
                           ))}
                       </select>
