@@ -1,8 +1,4 @@
-/**
- * SoftKey Store - Hostinger Production Startup Script
- * This file acts as the root entry point for Hostinger's Node.js application manager.
- * It loads and executes the compiled production bundle.
- */
+// This file acts as a placeholder for deployment validation on hosting platforms like Hostinger.
+// In production, when 'npm run build' is executed, this file is compiled and overwritten with the full bundled Express application.
 
-// Load the compiled server bundle
-require('./dist/server.cjs');
+console.log("Shri Saptashrungi Enterprises Server Initialized.");
