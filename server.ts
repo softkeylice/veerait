@@ -445,37 +445,112 @@ async function dispatchOrderNotifications(order: any) {
   try {
     console.log(`[NOTIFY-ENGINE] Consolidated WhatsApp execution for Order: ${orderId}...`);
 
+    const whatsappToken = cleanConfigValue(settings.whatsappToken, process.env.WHATSAPP_API_TOKEN);
+    const phoneNumberId = cleanConfigValue(settings.phoneNumberId, process.env.WHATSAPP_PHONE_NUMBER_ID);
+    const formattedPhone = customerPhone.replace(/\D/g, "");
+
     const hasKeys = order.items && order.items.some((it: any) => it.assignedKeys && it.assignedKeys.length > 0);
 
-    if (hasKeys) {
-      // Send EXACTLY ONE message: License Key Delivery (with all keys listed)
-      console.log(`[NOTIFY-ENGINE] Dispatching SINGLE license_key_delivery template to +91 ${customerPhone}...`);
-      dispatchWhatsAppTemplate("license_key_delivery", customerPhone, {
-        customerName,
+    if (whatsappToken && phoneNumberId) {
+      if (hasKeys) {
+        // Send EXACTLY ONE message: License Key Delivery (with all keys listed)
+        console.log(`[NOTIFY-ENGINE] Dispatching SINGLE license_key_delivery template to +91 ${customerPhone}...`);
+        dispatchWhatsAppTemplate("license_key_delivery", customerPhone, {
+          customerName,
+          orderId,
+          productName: productsList.substring(0, 50),
+          licenseKeys: keysList
+        }).catch(err => console.error("[NOTIFY-ENGINE] license_key_delivery dispatch err:", err));
+      } else {
+        // Send EXACTLY ONE message: Order Confirmation Template
+        console.log(`[NOTIFY-ENGINE] Dispatching SINGLE order_confirmation template to +91 ${customerPhone}...`);
+        dispatchWhatsAppTemplate("order_confirmation", customerPhone, {
+          customerName,
+          orderId,
+          items: productsList,
+          amount
+        }).catch(err => console.error("[NOTIFY-ENGINE] order_confirmation dispatch err:", err));
+      }
+
+      // Always notify the Admin as well (to admin phone)
+      const adminNum = settings.adminPhone || "9876543210";
+      dispatchWhatsAppTemplate("new_order_notifications", adminNum, {
         orderId,
-        productName: productsList.substring(0, 50),
-        licenseKeys: keysList
-      }).catch(err => console.error("[NOTIFY-ENGINE] license_key_delivery dispatch err:", err));
+        customerName,
+        summary: `${productsList} (${amount})`
+      }).catch(err => console.error("[NOTIFY-ENGINE] new_order_notifications dispatch err:", err));
+
+      results.whatsapp = "dispatched_templates_initiated";
     } else {
-      // Send EXACTLY ONE message: Order Confirmation Template
-      console.log(`[NOTIFY-ENGINE] Dispatching SINGLE order_confirmation template to +91 ${customerPhone}...`);
-      dispatchWhatsAppTemplate("order_confirmation", customerPhone, {
-        customerName,
-        orderId,
-        items: productsList,
-        amount
-      }).catch(err => console.error("[NOTIFY-ENGINE] order_confirmation dispatch err:", err));
+      // Fallback or 2Factor Active Integration
+      const apiKey = cleanConfigValue(settings.twoFactorApiKey, process.env.TWO_FACTOR_API_KEY);
+      const isDummyKey = !apiKey || apiKey === "YOUR_2FACTOR_API_KEY" || apiKey.trim() === "";
+
+      if (!isDummyKey) {
+        console.log(`[NOTIFY-ENGINE] 2Factor Gateway active as fallback. Dispatching order confirmation to +91 ${formattedPhone}...`);
+        
+        const cleanedPhone = formattedPhone.startsWith("91") && formattedPhone.length > 10 ? formattedPhone : `91${formattedPhone}`;
+        const msgBody = `🛒 *SoftKey Store Order Confirmation!*\n\n*Order ID:* ${orderId}\n*Products:* ${productsList}\n*Total Paid:* ${amount}\n\n*Your License Key(s):*\n${keysList}\n\nThank you for shopping with us! If you need support, visit your Customer Dashboard.`;
+        
+        const tsmsUrl = `https://2factor.in/API/V1/${apiKey}/ADDON_SERVICES/SEND/TSMS`;
+        const waUrl = `https://2factor.in/API/V1/${apiKey}/ADDON_SERVICES/SEND/WHATSAPP`;
+        
+        const postParams: Record<string, string> = {
+          To: cleanedPhone,
+          From: "SFTKEY"
+        };
+
+        if (settings.twoFactorTemplateName) {
+          postParams.TemplateName = settings.twoFactorTemplateName;
+          postParams.VAR1 = customerName || "Customer";
+          postParams.VAR2 = orderId;
+          postParams.VAR3 = amount.toString();
+          postParams.VAR4 = productsList ? productsList.substring(0, 30) : "License Purchase";
+          postParams.VAR5 = keysList ? keysList.substring(0, 30) : "See Email";
+        } else {
+          postParams.Msg = msgBody;
+        }
+
+        // Try sending via WhatsApp Addon
+        fetch(waUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams(postParams)
+        }).then(async r => {
+          const text = await r.text();
+          console.log(`[NOTIFY-ENGINE-2FACTOR] WhatsApp response:`, text);
+        }).catch(err => {
+          console.error(`[NOTIFY-ENGINE-2FACTOR] WhatsApp failed:`, err);
+        });
+
+        // Try sending via TSMS for maximum reliability
+        fetch(tsmsUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams(postParams)
+        }).then(async r => {
+          const text = await r.text();
+          console.log(`[NOTIFY-ENGINE-2FACTOR] TSMS response:`, text);
+        }).catch(err => {
+          console.error(`[NOTIFY-ENGINE-2FACTOR] TSMS failed:`, err);
+        });
+
+        results.whatsapp = "dispatched_2factor_initiated";
+      } else {
+        // Fallback Simulation logs for testing/evaluating without keys
+        const timeLog = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        console.log(`\n================================================================`);
+        console.log(`[NOTIFY-ENGINE SIMULATED SUCCESS] WHATSAPP DISPATCH LOG`);
+        console.log(`To: +91 ${formattedPhone}`);
+        console.log(`Order ID: ${orderId}`);
+        console.log(`Product Name: ${productsList}`);
+        console.log(`Amount: ${amount}`);
+        console.log(`License Key(s): ${keysList}`);
+        console.log(`================================================================\n`);
+        
+        results.whatsapp = "simulated_dispatch_successfully";
+      }
     }
-
-    // Always notify the Admin as well (to admin phone)
-    const adminNum = settings.adminPhone || "9876543210";
-    dispatchWhatsAppTemplate("new_order_notifications", adminNum, {
-      orderId,
-      customerName,
-      summary: `${productsList} (${amount})`
-    }).catch(err => console.error("[NOTIFY-ENGINE] new_order_notifications dispatch err:", err));
-
-    results.whatsapp = "dispatched_templates_initiated";
   } catch (err: any) {
     console.error("[NOTIFY-ENGINE] Failed WhatsApp template dispatch:", err);
     results.whatsapp = `batch_error: ${err.message}`;
