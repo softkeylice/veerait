@@ -10,16 +10,31 @@ import {
   LayoutDashboard, User, CreditCard, Download, Send, Phone,
   MapPin, Printer, Settings, FileText, ChevronRight, Smartphone,
   RefreshCw, CheckCircle2, Truck, HelpCircle, X, Wallet, Award,
-  Share2, ArrowUpRight, Clock, Sparkles
+  Share2, ArrowUpRight, Clock, Sparkles, Briefcase, Calendar,
+  Lock, LogOut, Edit3, Building, ShieldCheck, KeyRound, Building2
 } from 'lucide-react';
 import { Order, Product, B2BReseller, WalletTransaction } from '../types';
 
 interface CustomerDashboardProps {
   orders: Order[];
-  user: { email: string; name: string; phone?: string; id?: string; address?: string } | null;
+  user: { 
+    email: string; 
+    name: string; 
+    phone?: string; 
+    id?: string; 
+    address?: string;
+    role?: string;
+    gstNo?: string;
+    company?: string;
+    alternateMobile?: string;
+    city?: string;
+    state?: string;
+    pin?: string;
+  } | null;
   addNotification: (title: string, message: string, type: 'success' | 'info' | 'warning' | 'error') => void;
   setCurrentScreen: (screen: 'store' | 'dashboard' | 'admin' | 'tracking') => void;
   setUser?: (user: any) => void;
+  handleLogout?: () => void;
   resellers?: B2BReseller[];
   setResellers?: (value: B2BReseller[] | ((prev: B2BReseller[]) => B2BReseller[])) => void;
   walletTransactions?: WalletTransaction[];
@@ -32,6 +47,7 @@ export default function CustomerDashboard({
   addNotification,
   setCurrentScreen,
   setUser,
+  handleLogout,
   resellers = [],
   setResellers = () => {},
   walletTransactions = [],
@@ -46,10 +62,17 @@ export default function CustomerDashboard({
 
   // Profile Edit State
   const [isEditing, setIsEditing] = useState(false);
-  const [editName, setEditName] = useState(user?.name || '');
-  const [editEmail, setEditEmail] = useState(user?.email || '');
-  const [editPhone, setEditPhone] = useState(user?.phone || '');
-  const [editAddress, setEditAddress] = useState(user?.address || '');
+  const [editName, setEditName] = useState(user?.name || 'Krishna Salunke');
+  const [editEmail, setEditEmail] = useState(user?.email || 'salunkeks96@gmail.com');
+  const [editPhone, setEditPhone] = useState(user?.phone || '9689677449');
+  const [editAltMobile, setEditAltMobile] = useState(user?.alternateMobile || '');
+  const [editCompany, setEditCompany] = useState(user?.company || 'Sanvi Production');
+  const [editGstNo, setEditGstNo] = useState(user?.gstNo || '');
+  const [editAddress, setEditAddress] = useState(user?.address || 'Deolgaon Raja Road, Kanhaiyanagar, Jalna - 431203.');
+  const [editCity, setEditCity] = useState(user?.city || 'Jalna');
+  const [editState, setEditState] = useState(user?.state || 'Maharashtra');
+  const [editPin, setEditPin] = useState(user?.pin || '431203');
+  
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [sessionId, setSessionId] = useState('');
@@ -72,13 +95,31 @@ export default function CustomerDashboard({
   const [isResendingWhatsApp, setIsResendingWhatsApp] = useState(false);
   const [isResendingEmail, setIsResendingEmail] = useState(false);
 
+  // Password & GST Modals
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [currentPass, setCurrentPass] = useState('');
+  const [newPass, setNewPass] = useState('');
+  const [confirmPass, setConfirmPass] = useState('');
+
+  const [showUpdateGstModal, setShowUpdateGstModal] = useState(false);
+  const [gstInput, setGstInput] = useState(user?.gstNo || '');
+  const [gstCompanyInput, setGstCompanyInput] = useState(user?.company || 'Sanvi Production');
+
   // Sync edits state fields when user object changes
   React.useEffect(() => {
     if (user) {
-      setEditName(user.name);
-      setEditEmail(user.email);
-      setEditPhone(user.phone || '');
-      setEditAddress(user.address || '');
+      setEditName(user.name || 'Krishna Salunke');
+      setEditEmail(user.email || 'salunkeks96@gmail.com');
+      setEditPhone(user.phone || '9689677449');
+      setEditAltMobile(user.alternateMobile || '');
+      setEditCompany(user.company || 'Sanvi Production');
+      setEditGstNo(user.gstNo || '');
+      setEditAddress(user.address || 'Deolgaon Raja Road, Kanhaiyanagar, Jalna - 431203.');
+      setEditCity(user.city || 'Jalna');
+      setEditState(user.state || 'Maharashtra');
+      setEditPin(user.pin || '431203');
+      setGstInput(user.gstNo || '');
+      setGstCompanyInput(user.company || 'Sanvi Production');
     }
   }, [user]);
 
@@ -454,7 +495,7 @@ export default function CustomerDashboard({
 
   return (
     <div className="bg-slate-50 text-slate-800 min-h-screen pb-16" id="customer-dashboard">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
+      <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-10 pt-10">
         
         {/* Profile dashboard header Card */}
         <div className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm relative overflow-hidden mb-8">
@@ -640,305 +681,233 @@ export default function CustomerDashboard({
           {/* RIGHT Content Display Pane */}
           <main className="lg:col-span-9">
             
-            {/* 1. OVERVIEW SECTION */}
-            {activeTab === 'overview' && (
-              <div className="space-y-8 animate-in fade-in duration-200">
-                <div className="flex justify-between items-center border-b border-slate-200 pb-3">
-                  <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                    <LayoutDashboard className="w-5 h-5 text-blue-600" />
-                    Account Overview
-                  </h3>
-                  <span className="text-[10px] bg-blue-50 text-blue-600 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider font-mono">Live Session Data</span>
-                </div>
-
-                {/* 4 Overview Statistics Cards Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm hover:border-blue-200 transition-colors">
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] font-extrabold text-slate-500 uppercase">Total Orders</span>
-                      <ShoppingCart className="w-4 h-4 text-blue-500" />
-                    </div>
-                    <p className="text-2xl font-bold font-mono text-slate-900 mt-2">{totalOrders}</p>
-                    <p className="text-[9px] text-slate-400 mt-0.5">Lifetime acquisitions</p>
-                  </div>
-
-                  <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm hover:border-emerald-200 transition-colors">
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] font-extrabold text-slate-500 uppercase">Total Payments</span>
-                      <CreditCard className="w-4 h-4 text-emerald-500" />
-                    </div>
-                    <p className="text-2xl font-bold font-mono text-emerald-600 mt-2">₹{totalPayments.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
-                    <p className="text-[9px] text-slate-400 mt-0.5">Cleared balances</p>
-                  </div>
-
-                  <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm hover:border-indigo-200 transition-colors">
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] font-extrabold text-slate-500 uppercase">Completed Orders</span>
-                      <CheckCircle2 className="w-4 h-4 text-indigo-500" />
-                    </div>
-                    <p className="text-2xl font-bold font-mono text-indigo-600 mt-2">{completedOrders}</p>
-                    <p className="text-[9px] text-slate-400 mt-0.5">Fully dispatched / digital keys</p>
-                  </div>
-
-                  <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm hover:border-amber-200 transition-colors">
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] font-extrabold text-slate-500 uppercase">Pending Orders</span>
-                      <AlertTriangle className="w-4 h-4 text-amber-500" />
-                    </div>
-                    <p className="text-2xl font-bold font-mono text-amber-600 mt-2">{pendingOrders}</p>
-                    <p className="text-[9px] text-slate-400 mt-0.5">Transit / pending funds</p>
-                  </div>
-                </div>
-
-                {/* Additional Overview UI: Recent purchases & Quick action banners */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-white border border-slate-200 p-5 rounded-3xl space-y-4 shadow-sm">
-                    <h4 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Quick Shortcuts</h4>
-                    
-                    <div className="space-y-2">
-                      <button 
-                        onClick={() => setActiveTab('licenses')}
-                        className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-150 hover:bg-slate-100 text-left transition-colors cursor-pointer text-xs"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Key className="w-4 h-4 text-blue-600" />
-                          <span className="font-semibold text-slate-700">Access Software Keys</span>
-                        </div>
-                        <span className="text-[10px] font-mono font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-md">{userLicenses.length} keys</span>
-                      </button>
-
-                      <button 
-                        onClick={() => setActiveTab('downloads')}
-                        className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-150 hover:bg-slate-100 text-left transition-colors cursor-pointer text-xs"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Download className="w-4 h-4 text-indigo-600" />
-                          <span className="font-semibold text-slate-700">Download Installer Files</span>
-                        </div>
-                        <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
-                      </button>
-
-                      <button 
-                        onClick={() => setActiveTab('profile')}
-                        className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-150 hover:bg-slate-100 text-left transition-colors cursor-pointer text-xs"
-                      >
-                        <div className="flex items-center gap-2">
-                          <User className="w-4 h-4 text-emerald-600" />
-                          <span className="font-semibold text-slate-700">Update Delivery Address</span>
-                        </div>
-                        <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="bg-gradient-to-br from-slate-900 to-blue-950 p-6 rounded-3xl text-white relative overflow-hidden flex flex-col justify-between shadow-md">
-                    <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/10 rounded-full blur-2xl" />
-                    
-                    <div className="space-y-2 relative z-10">
-                      <span className="text-[9px] font-bold font-mono tracking-wider uppercase text-blue-400">Need Technical Assistance?</span>
-                      <h4 className="text-sm font-extrabold">Instant Activation & Installation Support</h4>
-                      <p className="text-[11px] text-slate-350 leading-relaxed">
-                        If you face any issues while redeeming Microsoft Office keys or registering Adobe accounts, open a chat with our automated support desk.
-                      </p>
-                    </div>
-
-                    <button 
-                      onClick={() => setCurrentScreen('store')}
-                      className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-[11px] rounded-xl flex items-center justify-center gap-1.5 transition-all w-fit shadow-sm shadow-blue-900/30 cursor-pointer"
-                    >
-                      <ShoppingCart className="w-3.5 h-3.5" />
-                      Browse Catalog
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* 2. PROFILE SECTION */}
-            {activeTab === 'profile' && (
+            {/* 1. PROFILE & OVERVIEW SECTION */}
+            {(activeTab === 'profile' || activeTab === 'overview') && (
               <div className="space-y-6 animate-in fade-in duration-200">
-                <div className="flex justify-between items-center border-b border-slate-200 pb-3">
-                  <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                    <User className="w-5 h-5 text-blue-600" />
-                    Customer Profile & Shipping Address
-                  </h3>
-                  <button
-                    onClick={() => {
-                      setIsEditing(!isEditing);
-                      setOtpSent(false);
-                      setOtp('');
-                    }}
-                    className="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 text-xs font-bold rounded-xl transition-colors flex items-center gap-1 cursor-pointer"
-                  >
-                    <Settings className="w-3.5 h-3.5" />
-                    {isEditing ? 'Cancel Edit' : 'Edit Profile Details'}
-                  </button>
+                {/* Greeting Header */}
+                <div>
+                  <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-sans tracking-tight">
+                    Welcome back, {user?.name || 'Krishna Salunke'}
+                  </h1>
+                  <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
+                    Manage your account settings and business details
+                  </p>
                 </div>
 
-                {/* Profile Display Box */}
-                {!isEditing ? (
-                  <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4">
-                        <div>
-                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Account Full Name</span>
-                          <p className="text-sm font-bold text-slate-900 mt-1">{user?.name || 'Not Provided'}</p>
+                {/* 4 Stat Cards Row */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* Card 1: Total Orders */}
+                  <div 
+                    onClick={() => setActiveTab('orders')}
+                    className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs hover:border-blue-300 transition-all cursor-pointer group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-blue-100/80 text-blue-600 flex items-center justify-center shrink-0 group-hover:bg-blue-200/80 transition-colors">
+                        <Briefcase className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <span className="text-xs font-semibold text-slate-600">Total Orders</span>
+                    </div>
+                    <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3 font-sans">
+                      {totalOrders}
+                    </p>
+                  </div>
+
+                  {/* Card 2: Customer Id */}
+                  <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-emerald-100/80 text-emerald-600 flex items-center justify-center shrink-0">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                      </div>
+                      <span className="text-xs font-semibold text-slate-600">Customer Id</span>
+                    </div>
+                    <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3 font-sans">
+                      {user?.id || '23469'}
+                    </p>
+                  </div>
+
+                  {/* Card 3: Prepaid Balance */}
+                  <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-amber-100/80 text-amber-600 flex items-center justify-center shrink-0">
+                        <Wallet className="w-5 h-5 text-amber-600" />
+                      </div>
+                      <span className="text-xs font-semibold text-slate-600">Prepaid Balance</span>
+                    </div>
+                    <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3 font-sans">
+                      Rs. 0
+                    </p>
+                  </div>
+
+                  {/* Card 4: Member Since */}
+                  <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-blue-100/80 text-blue-600 flex items-center justify-center shrink-0">
+                        <Calendar className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <span className="text-xs font-semibold text-slate-600">Member Since</span>
+                    </div>
+                    <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3 font-sans">
+                      Jul 2026
+                    </p>
+                  </div>
+                </div>
+
+                {/* Main 2-Column Section */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                  {/* Left Column: Account Information */}
+                  <div className="lg:col-span-8 space-y-3">
+                    <h2 className="text-lg font-extrabold text-slate-900 font-sans">
+                      Account Information
+                    </h2>
+
+                    <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-8 shadow-2xs space-y-6">
+                      {/* Avatar Row & 3 Action Buttons */}
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-slate-100 pb-6">
+                        <div className="flex items-center gap-4">
+                          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-slate-200/90 text-slate-600 font-extrabold text-2xl sm:text-3xl flex items-center justify-center shrink-0 shadow-2xs">
+                            {(user?.name || 'Krishna Salunke').charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 font-sans">
+                              {user?.name || 'Krishna Salunke'}
+                            </h3>
+                            <p className="text-xs sm:text-sm text-slate-500 font-mono mt-0.5">
+                              {user?.email || 'salunkeks96@gmail.com'}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Registered Email Address</span>
-                          <p className="text-sm font-bold text-slate-900 mt-1 font-mono">{user?.email || 'Not Provided'}</p>
+
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <button
+                            type="button"
+                            onClick={() => setIsEditing(true)}
+                            className="bg-[#4C82E6] hover:bg-[#3b71d5] text-white font-bold text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                            Edit Profile
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setShowChangePasswordModal(true)}
+                            className="bg-slate-100/90 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 transition-all border border-slate-200/80 cursor-pointer"
+                          >
+                            <Lock className="w-3.5 h-3.5 text-slate-500" />
+                            Change Password
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setShowUpdateGstModal(true)}
+                            className="bg-slate-100/90 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 transition-all border border-slate-200/80 cursor-pointer"
+                          >
+                            <FileText className="w-3.5 h-3.5 text-slate-500" />
+                            Update GST
+                          </button>
                         </div>
                       </div>
 
-                      <div className="space-y-4">
-                        <div>
-                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Registered Mobile Number</span>
-                          <p className="text-sm font-bold text-slate-900 mt-1 font-mono">+91 {user?.phone || 'Not Provided'}</p>
+                      {/* Fields with icons */}
+                      <div className="space-y-3.5 text-xs sm:text-sm font-medium text-slate-700">
+                        <div className="flex items-center gap-3">
+                          <FileText className="w-4 h-4 text-slate-400 shrink-0" />
+                          <span className="text-slate-800">
+                            <strong className="font-semibold text-slate-600">GST No :</strong> {user?.gstNo || '-'}
+                          </span>
                         </div>
-                        <div>
-                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Authentication Provider</span>
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-full text-[10px] font-bold mt-1">
-                            <CheckCircle2 className="w-3 h-3" />
-                            Supabase Auth
+
+                        <div className="flex items-center gap-3">
+                          <Phone className="w-4 h-4 text-slate-400 shrink-0" />
+                          <span className="text-slate-800">
+                            <strong className="font-semibold text-slate-600">Phone :</strong> {user?.phone || '9689677449'}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <Smartphone className="w-4 h-4 text-slate-400 shrink-0" />
+                          <span className="text-slate-800">
+                            <strong className="font-semibold text-slate-600">Alternate Mobile :</strong> {user?.alternateMobile || '-'}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <Building className="w-4 h-4 text-slate-400 shrink-0" />
+                          <span className="text-slate-800">
+                            <strong className="font-semibold text-slate-600">Company :</strong> {user?.company || 'Sanvi Production'}
+                          </span>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <MapPin className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                          <span className="text-slate-800 leading-relaxed">
+                            <strong className="font-semibold text-slate-600">Address :</strong> {user?.address || 'Deolgaon Raja Road, Kanhaiyanagar, Jalna - 431203.'}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
+                          <span className="text-slate-800">
+                            <strong className="font-semibold text-slate-600">City / State / PIN :</strong> {user?.city || 'Jalna'} / {user?.state || 'Maharashtra'} / {user?.pin || '431203'}
                           </span>
                         </div>
                       </div>
                     </div>
+                  </div>
 
-                    <div className="border-t border-slate-150 pt-5 space-y-2">
-                      <div className="flex items-center gap-1.5">
-                        <MapPin className="w-4 h-4 text-blue-600" />
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Default Shipping Address</span>
-                      </div>
-                      <p className="text-xs text-slate-700 font-medium leading-relaxed bg-slate-50 border border-slate-150 p-3.5 rounded-2xl max-w-2xl">
-                        {user?.address || 'No default shipping address on file. Please edit your profile to supply a default destination for parcel order dispatch.'}
-                      </p>
+                  {/* Right Column: My Account Menu */}
+                  <div className="lg:col-span-4 space-y-3">
+                    <h2 className="text-lg font-extrabold text-slate-900 font-sans">
+                      My Account
+                    </h2>
+
+                    <div className="bg-white border border-slate-200/90 rounded-2xl p-3 shadow-2xs space-y-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('profile')}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs sm:text-sm transition-all ${
+                          activeTab === 'profile' || activeTab === 'overview'
+                            ? 'bg-[#4C82E6] text-white shadow-2xs'
+                            : 'text-slate-700 hover:bg-slate-100/80'
+                        }`}
+                      >
+                        <User className="w-4 h-4" />
+                        <span>Profile</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('orders')}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs sm:text-sm transition-all ${
+                          activeTab === 'orders'
+                            ? 'bg-[#4C82E6] text-white shadow-2xs'
+                            : 'text-slate-700 hover:bg-slate-100/80 cursor-pointer'
+                        }`}
+                      >
+                        <FileText className="w-4 h-4 text-slate-500" />
+                        <span>Orders</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (handleLogout) {
+                            handleLogout();
+                          } else if (setUser) {
+                            setUser(null);
+                          }
+                          setCurrentScreen('store');
+                          addNotification('Signed Out', 'You have been logged out successfully.', 'info');
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs sm:text-sm text-slate-700 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer"
+                      >
+                        <LogOut className="w-4 h-4 text-slate-500" />
+                        <span>Logout</span>
+                      </button>
                     </div>
                   </div>
-                ) : (
-                  /* Edit Profile Panel with OTP */
-                  <div className="bg-white border border-blue-100 rounded-3xl p-6 shadow-md animate-in slide-in-from-top duration-200">
-                    <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2 mb-4 font-sans">
-                      <Layers className="w-4.5 h-4.5 text-blue-600" />
-                      Modify Credentials (Mobile OTP Required)
-                    </h3>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Full Name</label>
-                          <input
-                            type="text"
-                            required
-                            value={editName}
-                            onChange={(e) => setEditName(e.target.value)}
-                            className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-semibold"
-                          />
-                        </div>
-                        
-                        <div>
-                          <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Email Address</label>
-                          <input
-                            type="email"
-                            required
-                            value={editEmail}
-                            onChange={(e) => setEditEmail(e.target.value)}
-                            className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-semibold"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Phone Number (+91)</label>
-                          <input
-                            type="tel"
-                            required
-                            maxLength={10}
-                            value={editPhone}
-                            onChange={(e) => setEditPhone(e.target.value.replace(/\D/g, ''))}
-                            className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-semibold font-mono"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Shipping Address</label>
-                          <textarea
-                            required
-                            rows={3}
-                            value={editAddress}
-                            onChange={(e) => setEditAddress(e.target.value)}
-                            placeholder="Apartment suite number, street address, zip code, state, etc."
-                            className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-semibold leading-relaxed"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="border-t md:border-t-0 md:border-l border-slate-150 pt-5 md:pt-0 md:pl-6 flex flex-col justify-between">
-                        <div className="space-y-4">
-                          <span className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">SMS Authentication Layer</span>
-                          <p className="text-[11px] text-slate-500 leading-relaxed">
-                            To preserve security and prevent unauthorized address manipulation, modifications require an active verification code dispatched via 2Factor OTP SMS.
-                          </p>
-                          
-                          {!otpSent ? (
-                            <button
-                              type="button"
-                              disabled={otpLoading}
-                              onClick={handleSendOtp}
-                              className="w-full py-2.5 bg-blue-50 border border-blue-150 hover:bg-blue-100 text-blue-600 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                            >
-                              {otpLoading ? <RefreshCw className="w-4 h-4 animate-spin text-blue-500" /> : null}
-                              Send Mobile Verification OTP
-                            </button>
-                          ) : (
-                            <div className="space-y-2 animate-in slide-in-from-bottom duration-200">
-                              <div className="flex justify-between items-center">
-                                <label className="block text-[10px] font-bold text-slate-600 uppercase">Verification OTP Code</label>
-                                <button
-                                  type="button"
-                                  onClick={() => { setOtpSent(false); setOtp(''); }}
-                                  className="text-[10px] text-blue-600 hover:underline font-semibold cursor-pointer"
-                                >
-                                  Resend Code
-                                </button>
-                              </div>
-                              <input
-                                type="text"
-                                maxLength={6}
-                                required
-                                value={otp}
-                                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                                placeholder="••••••"
-                                className="w-full tracking-[0.5em] text-center px-4 py-2.5 bg-slate-50 border border-slate-250 rounded-xl text-base font-mono font-bold text-blue-600 outline-none focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
-                              />
-                              <p className="text-[9px] text-slate-400 font-mono leading-relaxed">⚡ Enter the SMS OTP dispatched to terminal console or use <strong>123456</strong> to bypass.</p>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="flex gap-3 pt-5 mt-5 border-t border-slate-100">
-                          <button
-                            type="button"
-                            onClick={() => { setIsEditing(false); setOtpSent(false); setOtp(''); }}
-                            className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            type="button"
-                            disabled={saving || !otpSent || !otp}
-                            onClick={handleSaveProfile}
-                            className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none text-white rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
-                          >
-                            {saving ? 'Saving...' : 'Verify & Update'}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                </div>
               </div>
             )}
-
             {/* 3. ORDERS SECTION (History, details, printable invoice) */}
             {activeTab === 'orders' && (
               <div className="space-y-6 animate-in fade-in duration-200">
@@ -2214,6 +2183,328 @@ export default function CustomerDashboard({
           </div>
         );
       })()}
+
+      {/* Edit Profile Modal */}
+      {isEditing && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl relative my-8 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <h3 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+                <Edit3 className="w-5 h-5 text-blue-600" />
+                Edit Profile Details
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsEditing(false)}
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const updated = {
+                ...user,
+                name: editName,
+                email: editEmail,
+                phone: editPhone,
+                alternateMobile: editAltMobile,
+                company: editCompany,
+                address: editAddress,
+                city: editCity,
+                state: editState,
+                pin: editPin,
+                gstNo: editGstNo
+              };
+              if (setUser) setUser(updated);
+              setIsEditing(false);
+              addNotification('Profile Saved', 'Your account profile details have been updated!', 'success');
+            }} className="space-y-4 mt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Full Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
+                  <input
+                    type="email"
+                    required
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number</label>
+                  <input
+                    type="tel"
+                    required
+                    value={editPhone}
+                    onChange={(e) => setEditPhone(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Alternate Mobile</label>
+                  <input
+                    type="tel"
+                    value={editAltMobile}
+                    onChange={(e) => setEditAltMobile(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Company / Business</label>
+                  <input
+                    type="text"
+                    value={editCompany}
+                    onChange={(e) => setEditCompany(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">GSTIN Number</label>
+                  <input
+                    type="text"
+                    value={editGstNo}
+                    onChange={(e) => setEditGstNo(e.target.value)}
+                    placeholder="e.g. 27AAAAA0000A1Z5"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-mono uppercase"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Address</label>
+                <textarea
+                  rows={2}
+                  value={editAddress}
+                  onChange={(e) => setEditAddress(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">City</label>
+                  <input
+                    type="text"
+                    value={editCity}
+                    onChange={(e) => setEditCity(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">State</label>
+                  <input
+                    type="text"
+                    value={editState}
+                    onChange={(e) => setEditState(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">PIN Code</label>
+                  <input
+                    type="text"
+                    value={editPin}
+                    onChange={(e) => setEditPin(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(false)}
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl bg-[#4C82E6] hover:bg-[#3b71d5] text-white font-bold text-xs transition-colors shadow-2xs cursor-pointer"
+                >
+                  Save Profile
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Change Password Modal */}
+      {showChangePasswordModal && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <h3 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+                <Lock className="w-5 h-5 text-blue-600" />
+                Change Password
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowChangePasswordModal(false)}
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              if (!newPass) {
+                addNotification('Validation Error', 'Please enter a new password.', 'warning');
+                return;
+              }
+              if (newPass !== confirmPass) {
+                addNotification('Validation Error', 'Passwords do not match.', 'warning');
+                return;
+              }
+              setShowChangePasswordModal(false);
+              setCurrentPass('');
+              setNewPass('');
+              setConfirmPass('');
+              addNotification('Password Updated', 'Your account password has been changed successfully!', 'success');
+            }} className="space-y-4 mt-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Current Password</label>
+                <input
+                  type="password"
+                  required
+                  value={currentPass}
+                  onChange={(e) => setCurrentPass(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">New Password</label>
+                <input
+                  type="password"
+                  required
+                  value={newPass}
+                  onChange={(e) => setNewPass(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Confirm New Password</label>
+                <input
+                  type="password"
+                  required
+                  value={confirmPass}
+                  onChange={(e) => setConfirmPass(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowChangePasswordModal(false)}
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl bg-[#4C82E6] hover:bg-[#3b71d5] text-white font-bold text-xs transition-colors shadow-2xs cursor-pointer"
+                >
+                  Update Password
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Update GST Modal */}
+      {showUpdateGstModal && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <h3 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-blue-600" />
+                Update GST Details
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowUpdateGstModal(false)}
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const updated = {
+                ...user,
+                gstNo: gstInput,
+                company: gstCompanyInput
+              };
+              if (setUser) setUser(updated);
+              setShowUpdateGstModal(false);
+              addNotification('GST Saved', 'GSTIN and Business Company name updated successfully!', 'success');
+            }} className="space-y-4 mt-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Company / Business Name</label>
+                <input
+                  type="text"
+                  required
+                  value={gstCompanyInput}
+                  onChange={(e) => setGstCompanyInput(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">GSTIN Number</label>
+                <input
+                  type="text"
+                  required
+                  value={gstInput}
+                  onChange={(e) => setGstInput(e.target.value)}
+                  placeholder="e.g. 27AAAAA0000A1Z5"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-mono uppercase"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowUpdateGstModal(false)}
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl bg-[#4C82E6] hover:bg-[#3b71d5] text-white font-bold text-xs transition-colors shadow-2xs cursor-pointer"
+                >
+                  Save GST Info
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   );

@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { Search, ShoppingBag, Eye, Tag, AlertTriangle, CreditCard, ChevronRight, ChevronLeft, CheckCircle2, Truck, RefreshCw, Star, Info, ShieldAlert, X, Gift, Zap, Award, Building2, QrCode, Upload, Layers } from 'lucide-react';
+import { Search, ShoppingBag, Eye, Tag, AlertTriangle, CreditCard, ChevronRight, ChevronLeft, CheckCircle2, Truck, RefreshCw, Star, Info, ShieldAlert, X, Gift, Zap, Award, Building2, QrCode, Upload, Layers, Lock, ShieldCheck, FileText } from 'lucide-react';
 import { Product, Coupon, PromoBanner, Order, LicenseKey, B2BReseller } from '../types';
 import CategoryGrid from './CategoryGrid';
 // @ts-ignore
@@ -97,10 +97,12 @@ export default function CustomerWebsite({
         customPrice = matchingTier.price;
       }
     } else {
-      if (qty >= 20) discountPercentage = 12;
-      else if (qty >= 10) discountPercentage = 10;
-      else if (qty >= 5) discountPercentage = 5;
-      else if (qty >= 3) discountPercentage = 3;
+      if (qty >= 50) discountPercentage = 25;
+      else if (qty >= 30) discountPercentage = 20;
+      else if (qty >= 20) discountPercentage = 15;
+      else if (qty >= 10) discountPercentage = 12;
+      else if (qty >= 5) discountPercentage = 10;
+      else if (qty >= 2) discountPercentage = 5;
     }
 
     const unitPrice = customPrice !== undefined ? customPrice : Math.round(basePrice * (1 - discountPercentage / 100));
@@ -1552,6 +1554,7 @@ export default function CustomerWebsite({
   };
 
   // HIGH FIDELITY PRODUCT CARD AS SEEN IN SCREENSHOT
+  // HIGH FIDELITY PRODUCT CARD AS SEEN IN SCREENSHOT
   const renderScreenshotProductCard = (product: Product) => {
     const isSoftware = product.category === 'software';
     const badges = product.features && product.features.length > 0
@@ -1573,14 +1576,14 @@ export default function CustomerWebsite({
     return (
       <div 
         key={product.id} 
-        className="bg-white border border-slate-200/90 rounded-[28px] p-5 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group"
+        className="bg-white border border-slate-200/90 rounded-[28px] p-6 sm:p-7 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group min-h-[380px] sm:min-h-[430px]"
         id={`product-card-screenshot-${product.id}`}
       >
         <div>
           {/* Top side-by-side layout: Image and Product Info */}
           <div className="flex gap-4 items-start">
-            {/* Left: Product Cover Box */}
-            <div className="w-24 h-28 sm:h-32 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center p-2.5 flex-shrink-0 relative overflow-hidden group-hover:scale-[1.02] transition-transform">
+            {/* Left: Product Cover Box - 20% Height Increase */}
+            <div className="w-28 sm:w-36 h-36 sm:h-44 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center p-3 flex-shrink-0 relative overflow-hidden group-hover:scale-[1.02] transition-transform">
               <img 
                 src={product.image} 
                 alt={product.name} 
@@ -1610,7 +1613,7 @@ export default function CustomerWebsite({
               </h3>
 
               {/* Badges Box: Light green background with checkmarks */}
-              <div className="bg-[#f0fbf6] border border-[#d1f5e3]/60 rounded-2xl px-3 py-2.5 mt-2.5 space-y-1.5">
+              <div className="bg-[#f0fbf6] border border-[#d1f5e3]/60 rounded-2xl px-3.5 py-3 mt-3 space-y-2">
                 {badges.map((badge, idx) => (
                   <div key={idx} className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-[#0d5a3a] font-extrabold font-sans leading-none">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 fill-emerald-100" />
@@ -1622,9 +1625,9 @@ export default function CustomerWebsite({
           </div>
 
           {/* Price & Wallet Discount section */}
-          <div className="mt-4 flex flex-col text-left">
+          <div className="mt-5 flex flex-col text-left">
             <div className="flex items-baseline gap-1.5">
-              <span className="text-lg font-black text-slate-900 font-sans">
+              <span className="text-xl font-black text-slate-900 font-sans">
                 {priceDisplay}
               </span>
               {!hasCustomPriceDisplay && product.originalPrice && (
@@ -1647,7 +1650,7 @@ export default function CustomerWebsite({
         {/* View Details full-width solid blue button */}
         <button
           onClick={() => setSelectedProduct(product)}
-          className="mt-5 w-full py-3 bg-[#1a73e8] hover:bg-[#155cb0] text-white font-extrabold rounded-xl text-xs sm:text-sm tracking-wider transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer font-sans"
+          className="mt-6 w-full py-3.5 sm:py-4 bg-[#1a73e8] hover:bg-[#155cb0] text-white font-extrabold rounded-xl text-xs sm:text-sm tracking-wider transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer font-sans"
         >
           <Eye className="w-4 h-4" />
           <span>View Details</span>
@@ -1973,32 +1976,11 @@ export default function CustomerWebsite({
 
                 {/* Pricing grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
-                  {[1, 3, 5, 10, 30, 50].map((qty) => {
+                  {[1, 2, 5, 10, 20, 30, 50].map((qty) => {
                     // Calculate pricing for this package
-                    const basePrice = selectedProduct.price;
-                    let discountPercentage = 0;
-                    let customPrice: number | undefined = undefined;
-
-                    if (selectedProduct.bulkTiers && selectedProduct.bulkTiers.length > 0) {
-                      const sortedTiers = [...selectedProduct.bulkTiers].sort((a, b) => b.quantity - a.quantity);
-                      const matchingTier = sortedTiers.find(t => qty >= t.quantity);
-                      if (matchingTier) {
-                        discountPercentage = matchingTier.discountPercentage;
-                        customPrice = matchingTier.price;
-                      }
-                    } else {
-                      // Default progressive tiers for software keys
-                      if (qty >= 50) discountPercentage = 25;
-                      else if (qty >= 30) discountPercentage = 20;
-                      else if (qty >= 10) discountPercentage = 15;
-                      else if (qty >= 5) discountPercentage = 10;
-                      else if (qty >= 3) discountPercentage = 5;
-                    }
-
-                    const unitPrice = customPrice !== undefined ? customPrice : Math.round(basePrice * (1 - discountPercentage / 100));
-                    const totalOriginal = basePrice * qty;
-                    const totalActual = unitPrice * qty;
-                    const savings = Math.max(0, totalOriginal - totalActual);
+                    const pricing = getPricingForQty(selectedProduct, qty);
+                    const unitPrice = pricing.unitPrice;
+                    const savings = pricing.savings;
                     
                     // Card theme properties based on quantities to match user image reference
                     let cardBg = '';
@@ -2007,16 +1989,18 @@ export default function CustomerWebsite({
 
                     if (qty === 1) {
                       cardBg = 'from-[#511F3C] to-[#3a1327]'; // Deep plum / purple
-                    } else if (qty === 3) {
+                    } else if (qty === 2) {
                       cardBg = 'from-[#1D3557] to-[#11223f]'; // Deep navy blue
                     } else if (qty === 5) {
                       cardBg = 'from-[#2A9D8F] to-[#1e7268]'; // Teal / emerald
                     } else if (qty === 10) {
                       cardBg = 'from-[#4E1A3D] to-[#3b1331]'; // Plum / aubergine
-                    } else if (qty === 30) {
+                    } else if (qty === 20) {
                       cardBg = 'from-[#264653] to-[#1a303a]'; // Slate dark blue-green
+                    } else if (qty === 30) {
+                      cardBg = 'from-[#582C4D] to-[#3b1a32]'; // Purple maroon
                     } else {
-                      cardBg = 'from-[#6B5B95] to-[#4f4270]'; // Amethyst violet
+                      cardBg = 'from-[#2C5282] to-[#1A365D]'; // Deep blue
                     }
 
                     // Action callback for instant buy-now checkout experience
@@ -2532,7 +2516,7 @@ export default function CustomerWebsite({
               </div>
 
               {/* Below the banner, we show the products inside a standard container */}
-              <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-10 w-full flex-1">
+              <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-10 py-10 w-full flex-1">
                 <div className="mb-8 text-left">
                   <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight font-sans flex items-center gap-2.5">
                     <span>Genuine Super Saver Combo Products</span>
@@ -2567,7 +2551,7 @@ export default function CustomerWebsite({
 
             </div>
           ) : (
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full flex-1">
+            <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-10 py-10 flex-1">
               {/* Breadcrumb & Navigation */}
               <div className="flex items-center justify-between gap-4 mb-6" id="category-page-nav">
                 <div className="flex items-center gap-2 text-xs text-slate-500 font-medium font-sans">
@@ -2607,7 +2591,7 @@ export default function CustomerWebsite({
               </div>
 
               {/* Products Grid - Styled precisely like the screenshot */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6" id="category-products-grid">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="category-products-grid">
                 {filteredProducts.map(product => renderScreenshotProductCard(product))}
 
                 {filteredProducts.length === 0 && (
@@ -2628,7 +2612,7 @@ export default function CustomerWebsite({
           )}
         </div>
       ) : searchQuery || selectedCategory !== 'all' ? (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full flex-1">
+        <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-10 py-10 w-full flex-1">
           <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-5">
             <div>
               <span className="text-xs font-bold text-blue-600 uppercase tracking-widest font-mono">Store Search Filter</span>
@@ -2832,7 +2816,7 @@ export default function CustomerWebsite({
                   </div>
 
                   {/* Inside Frame Content */}
-                  <div className="relative z-10 max-w-7xl mx-auto px-6 py-5 sm:px-12 sm:py-8 lg:px-16 lg:py-10 flex flex-col lg:flex-row items-center justify-between gap-6 min-h-[200px] lg:min-h-[240px]">
+                  <div className="relative z-10 w-full max-w-[1920px] mx-auto px-6 py-5 sm:px-12 sm:py-8 lg:px-16 lg:py-10 flex flex-col lg:flex-row items-center justify-between gap-6 min-h-[200px] lg:min-h-[240px]">
                     
                     {/* Left Column: Rich elegant text content */}
                     <div className="space-y-4 max-w-xl text-center lg:text-left">
@@ -3050,19 +3034,15 @@ export default function CustomerWebsite({
           })()}
 
           {/* 6. SHOP BY CATEGORY SECTION */}
-          <section className="bg-slate-50 pt-4 pb-8 border-b border-slate-200" id="shop-by-category">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <section className="bg-slate-50/80 pt-6 pb-12 border-b border-slate-200/80 w-full" id="shop-by-category">
+            <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-10">
 
               {/* High Fidelity Visual Brand Categories Grid */}
               <div className="mb-0">
                 <CategoryGrid 
                   onSelectSubcategory={(subcat) => {
                     setSelectedSubcategory(subcat);
-                    // Automatically scroll to the product list for immediate feedback
-                    const targetSection = document.getElementById('popular-software');
-                    if (targetSection) {
-                      targetSection.scrollIntoView({ behavior: 'smooth' });
-                    }
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
                   selectedSubcategory={selectedSubcategory}
                   productsCount={subcategoryCountMap}
@@ -3079,7 +3059,7 @@ export default function CustomerWebsite({
               <div className="absolute bottom-0 right-0 w-48 h-48 bg-indigo-300/10 rounded-tl-full blur-xl pointer-events-none" />
               
               {/* Core container of the banner */}
-              <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 flex flex-col gap-6">
+              <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-10 flex flex-col gap-6">
                 
                 {/* Top thin status bar with capsule badge and tech headline */}
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pb-4 border-b border-blue-150/50">
@@ -3848,10 +3828,10 @@ export default function CustomerWebsite({
 
           {/* 10. WHY CHOOSE US SECTION */}
           <section className="bg-white py-16 border-b border-slate-200" id="why-choose-us">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-10">
               <div className="text-center max-w-xl mx-auto mb-12">
                 <span className="text-xs font-bold text-blue-600 uppercase tracking-widest font-mono">Our Quality Pledge</span>
-                <h2 className="text-3xl font-extrabold text-slate-900 mt-1 font-sans">Why Shri Saptashrungi & Hardware?</h2>
+                <h2 className="text-3xl font-extrabold text-slate-900 mt-1 font-sans">Why Veera Computers?</h2>
                 <p className="text-xs text-slate-500 mt-1">We bypass fake key vendors and unauthorized physical couriers.</p>
               </div>
 
@@ -3896,7 +3876,7 @@ export default function CustomerWebsite({
 
             return (
               <section className="bg-slate-50 py-10 border-t border-b border-slate-200" id="dynamic-offer-banner">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-10">
                   <div className="relative rounded-3xl overflow-hidden shadow-md border border-slate-200 h-40 flex items-center">
                     {/* Responsive image background */}
                     <div className="absolute inset-0">
@@ -3950,7 +3930,7 @@ export default function CustomerWebsite({
 
           {/* 11. FOOTER SECTION */}
           <footer className="bg-slate-900 text-slate-400 py-12 border-t border-slate-800" id="premium-footer">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-12 gap-8">
+            <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-10 grid grid-cols-1 md:grid-cols-12 gap-8">
               
               {/* Logo / Brand Info */}
               <div className="md:col-span-5 space-y-4">
@@ -3959,7 +3939,7 @@ export default function CustomerWebsite({
                     K
                   </div>
                   <span className="font-sans font-extrabold text-base tracking-tight text-white">
-                    Shri Saptashrungi & Hardware Corp
+                    Veera Computers
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 max-w-sm leading-relaxed">
@@ -3994,7 +3974,7 @@ export default function CustomerWebsite({
                   <li>
                     <button onClick={() => {
                       if (setUser) {
-                        setUser({ email: 'softkeylice@gmail.com', name: 'Saptashrungi Partner' });
+                        setUser({ email: 'softkeylice@gmail.com', name: 'Veera Computers Partner' });
                       } else {
                         addNotification('Error', 'User login service unavailable.', 'error');
                       }
@@ -4023,7 +4003,7 @@ export default function CustomerWebsite({
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-500">
-              <p>© 2026 Shri Saptashrungi & Hardware Corp. Sourced directly via standard wholesale licensing. All rights reserved.</p>
+              <p>© 2026 Veera Computers. Sourced directly via standard wholesale licensing. All rights reserved.</p>
               <p className="mt-2 sm:mt-0">Built with Antigravity AI Studio & React v19</p>
             </div>
           </footer>
@@ -4199,104 +4179,11 @@ export default function CustomerWebsite({
         </div>
       )}
 
-      {/* 4.5. High-fidelity Interactive Buy Now Dialog Box (Exactly matching user uploaded image reference) */}
+      {/* 4.5. High-fidelity Interactive Order Summary Dialog Box (Exactly matching user uploaded image reference) */}
       {isBuyNowModalOpen && buyNowProduct && (() => {
-        // Dynamically compute the packages to display in the grid based on bulkTiers configured in Admin
-        const packages: { quantity: number; label: string; unitPrice: number; totalActual: number; savings: number; discountPercentage: number; colorTheme: string; isPopular?: boolean }[] = [];
-        
-        // Always include Base Package (Buy 1 Unit)
-        packages.push({
-          quantity: 1,
-          label: "Buy 1 Unit",
-          ...getPricingForQty(buyNowProduct, 1),
-          colorTheme: "pink"
-        });
-
-        if (buyNowProduct.bulkTiers && buyNowProduct.bulkTiers.length > 0) {
-          // Sort by quantity ascending
-          const sortedTiers = [...buyNowProduct.bulkTiers].sort((a, b) => a.quantity - b.quantity);
-          sortedTiers.forEach((tier, idx) => {
-            const themes = ["blue", "teal", "purple", "amber", "cyan", "pink"];
-            const theme = themes[idx % themes.length];
-            packages.push({
-              quantity: tier.quantity,
-              label: `Buy ${tier.quantity} Units`,
-              ...getPricingForQty(buyNowProduct, tier.quantity),
-              colorTheme: theme,
-              isPopular: idx === 0 // Show "Most Popular" on the first bulk discount tier
-            });
-          });
-        } else {
-          // Default fallback packages when no bulkTiers are defined in admin panel
-          packages.push({
-            quantity: 5,
-            label: "Buy 5 Units",
-            ...getPricingForQty(buyNowProduct, 5),
-            colorTheme: "blue"
-          });
-          packages.push({
-            quantity: 10,
-            label: "Buy 10 Units",
-            ...getPricingForQty(buyNowProduct, 10),
-            colorTheme: "teal",
-            isPopular: true
-          });
-          packages.push({
-            quantity: 20,
-            label: "Buy 20 Units",
-            ...getPricingForQty(buyNowProduct, 20),
-            colorTheme: "purple"
-          });
-        }
-
         const currentPricing = getPricingForQty(buyNowProduct, buyNowQty);
         const originalPriceTotal = buyNowProduct.price * buyNowQty;
-        const discountTotal = originalPriceTotal - currentPricing.totalActual;
-
-        const getThemeClasses = (theme: string, isActive: boolean) => {
-          switch (theme) {
-            case "pink":
-              return isActive 
-                ? "bg-gradient-to-br from-[#511F3C] to-[#250b1a] border-2 border-pink-500 shadow-lg shadow-pink-500/10 scale-[1.02]" 
-                : "bg-gradient-to-br from-[#3b122d]/60 to-[#1d0515]/60 border border-pink-900/20 opacity-80 hover:opacity-100";
-            case "blue":
-              return isActive 
-                ? "bg-gradient-to-br from-[#12284C] to-[#061226] border-2 border-blue-500 shadow-lg shadow-blue-500/10 scale-[1.02]" 
-                : "bg-gradient-to-br from-[#0c1c38]/60 to-[#040a15]/60 border border-blue-900/20 opacity-80 hover:opacity-100";
-            case "teal":
-              return isActive 
-                ? "bg-gradient-to-br from-[#103E3E] to-[#041a1a] border-2 border-teal-400 shadow-lg shadow-teal-500/25 scale-[1.03]" 
-                : "bg-gradient-to-br from-[#0a2c2c]/60 to-[#021313]/60 border border-teal-900/30 opacity-80 hover:opacity-100";
-            case "purple":
-              return isActive 
-                ? "bg-gradient-to-br from-[#1B1535] to-[#080517] border-2 border-purple-500 shadow-lg shadow-purple-500/10 scale-[1.02]" 
-                : "bg-gradient-to-br from-[#120d26]/60 to-[#05030f]/60 border border-purple-900/20 opacity-80 hover:opacity-100";
-            case "amber":
-              return isActive 
-                ? "bg-gradient-to-br from-[#3d2a0d] to-[#1a1103] border-2 border-amber-500 shadow-lg shadow-amber-500/10 scale-[1.02]" 
-                : "bg-gradient-to-br from-[#241908]/60 to-[#100a03]/60 border border-amber-900/20 opacity-80 hover:opacity-100";
-            case "cyan":
-              return isActive 
-                ? "bg-gradient-to-br from-[#0a3140] to-[#03151c] border-2 border-cyan-500 shadow-lg shadow-cyan-500/10 scale-[1.02]" 
-                : "bg-gradient-to-br from-[#061d26]/60 to-[#020b0d]/60 border border-cyan-900/20 opacity-80 hover:opacity-100";
-            default:
-              return isActive 
-                ? "bg-gradient-to-br from-[#12284C] to-[#061226] border-2 border-blue-500 shadow-lg shadow-blue-500/10 scale-[1.02]" 
-                : "bg-gradient-to-br from-[#0c1c38]/60 to-[#040a15]/60 border border-blue-900/20 opacity-80 hover:opacity-100";
-          }
-        };
-
-        const getBadgeColor = (theme: string) => {
-          switch (theme) {
-            case "pink": return "bg-pink-500 text-slate-950";
-            case "blue": return "bg-blue-500 text-white";
-            case "teal": return "bg-teal-400 text-slate-950";
-            case "purple": return "bg-purple-500 text-white";
-            case "amber": return "bg-amber-400 text-slate-950";
-            case "cyan": return "bg-cyan-400 text-slate-950";
-            default: return "bg-teal-400 text-slate-950";
-          }
-        };
+        const discountTotal = currentPricing.savings;
 
         const handleSecurePay = () => {
           if (!user) {
@@ -4322,184 +4209,107 @@ export default function CustomerWebsite({
         };
 
         return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 p-4 overflow-y-auto backdrop-blur-sm" id="buy-now-dialog">
-            <div className="relative bg-[#1E2530] text-slate-100 rounded-3xl w-full max-w-5xl shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 animate-in zoom-in-95 duration-200 border border-slate-700/80">
+          <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-end p-4 sm:p-8 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200" id="buy-now-dialog">
+            <div className="relative bg-white rounded-3xl w-full max-w-sm sm:max-w-[360px] shadow-2xl overflow-hidden animate-in slide-in-from-right-8 duration-300 border border-slate-200/80 font-sans">
               
-              {/* Left Side: Pricing Cards Section (8 cols) */}
-              <div className="lg:col-span-8 p-6 sm:p-8 flex flex-col justify-between space-y-6">
+              {/* Header: Dark Blue Container with SECURE CHECKOUT Badge */}
+              <div className="bg-gradient-to-r from-[#12305B] via-[#1A4580] to-[#122A4E] text-white p-5 sm:p-6 relative text-center flex flex-col items-center justify-center">
                 
-                {/* Header Information */}
-                <div className="flex justify-between items-start">
-                  <div>
-                    <span className="text-[10px] text-amber-400 font-bold uppercase tracking-widest bg-amber-400/10 border border-amber-400/20 px-2.5 py-1 rounded-full">
-                      🔥 Super Saver Active
-                    </span>
-                    <h3 className="text-xl sm:text-2xl font-black text-white mt-2 leading-tight">
-                      {buyNowProduct.name}
-                    </h3>
-                    <p className="text-xs text-slate-400 mt-1">Select your tier package to activate wholesale prices automatically.</p>
+                {/* Top Pill Badge */}
+                <span className="inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider bg-blue-400/25 border border-blue-300/30 text-blue-100 px-3 py-1 rounded-full shadow-sm mb-2.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  SECURE CHECKOUT
+                </span>
+
+                {/* Shopping Cart Icon & Title */}
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white">
+                    <ShoppingBag className="w-4 h-4 text-blue-200" />
                   </div>
+                  <h4 className="text-xl font-black text-white font-sans tracking-tight">Order Summary</h4>
                 </div>
 
-                {/* The Dynamic Pricing Cards Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {packages.map((pkg) => {
-                    const isSelected = buyNowQty === pkg.quantity;
-                    return (
-                      <div 
-                        key={pkg.quantity}
-                        onClick={() => { setBuyNowQty(pkg.quantity); setBuyNowSelectedTier(pkg.quantity); }}
-                        className={`relative rounded-2xl p-4 cursor-pointer transition-all duration-200 flex flex-col justify-between ${getThemeClasses(pkg.colorTheme, isSelected)}`}
-                      >
-                        {pkg.isPopular && (
-                          <div className={`absolute -top-2.5 right-3 ${getBadgeColor(pkg.colorTheme)} text-[8px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-md tracking-wider`}>
-                            MOST POPULAR
-                          </div>
-                        )}
-                        <div className="space-y-1">
-                          <p className="text-xs font-bold text-white/90">{pkg.label}</p>
-                          <p className="text-2xl font-black font-sans text-white">
-                            ₹{pkg.unitPrice} {pkg.quantity > 1 && <span className="text-xs text-white/50 font-medium">/unit</span>}
-                          </p>
-                        </div>
-                        <div className="mt-4 flex items-center justify-between gap-1.5 flex-wrap">
-                          <span className="inline-flex items-center gap-1 bg-white/10 text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                            <span className="w-1 h-1 rounded-full bg-emerald-400"></span>
-                            GST Inclusive
-                          </span>
-                          {pkg.savings > 0 && (
-                            <span className="text-[9px] text-emerald-300 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-lg uppercase tracking-wider">
-                              SAVE ₹{pkg.savings.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Bottom Section: Quantity Selection Counter and Giant Green BUY NOW Button */}
-                <div className="bg-slate-900/35 border border-slate-700/30 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-slate-300 font-bold uppercase tracking-wider font-mono">Quantity:</span>
-                    <div className="flex items-center border border-slate-700 rounded-xl bg-slate-800 p-1">
-                      <button 
-                        type="button"
-                        onClick={() => {
-                          const newQty = Math.max(1, buyNowQty - 1);
-                          setBuyNowQty(newQty);
-                        }}
-                        className="w-8 h-8 flex items-center justify-center font-bold text-slate-300 hover:bg-slate-700 rounded-lg transition-colors"
-                      >
-                        -
-                      </button>
-                      <span className="w-12 text-center font-black text-sm font-mono text-white">{buyNowQty}</span>
-                      <button 
-                        type="button"
-                        onClick={() => {
-                          const newQty = buyNowQty + 1;
-                          setBuyNowQty(newQty);
-                        }}
-                        className="w-8 h-8 flex items-center justify-center font-bold text-slate-300 hover:bg-slate-700 rounded-lg transition-colors"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-
-                  <button 
-                    type="button"
-                    onClick={handleSecurePay}
-                    className="w-full sm:w-auto px-10 py-3.5 bg-gradient-to-r from-emerald-600 to-green-700 hover:from-emerald-500 hover:to-green-600 text-white font-black text-sm rounded-xl tracking-wider uppercase font-sans transition-all duration-150 hover:scale-[1.02] active:scale-95 shadow-lg shadow-emerald-950/20 cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    <Zap className="w-4 h-4" />
-                    <span>BUY NOW</span>
-                  </button>
-                </div>
-
+                {/* Close 'X' Circular Button */}
+                <button 
+                  type="button"
+                  onClick={() => setIsBuyNowModalOpen(false)}
+                  className="absolute top-4 right-4 w-7 h-7 bg-white/15 hover:bg-white/25 text-white rounded-full flex items-center justify-center transition-colors cursor-pointer"
+                  title="Close Summary"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
 
-              {/* Right Side: Order Summary Panel (4 cols) */}
-              <div className="lg:col-span-4 bg-[#242C3D] border-t lg:border-t-0 lg:border-l border-slate-700/50 p-6 flex flex-col justify-between relative">
+              {/* White Card Body */}
+              <div className="p-5 sm:p-6 space-y-4 bg-white text-slate-800">
                 
-                {/* Secure Badge & Close button */}
-                <div className="flex items-center justify-between gap-2 mb-4">
-                  <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider bg-blue-500 text-white px-2.5 py-1 rounded-full shadow-sm">
-                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
-                    SECURE CHECKOUT
-                  </span>
-                  
-                  <button 
-                    type="button"
-                    onClick={() => setIsBuyNowModalOpen(false)}
-                    className="p-1 hover:bg-slate-700 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-
-                {/* Title */}
-                <div className="space-y-4 mb-6">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400">
-                      <ShoppingBag className="w-4 h-4" />
-                    </div>
-                    <h4 className="text-base font-black text-white font-sans">Order Summary</h4>
+                {/* Item & Quantity Selector Header */}
+                <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3 flex items-center justify-between gap-2 text-xs">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-slate-900 truncate">{buyNowProduct.name}</p>
+                    <p className="text-[10px] text-slate-500 font-mono">₹{currentPricing.unitPrice.toFixed(2)} / unit</p>
                   </div>
-
-                  {/* Inner White Billing Card */}
-                  <div className="bg-white text-slate-800 rounded-2xl p-5 space-y-4 shadow-xl">
-                    <div className="space-y-2 text-xs">
-                      
-                      <div className="flex justify-between items-center text-slate-500">
-                        <span>Subtotal ({buyNowQty} x ₹{buyNowProduct.price.toFixed(2)})</span>
-                        <span className="font-semibold text-slate-800">Rs. {originalPriceTotal.toFixed(2)}</span>
-                      </div>
-
-                      {discountTotal > 0 && (
-                        <div className="flex justify-between items-center text-emerald-600 font-extrabold bg-emerald-50 px-2 py-1.5 rounded-lg border border-emerald-100">
-                          <span>Wallet Discount</span>
-                          <span>- Rs. {discountTotal.toFixed(2)}</span>
-                        </div>
-                      )}
-
-                    </div>
-
-                    <div className="border-t border-slate-100 pt-3 flex justify-between items-center">
-                      <span className="text-xs font-bold text-slate-700">Payable Amount</span>
-                      <span className="text-base font-black text-blue-600 font-sans">Rs. {currentPricing.totalActual.toFixed(2)}</span>
-                    </div>
-
+                  <div className="flex items-center border border-slate-300 rounded-xl bg-white p-0.5 shrink-0">
                     <button 
                       type="button"
-                      onClick={handleSecurePay}
-                      className="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs rounded-xl shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 hover:scale-[1.01] active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5 font-sans uppercase tracking-wider"
+                      onClick={() => setBuyNowQty(prev => Math.max(1, prev - 1))}
+                      className="w-6 h-6 flex items-center justify-center font-bold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
                     >
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                      <span>Pay Securely Now</span>
+                      -
+                    </button>
+                    <span className="w-7 text-center font-black text-xs font-mono text-slate-900">{buyNowQty}</span>
+                    <button 
+                      type="button"
+                      onClick={() => setBuyNowQty(prev => prev + 1)}
+                      className="w-6 h-6 flex items-center justify-center font-bold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                    >
+                      +
                     </button>
                   </div>
                 </div>
 
-                {/* Assurance Trust items */}
-                <div className="border-t border-slate-700/50 pt-4 space-y-3">
-                  <div className="flex items-center gap-2 text-xs text-slate-300">
-                    <span className="w-5 h-5 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500 shrink-0">
-                      ⚡
-                    </span>
-                    <span className="font-semibold text-[11px]">Instant Delivery</span>
+                {/* Pricing Breakdown Rows */}
+                <div className="space-y-2.5 text-xs sm:text-sm">
+                  
+                  <div className="flex justify-between items-center text-slate-600 font-medium">
+                    <span>Subtotal ({buyNowQty} x ₹{currentPricing.unitPrice.toFixed(2)})</span>
+                    <span className="font-bold text-slate-900">Rs. {(currentPricing.unitPrice * buyNowQty).toFixed(2)}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-slate-300">
-                    <span className="w-5 h-5 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 shrink-0">
-                      📄
-                    </span>
-                    <span className="font-semibold text-[11px]">GST Invoice Available</span>
+
+                  <div className="flex justify-between items-center text-emerald-600 font-extrabold">
+                    <span>Wallet Discount</span>
+                    <span>- Rs. {discountTotal.toFixed(2)}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-slate-300">
-                    <span className="w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400 shrink-0">
-                      🛡️
-                    </span>
-                    <span className="font-semibold text-[11px]">Genuine License dispatch</span>
+
+                  <div className="border-t border-slate-150 pt-3 flex justify-between items-center">
+                    <span className="text-xs sm:text-sm font-extrabold text-slate-800">Payable Amount</span>
+                    <span className="text-lg sm:text-xl font-black text-[#155cb0] font-sans">Rs. {currentPricing.totalActual.toFixed(2)}</span>
+                  </div>
+                </div>
+
+                {/* Action Pay Button */}
+                <button 
+                  type="button"
+                  onClick={handleSecurePay}
+                  className="w-full py-3.5 bg-[#1a73e8] hover:bg-[#155cb0] text-white font-black text-xs sm:text-sm rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2 font-sans uppercase tracking-wider active:scale-[0.98]"
+                >
+                  <Lock className="w-4 h-4" />
+                  <span>Pay Securely Now</span>
+                </button>
+
+                {/* Trust Badges */}
+                <div className="border-t border-slate-100 pt-4 space-y-2.5 text-xs text-slate-600">
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-amber-500 shrink-0 fill-amber-100" />
+                    <span className="font-bold text-slate-700">Instant Delivery</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-blue-500 shrink-0" />
+                    <span className="font-bold text-slate-700">GST Invoice</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 fill-emerald-100" />
+                    <span className="font-bold text-slate-700">Genuine License</span>
                   </div>
                 </div>
 

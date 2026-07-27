@@ -685,10 +685,12 @@ INSERT INTO public.banners (id, title, subtitle, image, link_text, active, theme
 ON CONFLICT (id) DO NOTHING;
 
 -- ======================================================================
--- 7. STORAGE BUCKET CREATION & PUBLIC RLS POLICIES FOR PRODUCT IMAGES
+-- 7. STORAGE BUCKET CREATION & PUBLIC RLS POLICIES FOR PRODUCT & BANNER IMAGES
 -- ======================================================================
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-VALUES ('product-images', 'product-images', true, 5242880, ARRAY['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'])
+VALUES 
+  ('product-images', 'product-images', true, 10485760, ARRAY['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']),
+  ('banner-images', 'banner-images', true, 10485760, ARRAY['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'])
 ON CONFLICT (id) DO UPDATE SET 
   public = EXCLUDED.public,
   file_size_limit = EXCLUDED.file_size_limit,
@@ -698,9 +700,9 @@ DROP POLICY IF EXISTS "Allow Public Read Access to Product Images" ON storage.ob
 DROP POLICY IF EXISTS "Allow Public/Admin Upload Access to Product Images" ON storage.objects;
 DROP POLICY IF EXISTS "Allow Public/Admin Delete Access to Product Images" ON storage.objects;
 
-CREATE POLICY "Allow Public Read Access to Product Images" ON storage.objects FOR SELECT USING (bucket_id = 'product-images');
-CREATE POLICY "Allow Public/Admin Upload Access to Product Images" ON storage.objects FOR INSERT TO public WITH CHECK (bucket_id = 'product-images');
-CREATE POLICY "Allow Public/Admin Delete Access to Product Images" ON storage.objects FOR DELETE TO public USING (bucket_id = 'product-images');
+CREATE POLICY "Allow Public Read Access to Product Images" ON storage.objects FOR SELECT USING (bucket_id IN ('product-images', 'banner-images'));
+CREATE POLICY "Allow Public/Admin Upload Access to Product Images" ON storage.objects FOR INSERT TO public WITH CHECK (bucket_id IN ('product-images', 'banner-images'));
+CREATE POLICY "Allow Public/Admin Delete Access to Product Images" ON storage.objects FOR DELETE TO public USING (bucket_id IN ('product-images', 'banner-images'));
 
 -- ==========================================
 -- 8. INITIALIZE WHATSAPP & NOTIFICATION CONFIG CONTAINER

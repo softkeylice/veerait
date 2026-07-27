@@ -57,7 +57,30 @@ function ToastItem({ notif, onClose }: { notif: AppNotification; onClose: () => 
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<'store' | 'dashboard' | 'admin' | 'tracking' | 'b2b-signup'>('store');
-  const [user, setUser] = useState<{ email: string; name: string; phone?: string; id?: string; address?: string; role?: string } | null>(null);
+  const [user, setUserState] = useState<{ email: string; name: string; phone?: string; id?: string; address?: string; role?: string; gstNo?: string; company?: string; alternateMobile?: string; city?: string; state?: string; pin?: string } | null>(() => {
+    try {
+      const saved = localStorage.getItem('supabase_user_session');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const setUser = (newUser: { email: string; name: string; phone?: string; id?: string; address?: string; role?: string; gstNo?: string; company?: string; alternateMobile?: string; city?: string; state?: string; pin?: string } | null | ((prev: any) => any)) => {
+    setUserState(prev => {
+      const updated = typeof newUser === 'function' ? newUser(prev) : newUser;
+      if (updated) {
+        localStorage.setItem('supabase_user_session', JSON.stringify(updated));
+      } else {
+        localStorage.removeItem('supabase_user_session');
+        localStorage.removeItem('session_token');
+        localStorage.removeItem('customer_session_token');
+        localStorage.removeItem('admin_session_token');
+      }
+      return updated;
+    });
+  };
+
   const [cart, setCart] = useState<{ product: Product; quantity: number }[]>(() => {
     try {
       const saved = localStorage.getItem('supabase_cart');
@@ -115,6 +138,85 @@ export default function App() {
     const saved = localStorage.getItem('supabase_coupons');
     return saved ? JSON.parse(saved) : INITIAL_COUPONS;
   });
+
+  // History & Back/Forward Navigation tracking
+  const isPopStateRef = React.useRef(false);
+  const isInitialRender = React.useRef(true);
+
+  // Initialize browser history state on mount
+  useEffect(() => {
+    const initialState = {
+      screen: currentScreen,
+      category: selectedCategory,
+      subcategory: selectedSubcategory,
+      productId: selectedProduct?.id || null
+    };
+    if (!window.history.state) {
+      window.history.replaceState(initialState, '');
+    }
+  }, []);
+
+  // Synchronize state changes with browser history (pushState)
+  useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+
+    if (isPopStateRef.current) {
+      isPopStateRef.current = false;
+      return;
+    }
+
+    const newState = {
+      screen: currentScreen,
+      category: selectedCategory,
+      subcategory: selectedSubcategory,
+      productId: selectedProduct?.id || null
+    };
+
+    const currentState = window.history.state;
+    if (
+      !currentState ||
+      currentState.screen !== newState.screen ||
+      currentState.category !== newState.category ||
+      currentState.subcategory !== newState.subcategory ||
+      currentState.productId !== newState.productId
+    ) {
+      window.history.pushState(newState, '');
+    }
+  }, [currentScreen, selectedCategory, selectedSubcategory, selectedProduct]);
+
+  // Handle Browser Back and Forward buttons (popstate) without logging user out
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      const state = event.state;
+      isPopStateRef.current = true;
+
+      if (state) {
+        if (state.screen) setCurrentScreen(state.screen);
+        if (state.category !== undefined) setSelectedCategory(state.category);
+        if (state.subcategory !== undefined) setSelectedSubcategory(state.subcategory);
+        if (state.productId !== undefined) {
+          if (state.productId) {
+            const found = products.find(p => p.id === state.productId) || null;
+            setSelectedProduct(found);
+          } else {
+            setSelectedProduct(null);
+          }
+        }
+      } else {
+        // Fallback default state
+        setCurrentScreen('store');
+        setSelectedCategory('all');
+        setSelectedSubcategory(null);
+        setSelectedProduct(null);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [products]);
 
   const [banners, setBannersState] = useState<PromoBanner[]>(() => {
     const saved = localStorage.getItem('supabase_banners');
@@ -1340,6 +1442,11 @@ export default function App() {
               addNotification={addNotification}
               setCurrentScreen={setCurrentScreen}
               setUser={setUser}
+              handleLogout={() => {
+                setUser(null);
+                setCurrentScreen('store');
+                addNotification('Logged Out', 'You have been signed out successfully.', 'info');
+              }}
               resellers={resellers}
               setResellers={setResellers}
               walletTransactions={walletTransactions}

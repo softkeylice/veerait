@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { ShoppingCart, ShieldCheck, LogIn, LogOut, Menu, X, User, Search, ChevronDown, Zap, Shield, Award, Truck, Home, Phone, HelpCircle, LayoutDashboard } from 'lucide-react';
+import { ShoppingCart, ShieldCheck, LogIn, LogOut, Menu, X, User, Search, ChevronDown, Zap, Shield, Award, Truck, Home, Phone, HelpCircle, LayoutDashboard, Coins, Wallet, FileText, UserCheck, Plus } from 'lucide-react';
 import { Product } from '../types';
 import { BRAND_CATEGORIES } from './CategoryGrid';
 
@@ -64,7 +64,7 @@ export default function CustomerHeader({
     <div className="w-full flex flex-col" id="customer-header-container">
       {/* 1. TOP INFORMATION BAR (Black Theme) */}
       <div className="bg-black text-white text-[11px] md:text-xs py-2 px-4 shadow-sm font-medium border-b border-zinc-800" id="top-info-bar">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-1.5 sm:gap-4">
+        <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-10 flex flex-col sm:flex-row items-center justify-between gap-1.5 sm:gap-4">
           <div className="flex items-center gap-5">
             <span className="flex items-center gap-1.5 text-zinc-300">
               <Phone className="w-3.5 h-3.5 text-[#8cc33f]" />
@@ -90,7 +90,7 @@ export default function CustomerHeader({
 
       {/* 2. THE MAIN WOOCOMMERCE HEADER */}
       <header className="bg-white border-b border-slate-200 text-slate-800 shadow-sm" id="customer-header">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-10">
           <div className="flex items-center justify-between h-20 gap-4">
             
             {/* Logo matching pcdealsindia.com */}
@@ -316,9 +316,102 @@ export default function CustomerHeader({
         </div>
       </header>
 
+      {/* 2.5. LOGGED-IN CUSTOMER DASHBOARD WIDGET BAR (Displayed above menu whenever customer is logged in) */}
+      {user && user.role !== 'admin' && (
+        <div className="bg-slate-50/90 border-b border-slate-200/80 py-2.5 px-4 sm:px-6 lg:px-10 font-sans" id="customer-logged-in-widget-bar">
+          <div className="w-full max-w-[1920px] mx-auto bg-white border border-slate-200/90 rounded-2xl p-2.5 sm:p-3.5 shadow-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-4">
+              
+              {/* Box 1: Welcome back! */}
+              <div className="bg-slate-50/70 border border-slate-100/90 rounded-xl p-2.5 sm:p-3 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-emerald-100/80 text-emerald-600 flex items-center justify-center shrink-0">
+                  <UserCheck className="w-5 h-5 text-emerald-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] text-slate-500 font-medium leading-none">Welcome back!</p>
+                  <p className="text-xs sm:text-sm font-extrabold text-slate-800 mt-1 truncate">
+                    Hi, {user.name || 'Krishna Salunke'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Box 2: Cash Back Wallet */}
+              <div className="bg-slate-50/70 border border-slate-100/90 rounded-xl p-2.5 sm:p-3 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-amber-100/80 text-amber-500 flex items-center justify-center shrink-0">
+                  <Coins className="w-5 h-5 text-amber-500" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] text-slate-500 font-medium leading-none">Cash Back Wallet</p>
+                  <p className="text-sm sm:text-base font-black text-slate-900 mt-1 font-sans">
+                    Rs 100
+                  </p>
+                </div>
+              </div>
+
+              {/* Box 3: Prepaid Balance */}
+              <div className="bg-slate-50/70 border border-slate-100/90 rounded-xl p-2.5 sm:p-3 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-9 h-9 rounded-full bg-emerald-100/80 text-emerald-600 flex items-center justify-center shrink-0">
+                    <Wallet className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] text-slate-500 font-medium leading-none">Prepaid Balance</p>
+                    <p className="text-sm sm:text-base font-black text-slate-900 mt-1 font-sans">
+                      Rs 0
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    addNotification('Add Money', 'Prepaid balance wallet recharge option selected. UPI & NetBanking support ready.', 'info');
+                  }}
+                  className="border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 font-extrabold text-[10px] px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md transition-all shadow-2xs cursor-pointer shrink-0"
+                >
+                  + Add Money
+                </button>
+              </div>
+
+              {/* Box 4: My Orders */}
+              <div 
+                onClick={() => setCurrentScreen('tracking')}
+                className="bg-slate-50/70 border border-slate-100/90 hover:border-blue-200 hover:bg-blue-50/40 rounded-xl p-2.5 sm:p-3 flex items-center gap-3 cursor-pointer transition-all group"
+              >
+                <div className="w-9 h-9 rounded-full bg-blue-100/80 text-blue-600 flex items-center justify-center shrink-0 group-hover:bg-blue-200/80 transition-colors">
+                  <FileText className="w-5 h-5 text-blue-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] text-slate-500 font-medium leading-none">My Orders</p>
+                  <p className="text-xs font-bold text-slate-800 group-hover:text-blue-600 mt-1 transition-colors">
+                    View & Track
+                  </p>
+                </div>
+              </div>
+
+              {/* Box 5: My Profile */}
+              <div 
+                onClick={() => setCurrentScreen('dashboard')}
+                className="bg-slate-50/70 border border-slate-100/90 hover:border-cyan-200 hover:bg-cyan-50/40 rounded-xl p-2.5 sm:p-3 flex items-center gap-3 cursor-pointer transition-all group"
+              >
+                <div className="w-9 h-9 rounded-full bg-cyan-100/80 text-cyan-500 flex items-center justify-center shrink-0 group-hover:bg-cyan-200/80 transition-colors">
+                  <User className="w-5 h-5 text-cyan-500" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] text-slate-500 font-medium leading-none">My Profile</p>
+                  <p className="text-xs font-bold text-slate-800 group-hover:text-cyan-600 mt-1 transition-colors">
+                    View & Edit
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 3. HORIZONTAL CATEGORY MENU (Dark Black Navigation matching pcdealsindia.com) */}
       <div className="bg-[#0c1320] border-b border-slate-950 text-white text-xs py-2 shadow-md" id="category-menu">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-2">
+        <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-10 flex flex-col gap-2">
           
           {/* Row 1: Main Products & Core Microsoft Suites */}
           <div className="flex items-center justify-between overflow-x-auto whitespace-nowrap scrollbar-none gap-4">
@@ -359,6 +452,7 @@ export default function CustomerHeader({
                       setSelectedCategory('all');
                       setSearchQuery('');
                       if (setSelectedProduct) setSelectedProduct(null);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
                     className={`flex items-center gap-1.5 px-3 py-2 rounded text-xs font-bold transition-all uppercase cursor-pointer ${
                       isActive
@@ -424,6 +518,7 @@ export default function CustomerHeader({
                       setSelectedCategory('all');
                       setSearchQuery('');
                       if (setSelectedProduct) setSelectedProduct(null);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-[11px] font-bold transition-all uppercase cursor-pointer ${
                       isActive
