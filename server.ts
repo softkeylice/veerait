@@ -3517,18 +3517,21 @@ app.use(async (req, res, next) => {
       const compiled = await fulfillOrderOnBackend(orderId, verifiedTxnId, payment);
 
       if (isSupabaseConfigured && supabaseServer) {
-        await supabaseServer
-          .from("payments")
-          .insert({
-            id: `paytm-${Date.now()}-${Math.random().toString(36).substring(2,6)}`,
-            order_id: orderId,
-            amount: payment.amount,
-            payment_method: `paytm_pg_${mode || 'direct'}`,
-            payment_status: "paid",
-            gateway_response: { orderId, txnId: verifiedTxnId, mode, verifiedAt: new Date().toISOString() },
-            created_at: new Date().toISOString()
-          })
-          .catch(e => console.error("[PAYTM PG DB ERROR]", e));
+        try {
+          await supabaseServer
+            .from("payments")
+            .insert({
+              id: `paytm-${Date.now()}-${Math.random().toString(36).substring(2,6)}`,
+              order_id: orderId,
+              amount: payment.amount,
+              payment_method: `paytm_pg_${mode || 'direct'}`,
+              payment_status: "paid",
+              gateway_response: { orderId, txnId: verifiedTxnId, mode, verifiedAt: new Date().toISOString() },
+              created_at: new Date().toISOString()
+            });
+        } catch (e) {
+          console.error("[PAYTM PG DB ERROR]", e);
+        }
       }
 
       return res.json({

@@ -55,8 +55,109 @@ function ToastItem({ notif, onClose }: { notif: AppNotification; onClose: () => 
   );
 }
 
+function parseStateFromUrl(productList: Product[] = []) {
+  try {
+    const rawPath = window.location.pathname.toLowerCase().replace(/^\/+|\/+$/g, '');
+    const rawHash = window.location.hash.toLowerCase().replace(/^#+/, '');
+    const params = new URLSearchParams(window.location.search);
+    
+    let screen: 'store' | 'dashboard' | 'admin' | 'tracking' | 'b2b-signup' | 'about' | 'contact' | 'privacy' | 'shipping' = 'store';
+    let category: 'all' | 'software' | 'hardware' = 'all';
+    let subcategory: string | null = null;
+    let selectedProduct: Product | null = null;
+
+    const pageParam = (params.get('page') || params.get('screen') || '').toLowerCase();
+    
+    // Privacy Policy detection
+    const isPrivacy = 
+      rawPath === 'privacy' || rawPath === 'privacy-policy' || rawPath === 'privacy.html' || rawPath === 'privacy-policy.html' ||
+      rawHash === 'privacy' || rawHash === 'privacy-policy' ||
+      pageParam === 'privacy' || pageParam === 'privacy-policy' ||
+      params.has('privacy') || params.has('privacy-policy');
+
+    // Shipping Policy detection
+    const isShipping = 
+      rawPath === 'shipping' || rawPath === 'shipping-policy' || rawPath === 'shipping.html' || rawPath === 'shipping-policy.html' || rawPath === 'return-policy' || rawPath === 'refund-policy' ||
+      rawHash === 'shipping' || rawHash === 'shipping-policy' ||
+      pageParam === 'shipping' || pageParam === 'shipping-policy' ||
+      params.has('shipping') || params.has('shipping-policy');
+
+    // About Us detection
+    const isAbout = 
+      rawPath === 'about' || rawPath === 'about-us' || rawPath === 'about.html' || rawPath === 'about-us.html' ||
+      rawHash === 'about' || rawHash === 'about-us' ||
+      pageParam === 'about' || pageParam === 'about-us' ||
+      params.has('about');
+
+    // Contact Us detection
+    const isContact = 
+      rawPath === 'contact' || rawPath === 'contact-us' || rawPath === 'contact.html' || rawPath === 'contact-us.html' ||
+      rawHash === 'contact' || rawHash === 'contact-us' ||
+      pageParam === 'contact' || pageParam === 'contact-us' ||
+      params.has('contact');
+
+    // B2B Signup detection
+    const isB2B = 
+      rawPath === 'b2b' || rawPath === 'b2b-signup' || rawPath === 'reseller' ||
+      rawHash === 'b2b' || rawHash === 'b2b-signup' ||
+      pageParam === 'b2b' || pageParam === 'b2b-signup' ||
+      params.has('b2b');
+
+    // Tracking detection
+    const isTracking = 
+      rawPath === 'tracking' || rawPath === 'track' || rawPath === 'order-tracking' ||
+      rawHash === 'tracking' || rawHash === 'track' ||
+      pageParam === 'tracking' || pageParam === 'track' ||
+      params.has('tracking');
+
+    // Admin detection
+    const isAdmin = rawPath === 'admin' || rawHash === 'admin' || pageParam === 'admin' || params.has('admin');
+
+    // Dashboard detection
+    const isDashboard = rawPath === 'dashboard' || rawHash === 'dashboard' || pageParam === 'dashboard' || params.has('dashboard');
+
+    if (isPrivacy) screen = 'privacy';
+    else if (isShipping) screen = 'shipping';
+    else if (isAbout) screen = 'about';
+    else if (isContact) screen = 'contact';
+    else if (isB2B) screen = 'b2b-signup';
+    else if (isTracking) screen = 'tracking';
+    else if (isAdmin) screen = 'admin';
+    else if (isDashboard) screen = 'dashboard';
+
+    // Category parsing
+    const catParam = (params.get('category') || params.get('cat') || '').toLowerCase();
+    if (catParam === 'software' || catParam === 'hardware') {
+      category = catParam as 'software' | 'hardware';
+    } else if (rawHash.includes('software')) {
+      category = 'software';
+    } else if (rawHash.includes('hardware')) {
+      category = 'hardware';
+    }
+
+    // Subcategory parsing
+    const subParam = params.get('subcategory') || params.get('sub');
+    if (subParam) {
+      subcategory = subParam;
+    }
+
+    // Product parsing
+    const prodIdParam = params.get('product') || params.get('prod') || params.get('id');
+    if (prodIdParam && productList.length > 0) {
+      const found = productList.find(p => p.id.toLowerCase() === prodIdParam.toLowerCase());
+      if (found) selectedProduct = found;
+    }
+
+    return { screen, category, subcategory, selectedProduct };
+  } catch {
+    return { screen: 'store' as const, category: 'all' as const, subcategory: null, selectedProduct: null };
+  }
+}
+
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<'store' | 'dashboard' | 'admin' | 'tracking' | 'b2b-signup' | 'about' | 'contact' | 'privacy' | 'shipping'>('store');
+  const [currentScreen, setCurrentScreen] = useState<'store' | 'dashboard' | 'admin' | 'tracking' | 'b2b-signup' | 'about' | 'contact' | 'privacy' | 'shipping'>(() => {
+    return parseStateFromUrl(INITIAL_PRODUCTS).screen;
+  });
   const [user, setUserState] = useState<{ email: string; name: string; phone?: string; id?: string; address?: string; role?: string; gstNo?: string; company?: string; alternateMobile?: string; city?: string; state?: string; pin?: string } | null>(() => {
     try {
       const saved = localStorage.getItem('supabase_user_session');
@@ -91,8 +192,12 @@ export default function App() {
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<'all' | 'software' | 'hardware'>('all');
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'software' | 'hardware'>(() => {
+    return parseStateFromUrl(INITIAL_PRODUCTS).category;
+  });
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(() => {
+    return parseStateFromUrl(INITIAL_PRODUCTS).subcategory;
+  });
 
   // Authentication & Add-to-cart intercepts state
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -107,7 +212,9 @@ export default function App() {
     }
   };
   const [pendingProduct, setPendingProduct] = useState<Product | null>(null);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(() => {
+    return parseStateFromUrl(INITIAL_PRODUCTS).selectedProduct;
+  });
 
   // Core database states (Dual mode: local cache fallback vs Live Supabase)
   const [products, setProductsState] = useState<Product[]>(() => {
@@ -168,6 +275,42 @@ export default function App() {
       return;
     }
 
+    const searchParams = new URLSearchParams(window.location.search);
+    
+    // Clear state params before setting active ones
+    searchParams.delete('page');
+    searchParams.delete('screen');
+    searchParams.delete('category');
+    searchParams.delete('cat');
+    searchParams.delete('sub');
+    searchParams.delete('subcategory');
+    searchParams.delete('product');
+    searchParams.delete('prod');
+    searchParams.delete('id');
+
+    let newHash = '';
+
+    if (currentScreen !== 'store') {
+      searchParams.set('page', currentScreen);
+      newHash = `#${currentScreen}`;
+    } else {
+      if (selectedProduct) {
+        searchParams.set('product', selectedProduct.id);
+        newHash = `#product=${selectedProduct.id}`;
+      } else if (selectedSubcategory) {
+        if (selectedCategory !== 'all') searchParams.set('category', selectedCategory);
+        searchParams.set('sub', selectedSubcategory);
+        newHash = `#category=${selectedCategory}&sub=${encodeURIComponent(selectedSubcategory)}`;
+      } else if (selectedCategory !== 'all') {
+        searchParams.set('category', selectedCategory);
+        newHash = `#category=${selectedCategory}`;
+      }
+    }
+
+    const searchStr = searchParams.toString();
+    const newTarget = (searchStr ? `?${searchStr}` : '') + newHash;
+    const currentTarget = window.location.search + window.location.hash;
+
     const newState = {
       screen: currentScreen,
       category: selectedCategory,
@@ -175,47 +318,28 @@ export default function App() {
       productId: selectedProduct?.id || null
     };
 
-    const currentState = window.history.state;
-    if (
-      !currentState ||
-      currentState.screen !== newState.screen ||
-      currentState.category !== newState.category ||
-      currentState.subcategory !== newState.subcategory ||
-      currentState.productId !== newState.productId
-    ) {
-      window.history.pushState(newState, '');
+    if (currentTarget !== newTarget) {
+      window.history.pushState(newState, '', window.location.pathname + newTarget);
     }
   }, [currentScreen, selectedCategory, selectedSubcategory, selectedProduct]);
 
-  // Handle Browser Back and Forward buttons (popstate) without logging user out
+  // Handle Browser Back/Forward buttons and direct URL hash changes
   useEffect(() => {
-    const handlePopState = (event: PopStateEvent) => {
-      const state = event.state;
+    const handleUrlChange = () => {
       isPopStateRef.current = true;
-
-      if (state) {
-        if (state.screen) setCurrentScreen(state.screen);
-        if (state.category !== undefined) setSelectedCategory(state.category);
-        if (state.subcategory !== undefined) setSelectedSubcategory(state.subcategory);
-        if (state.productId !== undefined) {
-          if (state.productId) {
-            const found = products.find(p => p.id === state.productId) || null;
-            setSelectedProduct(found);
-          } else {
-            setSelectedProduct(null);
-          }
-        }
-      } else {
-        // Fallback default state
-        setCurrentScreen('store');
-        setSelectedCategory('all');
-        setSelectedSubcategory(null);
-        setSelectedProduct(null);
-      }
+      const parsed = parseStateFromUrl(products);
+      setCurrentScreen(parsed.screen);
+      setSelectedCategory(parsed.category);
+      setSelectedSubcategory(parsed.subcategory);
+      setSelectedProduct(parsed.selectedProduct);
     };
 
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    window.addEventListener('popstate', handleUrlChange);
+    window.addEventListener('hashchange', handleUrlChange);
+    return () => {
+      window.removeEventListener('popstate', handleUrlChange);
+      window.removeEventListener('hashchange', handleUrlChange);
+    };
   }, [products]);
 
   const [banners, setBannersState] = useState<PromoBanner[]>(() => {
