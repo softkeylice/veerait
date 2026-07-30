@@ -67,6 +67,15 @@ function parseStateFromUrl(productList: Product[] = []) {
     let selectedProduct: Product | null = null;
 
     const pageParam = (params.get('page') || params.get('screen') || '').toLowerCase();
+
+    // Login modal detection
+    const isLogin = 
+      rawPath === 'login' || rawPath === 'admin-login' ||
+      rawHash === 'login' || rawHash === 'admin-login' ||
+      pageParam === 'login' || pageParam === 'admin-login' ||
+      params.has('login') || params.has('auth');
+
+    const isAdminLogin = rawPath === 'admin-login' || rawHash === 'admin-login' || pageParam === 'admin-login';
     
     // Privacy Policy detection
     const isPrivacy = 
@@ -148,15 +157,17 @@ function parseStateFromUrl(productList: Product[] = []) {
       if (found) selectedProduct = found;
     }
 
-    return { screen, category, subcategory, selectedProduct };
+    return { screen, category, subcategory, selectedProduct, isAuthOpen: isLogin, authModalIsAdmin: isAdminLogin };
   } catch {
-    return { screen: 'store' as const, category: 'all' as const, subcategory: null, selectedProduct: null };
+    return { screen: 'store' as const, category: 'all' as const, subcategory: null, selectedProduct: null, isAuthOpen: false, authModalIsAdmin: false };
   }
 }
 
 export default function App() {
+  const initialParsed = parseStateFromUrl(INITIAL_PRODUCTS);
+
   const [currentScreen, setCurrentScreen] = useState<'store' | 'dashboard' | 'admin' | 'tracking' | 'b2b-signup' | 'about' | 'contact' | 'privacy' | 'shipping'>(() => {
-    return parseStateFromUrl(INITIAL_PRODUCTS).screen;
+    return initialParsed.screen;
   });
   const [user, setUserState] = useState<{ email: string; name: string; phone?: string; id?: string; address?: string; role?: string; gstNo?: string; company?: string; alternateMobile?: string; city?: string; state?: string; pin?: string } | null>(() => {
     try {
@@ -193,15 +204,15 @@ export default function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'software' | 'hardware'>(() => {
-    return parseStateFromUrl(INITIAL_PRODUCTS).category;
+    return initialParsed.category;
   });
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(() => {
-    return parseStateFromUrl(INITIAL_PRODUCTS).subcategory;
+    return initialParsed.subcategory;
   });
 
   // Authentication & Add-to-cart intercepts state
-  const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [authModalIsAdmin, setAuthModalIsAdmin] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(() => initialParsed.isAuthOpen);
+  const [authModalIsAdmin, setAuthModalIsAdmin] = useState(() => initialParsed.authModalIsAdmin);
 
   const handleSetIsAuthOpen = (isOpen: boolean, isAdmin?: boolean) => {
     setIsAuthOpen(isOpen);
@@ -213,7 +224,7 @@ export default function App() {
   };
   const [pendingProduct, setPendingProduct] = useState<Product | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(() => {
-    return parseStateFromUrl(INITIAL_PRODUCTS).selectedProduct;
+    return initialParsed.selectedProduct;
   });
 
   // Core database states (Dual mode: local cache fallback vs Live Supabase)
@@ -250,13 +261,50 @@ export default function App() {
   const isPopStateRef = React.useRef(false);
   const isInitialRender = React.useRef(true);
 
-  // Initialize browser history state on mount
+  // Dynamically update document title based on current screen, modal, category, or product
+  useEffect(() => {
+    if (isAuthOpen) {
+      document.title = authModalIsAdmin ? 'Admin Login - Veerait' : 'Login - Veerait';
+    } else if (selectedProduct) {
+      document.title = `${selectedProduct.name} - Veerait`;
+    } else if (currentScreen === 'store') {
+      if (selectedSubcategory) {
+        document.title = `Shop - ${selectedSubcategory} - Veerait`;
+      } else if (selectedCategory !== 'all') {
+        const catName = selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1);
+        document.title = `Shop - ${catName} - Veerait`;
+      } else {
+        document.title = 'Home - Veerait';
+      }
+    } else if (currentScreen === 'about') {
+      document.title = 'About Us - Veerait';
+    } else if (currentScreen === 'contact') {
+      document.title = 'Contact Us - Veerait';
+    } else if (currentScreen === 'privacy') {
+      document.title = 'Privacy Policy - Veerait';
+    } else if (currentScreen === 'shipping') {
+      document.title = 'Shipping Policy - Veerait';
+    } else if (currentScreen === 'tracking') {
+      document.title = 'Track Order - Veerait';
+    } else if (currentScreen === 'b2b-signup') {
+      document.title = 'B2B Reseller Portal - Veerait';
+    } else if (currentScreen === 'dashboard') {
+      document.title = 'My Dashboard - Veerait';
+    } else if (currentScreen === 'admin') {
+      document.title = 'Admin Console - Veerait';
+    } else {
+      document.title = 'Veerait';
+    }
+  }, [isAuthOpen, authModalIsAdmin, selectedProduct, currentScreen, selectedCategory, selectedSubcategory]);
+
   useEffect(() => {
     const initialState = {
       screen: currentScreen,
       category: selectedCategory,
       subcategory: selectedSubcategory,
-      productId: selectedProduct?.id || null
+      productId: selectedProduct?.id || null,
+      isAuthOpen,
+      authModalIsAdmin
     };
     if (!window.history.state) {
       window.history.replaceState(initialState, '');
@@ -287,10 +335,16 @@ export default function App() {
     searchParams.delete('product');
     searchParams.delete('prod');
     searchParams.delete('id');
+    searchParams.delete('login');
+    searchParams.delete('auth');
 
     let newHash = '';
 
-    if (currentScreen !== 'store') {
+    if (isAuthOpen) {
+      const pageVal = authModalIsAdmin ? 'admin-login' : 'login';
+      searchParams.set('page', pageVal);
+      newHash = `#${pageVal}`;
+    } else if (currentScreen !== 'store') {
       searchParams.set('page', currentScreen);
       newHash = `#${currentScreen}`;
     } else {
@@ -315,13 +369,15 @@ export default function App() {
       screen: currentScreen,
       category: selectedCategory,
       subcategory: selectedSubcategory,
-      productId: selectedProduct?.id || null
+      productId: selectedProduct?.id || null,
+      isAuthOpen,
+      authModalIsAdmin
     };
 
     if (currentTarget !== newTarget) {
       window.history.pushState(newState, '', window.location.pathname + newTarget);
     }
-  }, [currentScreen, selectedCategory, selectedSubcategory, selectedProduct]);
+  }, [currentScreen, selectedCategory, selectedSubcategory, selectedProduct, isAuthOpen, authModalIsAdmin]);
 
   // Handle Browser Back/Forward buttons and direct URL hash changes
   useEffect(() => {
@@ -332,6 +388,8 @@ export default function App() {
       setSelectedCategory(parsed.category);
       setSelectedSubcategory(parsed.subcategory);
       setSelectedProduct(parsed.selectedProduct);
+      setIsAuthOpen(parsed.isAuthOpen);
+      setAuthModalIsAdmin(parsed.authModalIsAdmin);
     };
 
     window.addEventListener('popstate', handleUrlChange);
