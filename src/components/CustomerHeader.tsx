@@ -9,8 +9,8 @@ import { Product } from '../types';
 import { BRAND_CATEGORIES } from './CategoryGrid';
 
 interface CustomerHeaderProps {
-  currentScreen: 'store' | 'dashboard' | 'admin' | 'tracking';
-  setCurrentScreen: (screen: 'store' | 'dashboard' | 'admin' | 'tracking') => void;
+  currentScreen: 'store' | 'dashboard' | 'admin' | 'tracking' | 'about' | 'contact' | 'privacy' | 'shipping';
+  setCurrentScreen: (screen: 'store' | 'dashboard' | 'admin' | 'tracking' | 'about' | 'contact' | 'privacy' | 'shipping') => void;
   cart: { product: Product; quantity: number }[];
   toggleCart: () => void;
   user: { email: string; name: string; phone?: string; role?: string } | null;
@@ -68,7 +68,7 @@ export default function CustomerHeader({
           <div className="flex items-center gap-5">
             <span className="flex items-center gap-1.5 text-zinc-300">
               <Phone className="w-3.5 h-3.5 text-[#8cc33f]" />
-              <span>Technical Help? <strong className="text-white">98445-39000</strong> | Sales: <strong className="text-white">97286-22667</strong> <span className="text-zinc-500">(Mon - Sat, 11 AM - 7 PM)</span></span>
+              <span>Technical Help: <strong className="text-white font-mono">+91-9764528777</strong> | Sales: <strong className="text-white font-mono">+91-9764528777</strong> <span className="text-zinc-500">(Mon - Sat, 11 AM - 7 PM)</span></span>
             </span>
           </div>
           <div className="flex items-center gap-5 font-medium text-zinc-300 text-[10px] md:text-xs">
@@ -190,7 +190,7 @@ export default function CustomerHeader({
               {!user && (
                 <button
                   onClick={() => {
-                    setUser({ email: 'softkeylice@gmail.com', name: 'Saptashrungi Partner' });
+                    setUser({ email: 'softkeylice@gmail.com', name: 'Veera Partner' });
                     addNotification('Demo Authenticated', 'Logged in as softkeylice@gmail.com', 'success');
                   }}
                   className="hidden lg:block text-[10px] text-slate-500 hover:text-blue-600 border border-dashed border-slate-300 px-2 py-1 rounded bg-slate-50 hover:bg-blue-50/50 transition-colors font-mono"
@@ -567,6 +567,46 @@ export default function CustomerHeader({
             }`}
           >
             All Products Catalogue
+          </button>
+
+          <button
+            onClick={() => { setCurrentScreen('about'); if (setSelectedProduct) setSelectedProduct(null); setSelectedSubcategory(null); setMobileMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 ${
+              currentScreen === 'about' ? 'bg-emerald-50 text-emerald-600 font-extrabold' : 'text-slate-700 hover:bg-slate-50'
+            }`}
+          >
+            <User className="w-4 h-4 text-emerald-600" />
+            <span>About Us (Veera Computer)</span>
+          </button>
+
+          <button
+            onClick={() => { setCurrentScreen('contact'); if (setSelectedProduct) setSelectedProduct(null); setSelectedSubcategory(null); setMobileMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 ${
+              currentScreen === 'contact' ? 'bg-emerald-50 text-emerald-600 font-extrabold' : 'text-slate-700 hover:bg-slate-50'
+            }`}
+          >
+            <Phone className="w-4 h-4 text-emerald-600" />
+            <span>Contact Us</span>
+          </button>
+
+          <button
+            onClick={() => { setCurrentScreen('privacy'); if (setSelectedProduct) setSelectedProduct(null); setSelectedSubcategory(null); setMobileMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 ${
+              currentScreen === 'privacy' ? 'bg-emerald-50 text-emerald-600 font-extrabold' : 'text-slate-700 hover:bg-slate-50'
+            }`}
+          >
+            <Shield className="w-4 h-4 text-emerald-600" />
+            <span>Privacy Policy & Security</span>
+          </button>
+
+          <button
+            onClick={() => { setCurrentScreen('shipping'); if (setSelectedProduct) setSelectedProduct(null); setSelectedSubcategory(null); setMobileMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 ${
+              currentScreen === 'shipping' ? 'bg-emerald-50 text-emerald-600 font-extrabold' : 'text-slate-700 hover:bg-slate-50'
+            }`}
+          >
+            <Truck className="w-4 h-4 text-emerald-600" />
+            <span>Shipping, Return & Refund Policy</span>
           </button>
 
           {/* Quick Subcategory buttons inside mobile view */}

@@ -56,7 +56,7 @@ function ToastItem({ notif, onClose }: { notif: AppNotification; onClose: () => 
 }
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<'store' | 'dashboard' | 'admin' | 'tracking' | 'b2b-signup'>('store');
+  const [currentScreen, setCurrentScreen] = useState<'store' | 'dashboard' | 'admin' | 'tracking' | 'b2b-signup' | 'about' | 'contact' | 'privacy' | 'shipping'>('store');
   const [user, setUserState] = useState<{ email: string; name: string; phone?: string; id?: string; address?: string; role?: string; gstNo?: string; company?: string; alternateMobile?: string; city?: string; state?: string; pin?: string } | null>(() => {
     try {
       const saved = localStorage.getItem('supabase_user_session');
@@ -1232,7 +1232,7 @@ export default function App() {
         const threshold = parseInt(localStorage.getItem(`threshold_${item.product.id}`) || '5');
 
         if (remainingCount < threshold) {
-          const alertMessage = `⚠️ Saptashrungi Alert: Low stock alert for "${item.product.name}". Only ${remainingCount} keys left in the Supabase key pool (Threshold: ${threshold}). Please replenish the pool immediately.`;
+          const alertMessage = `⚠️ Veera Computers Alert: Low stock alert for "${item.product.name}". Only ${remainingCount} keys left in the Supabase key pool (Threshold: ${threshold}). Please replenish the pool immediately.`;
           
           // Save alert to alert logs in localStorage
           const savedAlertsStr = localStorage.getItem('supabase_whatsapp_alerts') || '[]';
@@ -1404,7 +1404,7 @@ export default function App() {
 
       {/* Screen Router */}
       <div className="flex-1" id="screen-renderer">
-        {currentScreen === 'store' && (
+        {(currentScreen !== 'dashboard' && currentScreen !== 'admin') && (
           <CustomerWebsite
             products={products}
             coupons={coupons}
@@ -1418,6 +1418,7 @@ export default function App() {
             addNotification={addNotification}
             onOrderPlaced={handleOrderPlaced}
             setCurrentScreen={setCurrentScreen}
+            currentScreen={currentScreen}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             selectedCategory={selectedCategory}
@@ -1427,6 +1428,9 @@ export default function App() {
             setPendingProduct={setPendingProduct}
             licenseKeys={licenseKeys}
             resellers={resellers}
+            setResellers={setResellersState}
+            walletTransactions={walletTransactions}
+            setWalletTransactions={setWalletTransactionsState}
             selectedSubcategory={selectedSubcategory}
             setSelectedSubcategory={setSelectedSubcategory}
             selectedProduct={selectedProduct}
@@ -1554,7 +1558,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
           <div className="flex items-center justify-center gap-2">
             <ShieldCheck className="w-5 h-5 text-blue-600" />
-            <span className="font-sans font-semibold text-slate-900">Shri Saptashrungi Enterprises</span>
+            <span className="font-sans font-semibold text-slate-900">Veera Computers</span>
           </div>
           <p className="text-xs max-w-md mx-auto leading-relaxed text-slate-500">
             A secure e-commerce environment featuring simulated Razorpay gateways, Supabase Auth instances, Node SMTP dispatch logs, and visual waybill timeline dashboards.

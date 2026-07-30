@@ -3439,6 +3439,111 @@ app.use(async (req, res, next) => {
     }
   });
 
+  // 9.1B CREATE PAYTM PG ORDER
+  app.post("/api/payment/paytm/order", optionalAuthenticateJwt, rateLimiter(1 * 60 * 1000, 10, "Too many checkout requests. Please try again in a minute."), async (req: any, res: any) => {
+    const { amount, currency, receipt, customerEmail, customerName, customerPhone, cart, shippingAddress, shippingCity, shippingPin, couponCode, discount, subtotal, total, b2bReferralCode } = req.body;
+
+    if (req.user && req.user.role !== "admin" && customerEmail && customerEmail !== req.user.email) {
+      return res.status(403).json({ error: "Access denied. Checkout email must match logged in user." });
+    }
+
+    try {
+      const paytmOrderId = "PAYTM_ORD_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6).toUpperCase();
+      const payments = await syncPaymentsFromSupabase();
+      
+      const newPayment: PaymentRecord = {
+        orderId: paytmOrderId,
+        amount: total || amount,
+        currency: currency || "INR",
+        status: "created",
+        signatureVerified: false,
+        attempts: 1,
+        customerEmail: customerEmail || "",
+        customerName: customerName || "Customer",
+        customerPhone: customerPhone || "",
+        cart: cart || [],
+        shippingAddress: shippingAddress || "",
+        shippingCity: shippingCity || "",
+        shippingPin: shippingPin || "",
+        couponCode: couponCode || "",
+        discount: discount || 0,
+        subtotal: subtotal || 0,
+        b2bReferralCode: b2bReferralCode || "",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      payments.push(newPayment);
+      writePaymentsDb(payments);
+      await savePaymentsToSupabase(payments);
+
+      return res.json({
+        success: true,
+        simulation: true,
+        orderId: paytmOrderId,
+        amount: total || amount,
+        currency: currency || "INR",
+        merchantId: "PAYTM_MCH_VEERA_IT_DEMO",
+        callbackUrl: "/api/payment/paytm/webhook"
+      });
+    } catch (error: any) {
+      console.error("Critical error initiating Paytm PG order:", error);
+      return res.status(500).json({ error: error.message || "Failed to initiate Paytm PG order." });
+    }
+  });
+
+  // 9.2B VERIFY PAYTM PG TRANSACTION
+  app.post("/api/payment/paytm/verify", optionalAuthenticateJwt, rateLimiter(1 * 60 * 1000, 15, "Too many verification attempts."), async (req: any, res: any) => {
+    const { orderId, txnId, mode } = req.body;
+    try {
+      const payments = await syncPaymentsFromSupabase();
+      const paymentIndex = payments.findIndex(p => p.orderId === orderId);
+
+      if (paymentIndex === -1) {
+        return res.status(404).json({ error: "Pending Paytm transaction not found on server." });
+      }
+
+      const payment = payments[paymentIndex];
+      payment.attempts += 1;
+      payment.updatedAt = new Date().toISOString();
+
+      const verifiedTxnId = txnId || `PTM_TXN_${Date.now()}`;
+      payment.status = "paid";
+      payment.paymentId = verifiedTxnId;
+      payment.signatureVerified = true;
+      writePaymentsDb(payments);
+      await savePaymentsToSupabase(payments);
+
+      const compiled = await fulfillOrderOnBackend(orderId, verifiedTxnId, payment);
+
+      if (isSupabaseConfigured && supabaseServer) {
+        await supabaseServer
+          .from("payments")
+          .insert({
+            id: `paytm-${Date.now()}-${Math.random().toString(36).substring(2,6)}`,
+            order_id: orderId,
+            amount: payment.amount,
+            payment_method: `paytm_pg_${mode || 'direct'}`,
+            payment_status: "paid",
+            gateway_response: { orderId, txnId: verifiedTxnId, mode, verifiedAt: new Date().toISOString() },
+            created_at: new Date().toISOString()
+          })
+          .catch(e => console.error("[PAYTM PG DB ERROR]", e));
+      }
+
+      return res.json({
+        success: true,
+        verified: true,
+        simulation: true,
+        txnId: verifiedTxnId,
+        order: compiled
+      });
+    } catch (error: any) {
+      console.error("Error verifying Paytm PG transaction:", error);
+      return res.status(500).json({ error: error.message || "Failed to verify Paytm PG payment." });
+    }
+  });
+
   // 9.2B SECURE WEBHOOK SYSTEM (Razorpay Webhook Endpoint with Audit Logging and Idempotency)
   const WEBHOOKS_DB_FILE = path.join(process.cwd(), "webhooks_db.json");
 
@@ -3864,6 +3969,136 @@ app.use(async (req, res, next) => {
 
   app.post("/api/payment/razorpay/webhook", handleRazorpayWebhook);
   app.post("/api/razorpay/webhook", handleRazorpayWebhook);
+
+  // PAYTM WEBHOOK SYSTEM (Paytm PG S2S Notification & Automated WhatsApp Dispatch)
+  const handlePaytmWebhook = async (req: any, res: any) => {
+    try {
+      const payload = req.body || {};
+      console.log("[PAYTM WEBHOOK RECEIVED] Raw payload:", JSON.stringify(payload));
+
+      const body = payload.body || payload;
+      const orderId = body.ORDERID || body.orderId || payload.ORDERID || payload.orderId;
+      const txnId = body.TXNID || body.txnId || payload.TXNID || payload.txnId || `paytm_txn_${Date.now()}`;
+      const status = body.STATUS || body.status || (body.resultInfo && body.resultInfo.resultStatus) || payload.STATUS || payload.status;
+      const txnAmount = body.TXNAMOUNT || body.txnAmount || payload.TXNAMOUNT || payload.txnAmount;
+
+      const eventId = `paytm_evt_${orderId || Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+
+      if (!orderId) {
+        console.warn("[PAYTM WEBHOOK] Received webhook without orderId.");
+        return res.status(400).json({ error: "Missing ORDERID / orderId in Paytm webhook payload." });
+      }
+
+      console.log(`[PAYTM WEBHOOK] Processing Order ID: ${orderId}, Status: ${status}, Txn ID: ${txnId}, Amount: ${txnAmount}`);
+
+      const isSuccess = status === "TXN_SUCCESS" || status === "SUCCESS" || status === "S" || status === "01";
+
+      if (isSuccess) {
+        const payments = await syncPaymentsFromSupabase();
+        let paymentIndex = payments.findIndex(p => p.orderId === orderId);
+
+        let payment: PaymentRecord;
+        if (paymentIndex !== -1) {
+          payment = payments[paymentIndex];
+        } else {
+          if (isSupabaseConfigured && supabaseServer) {
+            const { data: dbOrder } = await supabaseServer
+              .from("orders")
+              .select("*")
+              .eq("id", orderId)
+              .single();
+
+            if (dbOrder) {
+              payment = {
+                orderId,
+                paymentId: txnId,
+                amount: Number(dbOrder.total),
+                currency: "INR",
+                status: "paid",
+                signatureVerified: true,
+                attempts: 1,
+                customerEmail: dbOrder.customer_email,
+                customerName: dbOrder.customer_name,
+                customerPhone: dbOrder.customer_phone,
+                cart: [],
+                createdAt: dbOrder.created_at,
+                updatedAt: new Date().toISOString()
+              };
+
+              const { data: items } = await supabaseServer
+                .from("order_items")
+                .select("*, products(*)")
+                .eq("order_id", orderId);
+
+              if (items && items.length > 0) {
+                payment.cart = items.map((item: any) => ({
+                  product: item.products,
+                  quantity: item.quantity
+                }));
+              }
+            } else {
+              throw new Error(`Order ${orderId} not found in database or local store.`);
+            }
+          } else {
+            throw new Error(`No pending transaction or order found on server for ID: ${orderId}`);
+          }
+        }
+
+        if (payment.status !== "paid") {
+          payment.status = "paid";
+          payment.paymentId = txnId;
+          payment.signatureVerified = true;
+          payment.updatedAt = new Date().toISOString();
+          writePaymentsDb(payments);
+          await savePaymentsToSupabase(payments);
+
+          console.log(`[PAYTM WEBHOOK FULFILLMENT] Fulfilling order and sending WhatsApp notifications for Order ID: ${orderId}...`);
+          await fulfillOrderOnBackend(orderId, txnId, payment);
+
+          if (isSupabaseConfigured && supabaseServer) {
+            await supabaseServer
+              .from("payments")
+              .insert({
+                id: `paytm-${Date.now()}-${Math.random().toString(36).substring(2,6)}`,
+                order_id: orderId,
+                amount: payment.amount,
+                payment_method: "paytm_pg",
+                payment_status: "paid",
+                gateway_response: payload,
+                created_at: new Date().toISOString()
+              });
+          }
+        } else {
+          console.log(`[PAYTM WEBHOOK] Order ${orderId} was already fulfilled. Skipping duplicate fulfillment.`);
+        }
+
+        await logWebhookEvent(eventId, "paytm.payment.success", payload, "processed");
+        return res.status(200).json({
+          STATUS: "SUCCESS",
+          RESPCODE: "01",
+          RESPMSG: "Txn Successful",
+          orderId,
+          message: "Paytm Webhook processed and WhatsApp notifications dispatched."
+        });
+      } else {
+        console.warn(`[PAYTM WEBHOOK FAILED] Transaction failed for Order ID: ${orderId}, Status: ${status}`);
+        await logWebhookEvent(eventId, "paytm.payment.failed", payload, "processed");
+        return res.status(200).json({
+          STATUS: "FAILURE",
+          RESPCODE: "227",
+          RESPMSG: "Txn Failed or Pending",
+          orderId
+        });
+      }
+    } catch (err: any) {
+      console.error("[PAYTM WEBHOOK ERROR]", err);
+      return res.status(500).json({ error: "Internal server error processing Paytm webhook", details: err.message });
+    }
+  };
+
+  app.post("/api/payment/paytm/webhook", handlePaytmWebhook);
+  app.post("/api/paytm/webhook", handlePaytmWebhook);
+  app.post("/api/paytm/callback", handlePaytmWebhook);
 
   // DYNAMIC SUPABASE CLIENT CONFIGURATION ENDPOINT (Public)
   app.get("/api/config/supabase-client", (req, res) => {

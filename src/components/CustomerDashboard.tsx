@@ -95,6 +95,36 @@ export default function CustomerDashboard({
   const [isResendingWhatsApp, setIsResendingWhatsApp] = useState(false);
   const [isResendingEmail, setIsResendingEmail] = useState(false);
 
+  const [isLookingUpPincode, setIsLookingUpPincode] = useState(false);
+
+  // Auto-lookup city/state when pincode changes or clicked
+  const lookupPincode = async (pincodeVal: string) => {
+    const cleanPin = pincodeVal.replace(/\D/g, '');
+    if (cleanPin.length !== 6) return;
+    setIsLookingUpPincode(true);
+    try {
+      const res = await fetch(`https://api.postalpincode.in/pincode/${cleanPin}`);
+      const data = await res.json();
+      if (data && data[0] && data[0].Status === 'Success' && data[0].PostOffice?.length > 0) {
+        const po = data[0].PostOffice[0];
+        if (po.District) setEditCity(po.District);
+        if (po.State) setEditState(po.State);
+      }
+    } catch (e) {
+      // silent fallback
+    } finally {
+      setIsLookingUpPincode(false);
+    }
+  };
+
+  const handlePincodeChange = (val: string) => {
+    setEditPin(val);
+    const clean = val.replace(/\D/g, '');
+    if (clean.length === 6) {
+      lookupPincode(clean);
+    }
+  };
+
   // Password & GST Modals
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [currentPass, setCurrentPass] = useState('');
@@ -684,220 +714,530 @@ export default function CustomerDashboard({
             {/* 1. PROFILE & OVERVIEW SECTION */}
             {(activeTab === 'profile' || activeTab === 'overview') && (
               <div className="space-y-6 animate-in fade-in duration-200">
-                {/* Greeting Header */}
-                <div>
-                  <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-sans tracking-tight">
-                    Welcome back, {user?.name || 'Krishna Salunke'}
-                  </h1>
-                  <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
-                    Manage your account settings and business details
-                  </p>
-                </div>
-
-                {/* 4 Stat Cards Row */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {/* Card 1: Total Orders */}
-                  <div 
-                    onClick={() => setActiveTab('orders')}
-                    className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs hover:border-blue-300 transition-all cursor-pointer group"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-blue-100/80 text-blue-600 flex items-center justify-center shrink-0 group-hover:bg-blue-200/80 transition-colors">
-                        <Briefcase className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <span className="text-xs font-semibold text-slate-600">Total Orders</span>
+                {isEditing ? (
+                  /* EDIT INFO PAGE VIEW (MATCHING USER SCREENSHOT) */
+                  <div className="space-y-6 animate-in fade-in duration-200">
+                    {/* Top Breadcrumb Badge & Header */}
+                    <div>
+                      <span className="px-3 py-1 bg-indigo-100/90 text-indigo-700 font-bold text-[10px] rounded-full uppercase tracking-wider inline-flex items-center gap-1.5 shadow-2xs font-mono">
+                        <User className="w-3 h-3 text-indigo-600" /> PROFILE SETTINGS
+                      </span>
+                      <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-sans tracking-tight mt-2">
+                        Edit Info
+                      </h1>
+                      <p className="text-xs sm:text-sm text-slate-500 font-normal mt-1 leading-relaxed max-w-3xl">
+                        Keep your business details up to date. Your email stays locked for account security. Enter your pincode to look up city and state; you can edit them afterwards if needed.
+                      </p>
                     </div>
-                    <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3 font-sans">
-                      {totalOrders}
-                    </p>
-                  </div>
 
-                  {/* Card 2: Customer Id */}
-                  <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-emerald-100/80 text-emerald-600 flex items-center justify-center shrink-0">
-                        <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                      </div>
-                      <span className="text-xs font-semibold text-slate-600">Customer Id</span>
-                    </div>
-                    <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3 font-sans">
-                      {user?.id || '23469'}
-                    </p>
-                  </div>
-
-                  {/* Card 3: Prepaid Balance */}
-                  <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-amber-100/80 text-amber-600 flex items-center justify-center shrink-0">
-                        <Wallet className="w-5 h-5 text-amber-600" />
-                      </div>
-                      <span className="text-xs font-semibold text-slate-600">Prepaid Balance</span>
-                    </div>
-                    <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3 font-sans">
-                      Rs. 0
-                    </p>
-                  </div>
-
-                  {/* Card 4: Member Since */}
-                  <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-blue-100/80 text-blue-600 flex items-center justify-center shrink-0">
-                        <Calendar className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <span className="text-xs font-semibold text-slate-600">Member Since</span>
-                    </div>
-                    <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3 font-sans">
-                      Jul 2026
-                    </p>
-                  </div>
-                </div>
-
-                {/* Main 2-Column Section */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                  {/* Left Column: Account Information */}
-                  <div className="lg:col-span-8 space-y-3">
-                    <h2 className="text-lg font-extrabold text-slate-900 font-sans">
-                      Account Information
-                    </h2>
-
-                    <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-8 shadow-2xs space-y-6">
-                      {/* Avatar Row & 3 Action Buttons */}
-                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-slate-100 pb-6">
-                        <div className="flex items-center gap-4">
-                          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-slate-200/90 text-slate-600 font-extrabold text-2xl sm:text-3xl flex items-center justify-center shrink-0 shadow-2xs">
-                            {(user?.name || 'Krishna Salunke').charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 font-sans">
-                              {user?.name || 'Krishna Salunke'}
+                    {/* 2-Column Grid */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                      
+                      {/* Left Column: Edit Form Card (lg:col-span-8) */}
+                      <div className="lg:col-span-8">
+                        <form onSubmit={(e) => {
+                          e.preventDefault();
+                          const updated = {
+                            ...user,
+                            name: editName,
+                            email: editEmail,
+                            phone: editPhone,
+                            alternateMobile: editAltMobile,
+                            company: editCompany,
+                            address: editAddress,
+                            city: editCity,
+                            state: editState,
+                            pin: editPin,
+                            gstNo: editGstNo
+                          };
+                          if (setUser) setUser(updated);
+                          setIsEditing(false);
+                          addNotification('Profile Saved', 'Your account profile details have been updated successfully!', 'success');
+                        }} className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-8 shadow-2xs space-y-8">
+                          
+                          {/* Section 1: Personal Information */}
+                          <div className="space-y-4">
+                            <h3 className="text-sm sm:text-base font-extrabold text-slate-900 font-sans border-b border-slate-100 pb-2">
+                              Personal Information
                             </h3>
-                            <p className="text-xs sm:text-sm text-slate-500 font-mono mt-0.5">
-                              {user?.email || 'salunkeks96@gmail.com'}
-                            </p>
+                            
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              {/* Name * */}
+                              <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1.5">Name *</label>
+                                <input
+                                  type="text"
+                                  required
+                                  value={editName}
+                                  onChange={(e) => setEditName(e.target.value)}
+                                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs"
+                                />
+                              </div>
+
+                              {/* Phone Number * */}
+                              <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1.5">Phone Number *</label>
+                                <input
+                                  type="tel"
+                                  required
+                                  value={editPhone}
+                                  onChange={(e) => setEditPhone(e.target.value)}
+                                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs font-mono"
+                                />
+                              </div>
+
+                              {/* Email * */}
+                              <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1.5">Email *</label>
+                                <input
+                                  type="email"
+                                  disabled
+                                  value={editEmail}
+                                  className="w-full px-3.5 py-2.5 bg-slate-100/90 border border-slate-200 rounded-xl text-xs font-medium text-slate-600 cursor-not-allowed shadow-2xs font-mono"
+                                />
+                                <div className="mt-1.5">
+                                  <span className="px-2.5 py-0.5 bg-amber-100/80 text-amber-800 text-[10px] font-semibold rounded-md inline-block">
+                                    Email is not editable
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* GST No. */}
+                              <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1.5">GST No.</label>
+                                <input
+                                  type="text"
+                                  value={editGstNo}
+                                  onChange={(e) => setEditGstNo(e.target.value)}
+                                  placeholder="GST No"
+                                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs font-mono uppercase"
+                                />
+                              </div>
+
+                              {/* Alternate Phone Number */}
+                              <div className="sm:col-span-1">
+                                <label className="block text-xs font-bold text-slate-700 mb-1.5">Alternate Phone Number</label>
+                                <input
+                                  type="tel"
+                                  value={editAltMobile}
+                                  onChange={(e) => setEditAltMobile(e.target.value)}
+                                  placeholder="Alternate Phone Number"
+                                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs font-mono"
+                                />
+                              </div>
+                            </div>
                           </div>
-                        </div>
 
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <button
-                            type="button"
-                            onClick={() => setIsEditing(true)}
-                            className="bg-[#4C82E6] hover:bg-[#3b71d5] text-white font-bold text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
-                          >
-                            <Edit3 className="w-3.5 h-3.5" />
-                            Edit Profile
-                          </button>
+                          {/* Section 2: Company Details */}
+                          <div className="space-y-4 pt-2 border-t border-slate-100">
+                            <h3 className="text-sm sm:text-base font-extrabold text-slate-900 font-sans border-b border-slate-100 pb-2">
+                              Company Details
+                            </h3>
 
-                          <button
-                            type="button"
-                            onClick={() => setShowChangePasswordModal(true)}
-                            className="bg-slate-100/90 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 transition-all border border-slate-200/80 cursor-pointer"
-                          >
-                            <Lock className="w-3.5 h-3.5 text-slate-500" />
-                            Change Password
-                          </button>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              {/* Company * */}
+                              <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1.5">Company *</label>
+                                <input
+                                  type="text"
+                                  required
+                                  value={editCompany}
+                                  onChange={(e) => setEditCompany(e.target.value)}
+                                  placeholder="Sanvi Production"
+                                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs"
+                                />
+                              </div>
 
-                          <button
-                            type="button"
-                            onClick={() => setShowUpdateGstModal(true)}
-                            className="bg-slate-100/90 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 transition-all border border-slate-200/80 cursor-pointer"
-                          >
-                            <FileText className="w-3.5 h-3.5 text-slate-500" />
-                            Update GST
-                          </button>
+                              {/* Contact Name * */}
+                              <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1.5">Name *</label>
+                                <input
+                                  type="text"
+                                  required
+                                  value={editName}
+                                  onChange={(e) => setEditName(e.target.value)}
+                                  placeholder="Krishna Salunke"
+                                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs"
+                                />
+                              </div>
+
+                              {/* Address * */}
+                              <div className="sm:col-span-2">
+                                <label className="block text-xs font-bold text-slate-700 mb-1.5">Address *</label>
+                                <textarea
+                                  rows={3}
+                                  required
+                                  value={editAddress}
+                                  onChange={(e) => setEditAddress(e.target.value)}
+                                  placeholder="Deolgaon Raja Road, Kanhaiyanagar, Jalna - 431203."
+                                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs leading-relaxed"
+                                />
+                              </div>
+
+                              {/* Zip/Postal Code * */}
+                              <div className="sm:col-span-2 space-y-1">
+                                <label className="block text-xs font-bold text-slate-700 mb-1">Zip/Postal Code *</label>
+                                <input
+                                  type="text"
+                                  required
+                                  value={editPin}
+                                  onChange={(e) => handlePincodeChange(e.target.value)}
+                                  placeholder="431203"
+                                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs font-mono"
+                                />
+                                <p className="text-[11px] text-slate-500 leading-normal pt-0.5">
+                                  Enter your pincode to auto-fill city and state; you can change them afterwards.
+                                </p>
+                                <div>
+                                  {isLookingUpPincode ? (
+                                    <span className="text-[11px] text-blue-600 font-semibold animate-pulse flex items-center gap-1.5">
+                                      <RefreshCw className="w-3 h-3 animate-spin text-blue-600" /> Looking up city and state...
+                                    </span>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => lookupPincode(editPin)}
+                                      className="text-[11px] text-blue-600 font-semibold hover:underline cursor-pointer"
+                                    >
+                                      Looking up city and state...
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* City * */}
+                              <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1.5">City *</label>
+                                <input
+                                  type="text"
+                                  required
+                                  value={editCity}
+                                  onChange={(e) => setEditCity(e.target.value)}
+                                  placeholder="Jalna"
+                                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs"
+                                />
+                              </div>
+
+                              {/* State * */}
+                              <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1.5">State *</label>
+                                <input
+                                  type="text"
+                                  required
+                                  value={editState}
+                                  onChange={(e) => setEditState(e.target.value)}
+                                  placeholder="Maharashtra"
+                                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs"
+                                />
+                              </div>
+
+                            </div>
+                          </div>
+
+                          {/* Form Actions */}
+                          <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
+                            <button
+                              type="submit"
+                              className="px-6 py-2.5 bg-[#4C82E6] hover:bg-[#3b71d5] text-white font-bold text-xs rounded-xl shadow-2xs transition-all cursor-pointer"
+                            >
+                              Save Info
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setIsEditing(false)}
+                              className="px-5 py-2.5 border border-slate-200 text-slate-700 font-bold text-xs rounded-xl hover:bg-slate-50 transition-all cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+
+                        </form>
+                      </div>
+
+                      {/* Right Column: Profile Summary Card (lg:col-span-4) */}
+                      <div className="lg:col-span-4">
+                        <div className="bg-slate-50/80 border border-slate-200/90 rounded-2xl p-6 shadow-2xs space-y-4">
+                          <h3 className="text-sm sm:text-base font-extrabold text-slate-900 font-sans border-b border-slate-200/80 pb-3">
+                            Profile Summary
+                          </h3>
+
+                          <div className="space-y-3 text-xs text-slate-700 font-medium">
+                            <div className="flex justify-between items-center py-1">
+                              <span className="text-slate-500">Customer ID</span>
+                              <span className="font-extrabold font-mono text-slate-900">{user?.id || '23469'}</span>
+                            </div>
+
+                            <div className="flex justify-between items-center py-1 border-t border-slate-200/60">
+                              <span className="text-slate-500">GST No.</span>
+                              <span className="font-semibold font-mono text-slate-900">{editGstNo || '-'}</span>
+                            </div>
+
+                            <div className="flex justify-between items-center py-1 border-t border-slate-200/60">
+                              <span className="text-slate-500">Primary Phone</span>
+                              <span className="font-semibold font-mono text-slate-900">{editPhone || '9689677449'}</span>
+                            </div>
+
+                            <div className="flex justify-between items-center py-1 border-t border-slate-200/60">
+                              <span className="text-slate-500">Alternate Phone</span>
+                              <span className="font-semibold font-mono text-slate-900">{editAltMobile || '-'}</span>
+                            </div>
+
+                            <div className="flex justify-between items-center py-1 border-t border-slate-200/60">
+                              <span className="text-slate-500">Email</span>
+                              <span className="font-semibold font-mono text-slate-900 text-right truncate max-w-[170px]">{editEmail}</span>
+                            </div>
+
+                            <div className="flex justify-between items-center py-1 border-t border-slate-200/60">
+                              <span className="text-slate-500">Company</span>
+                              <span className="font-extrabold text-slate-900 text-right truncate max-w-[170px]">{editCompany || 'Sanvi Production'}</span>
+                            </div>
+
+                            <div className="flex justify-between items-center py-1 border-t border-slate-200/60">
+                              <span className="text-slate-500">Pincode</span>
+                              <span className="font-extrabold font-mono text-slate-900">{editPin || '431203'}</span>
+                            </div>
+
+                            <div className="flex justify-between items-center py-1 border-t border-slate-200/60">
+                              <span className="text-slate-500">City</span>
+                              <span className="font-bold text-slate-900">{editCity || 'Jalna'}</span>
+                            </div>
+
+                            <div className="flex justify-between items-center py-1 border-t border-slate-200/60">
+                              <span className="text-slate-500">State</span>
+                              <span className="font-bold text-slate-900">{editState || 'Maharashtra'}</span>
+                            </div>
+                          </div>
+
+                          <p className="text-[11px] text-slate-400 pt-3 border-t border-slate-200/80 leading-normal font-sans">
+                            Pincode lookup suggests city and state; you can correct them manually when needed.
+                          </p>
                         </div>
                       </div>
 
-                      {/* Fields with icons */}
-                      <div className="space-y-3.5 text-xs sm:text-sm font-medium text-slate-700">
-                        <div className="flex items-center gap-3">
-                          <FileText className="w-4 h-4 text-slate-400 shrink-0" />
-                          <span className="text-slate-800">
-                            <strong className="font-semibold text-slate-600">GST No :</strong> {user?.gstNo || '-'}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          <Phone className="w-4 h-4 text-slate-400 shrink-0" />
-                          <span className="text-slate-800">
-                            <strong className="font-semibold text-slate-600">Phone :</strong> {user?.phone || '9689677449'}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          <Smartphone className="w-4 h-4 text-slate-400 shrink-0" />
-                          <span className="text-slate-800">
-                            <strong className="font-semibold text-slate-600">Alternate Mobile :</strong> {user?.alternateMobile || '-'}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          <Building className="w-4 h-4 text-slate-400 shrink-0" />
-                          <span className="text-slate-800">
-                            <strong className="font-semibold text-slate-600">Company :</strong> {user?.company || 'Sanvi Production'}
-                          </span>
-                        </div>
-
-                        <div className="flex items-start gap-3">
-                          <MapPin className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
-                          <span className="text-slate-800 leading-relaxed">
-                            <strong className="font-semibold text-slate-600">Address :</strong> {user?.address || 'Deolgaon Raja Road, Kanhaiyanagar, Jalna - 431203.'}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
-                          <span className="text-slate-800">
-                            <strong className="font-semibold text-slate-600">City / State / PIN :</strong> {user?.city || 'Jalna'} / {user?.state || 'Maharashtra'} / {user?.pin || '431203'}
-                          </span>
-                        </div>
-                      </div>
                     </div>
                   </div>
+                ) : (
+                  <>
+                    {/* Greeting Header */}
+                    <div>
+                      <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-sans tracking-tight">
+                        Welcome back, {user?.name || 'Krishna Salunke'}
+                      </h1>
+                      <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
+                        Manage your account settings and business details
+                      </p>
+                    </div>
 
-                  {/* Right Column: My Account Menu */}
-                  <div className="lg:col-span-4 space-y-3">
-                    <h2 className="text-lg font-extrabold text-slate-900 font-sans">
-                      My Account
-                    </h2>
-
-                    <div className="bg-white border border-slate-200/90 rounded-2xl p-3 shadow-2xs space-y-1.5">
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab('profile')}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs sm:text-sm transition-all ${
-                          activeTab === 'profile' || activeTab === 'overview'
-                            ? 'bg-[#4C82E6] text-white shadow-2xs'
-                            : 'text-slate-700 hover:bg-slate-100/80'
-                        }`}
-                      >
-                        <User className="w-4 h-4" />
-                        <span>Profile</span>
-                      </button>
-
-                      <button
-                        type="button"
+                    {/* 4 Stat Cards Row */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {/* Card 1: Total Orders */}
+                      <div 
                         onClick={() => setActiveTab('orders')}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs sm:text-sm transition-all ${
-                          activeTab === 'orders'
-                            ? 'bg-[#4C82E6] text-white shadow-2xs'
-                            : 'text-slate-700 hover:bg-slate-100/80 cursor-pointer'
-                        }`}
+                        className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs hover:border-blue-300 transition-all cursor-pointer group"
                       >
-                        <FileText className="w-4 h-4 text-slate-500" />
-                        <span>Orders</span>
-                      </button>
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-blue-100/80 text-blue-600 flex items-center justify-center shrink-0 group-hover:bg-blue-200/80 transition-colors">
+                            <Briefcase className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <span className="text-xs font-semibold text-slate-600">Total Orders</span>
+                        </div>
+                        <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3 font-sans">
+                          {totalOrders}
+                        </p>
+                      </div>
 
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (handleLogout) {
-                            handleLogout();
-                          } else if (setUser) {
-                            setUser(null);
-                          }
-                          setCurrentScreen('store');
-                          addNotification('Signed Out', 'You have been logged out successfully.', 'info');
-                        }}
+                      {/* Card 2: Customer Id */}
+                      <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-emerald-100/80 text-emerald-600 flex items-center justify-center shrink-0">
+                            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                          </div>
+                          <span className="text-xs font-semibold text-slate-600">Customer Id</span>
+                        </div>
+                        <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3 font-sans">
+                          {user?.id || '23469'}
+                        </p>
+                      </div>
+
+                      {/* Card 3: Prepaid Balance */}
+                      <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-amber-100/80 text-amber-600 flex items-center justify-center shrink-0">
+                            <Wallet className="w-5 h-5 text-amber-600" />
+                          </div>
+                          <span className="text-xs font-semibold text-slate-600">Prepaid Balance</span>
+                        </div>
+                        <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3 font-sans">
+                          Rs. 0
+                        </p>
+                      </div>
+
+                      {/* Card 4: Member Since */}
+                      <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-blue-100/80 text-blue-600 flex items-center justify-center shrink-0">
+                            <Calendar className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <span className="text-xs font-semibold text-slate-600">Member Since</span>
+                        </div>
+                        <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3 font-sans">
+                          Jul 2026
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Main 2-Column Section */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                      {/* Left Column: Account Information */}
+                      <div className="lg:col-span-8 space-y-3">
+                        <h2 className="text-lg font-extrabold text-slate-900 font-sans">
+                          Account Information
+                        </h2>
+
+                        <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-8 shadow-2xs space-y-6">
+                          {/* Avatar Row & 3 Action Buttons */}
+                          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-slate-100 pb-6">
+                            <div className="flex items-center gap-4">
+                              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-slate-200/90 text-slate-600 font-extrabold text-2xl sm:text-3xl flex items-center justify-center shrink-0 shadow-2xs">
+                                {(user?.name || 'Krishna Salunke').charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 font-sans">
+                                  {user?.name || 'Krishna Salunke'}
+                                </h3>
+                                <p className="text-xs sm:text-sm text-slate-500 font-mono mt-0.5">
+                                  {user?.email || 'salunkeks96@gmail.com'}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <button
+                                type="button"
+                                onClick={() => setIsEditing(true)}
+                                className="bg-[#4C82E6] hover:bg-[#3b71d5] text-white font-bold text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                                Edit Profile
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => setShowChangePasswordModal(true)}
+                                className="bg-slate-100/90 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 transition-all border border-slate-200/80 cursor-pointer"
+                              >
+                                <Lock className="w-3.5 h-3.5 text-slate-500" />
+                                Change Password
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => setShowUpdateGstModal(true)}
+                                className="bg-slate-100/90 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 transition-all border border-slate-200/80 cursor-pointer"
+                              >
+                                <FileText className="w-3.5 h-3.5 text-slate-500" />
+                                Update GST
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Fields with icons */}
+                          <div className="space-y-3.5 text-xs sm:text-sm font-medium text-slate-700">
+                            <div className="flex items-center gap-3">
+                              <FileText className="w-4 h-4 text-slate-400 shrink-0" />
+                              <span className="text-slate-800">
+                                <strong className="font-semibold text-slate-600">GST No :</strong> {user?.gstNo || '-'}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                              <Phone className="w-4 h-4 text-slate-400 shrink-0" />
+                              <span className="text-slate-800">
+                                <strong className="font-semibold text-slate-600">Phone :</strong> {user?.phone || '9689677449'}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                              <Smartphone className="w-4 h-4 text-slate-400 shrink-0" />
+                              <span className="text-slate-800">
+                                <strong className="font-semibold text-slate-600">Alternate Mobile :</strong> {user?.alternateMobile || '-'}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                              <Building className="w-4 h-4 text-slate-400 shrink-0" />
+                              <span className="text-slate-800">
+                                <strong className="font-semibold text-slate-600">Company :</strong> {user?.company || 'Sanvi Production'}
+                              </span>
+                            </div>
+
+                            <div className="flex items-start gap-3">
+                              <MapPin className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                              <span className="text-slate-800 leading-relaxed">
+                                <strong className="font-semibold text-slate-600">Address :</strong> {user?.address || 'Deolgaon Raja Road, Kanhaiyanagar, Jalna - 431203.'}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                              <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
+                              <span className="text-slate-800">
+                                <strong className="font-semibold text-slate-600">City / State / PIN :</strong> {user?.city || 'Jalna'} / {user?.state || 'Maharashtra'} / {user?.pin || '431203'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right Column: My Account Menu */}
+                      <div className="lg:col-span-4 space-y-3">
+                        <h2 className="text-lg font-extrabold text-slate-900 font-sans">
+                          My Account
+                        </h2>
+
+                        <div className="bg-white border border-slate-200/90 rounded-2xl p-3 shadow-2xs space-y-1.5">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveTab('profile');
+                              setIsEditing(false);
+                            }}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs sm:text-sm transition-all ${
+                              activeTab === 'profile' || activeTab === 'overview'
+                                ? 'bg-[#4C82E6] text-white shadow-2xs'
+                                : 'text-slate-700 hover:bg-slate-100/80'
+                            }`}
+                          >
+                            <User className="w-4 h-4" />
+                            <span>Profile</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveTab('orders');
+                              setIsEditing(false);
+                            }}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs sm:text-sm transition-all ${
+                              activeTab === 'orders'
+                                ? 'bg-[#4C82E6] text-white shadow-2xs'
+                                : 'text-slate-700 hover:bg-slate-100/80 cursor-pointer'
+                            }`}
+                          >
+                            <FileText className="w-4 h-4 text-slate-500" />
+                            <span>Orders</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (handleLogout) {
+                                handleLogout();
+                              } else if (setUser) {
+                                setUser(null);
+                              }
+                              setCurrentScreen('store');
+                              addNotification('Signed Out', 'You have been logged out successfully.', 'info');
+                            }}
                         className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs sm:text-sm text-slate-700 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer"
                       >
                         <LogOut className="w-4 h-4 text-slate-500" />
@@ -906,8 +1246,10 @@ export default function CustomerDashboard({
                     </div>
                   </div>
                 </div>
-              </div>
+              </>
             )}
+          </div>
+        )}
             {/* 3. ORDERS SECTION (History, details, printable invoice) */}
             {activeTab === 'orders' && (
               <div className="space-y-6 animate-in fade-in duration-200">
@@ -1053,7 +1395,7 @@ export default function CustomerDashboard({
                                     .join("\n") || "No software keys in this order (Hardware items pending dispatch)";
                                   const formattedPhone = (selectedOrderForDetails.customerPhone || '9876543210').replace(/\D/g, '');
                                   const cleanedPhone = formattedPhone.startsWith('91') && formattedPhone.length > 10 ? formattedPhone : `91${formattedPhone}`;
-                                  const waText = `🛒 *Shri Saptashrungi Enterprises Order Confirmation!*\n\n*Order ID:* ${selectedOrderForDetails.id}\n*Products:* ${productsList}\n*Total Paid:* ₹${selectedOrderForDetails.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}\n\n*Your License Key(s):*\n${keysList}\n\nThank you for shopping with us! If you need support, visit your Customer Dashboard.`;
+                                  const waText = `🛒 *Veera Computers Order Confirmation!*\n\n*Order ID:* ${selectedOrderForDetails.id}\n*Products:* ${productsList}\n*Total Paid:* ₹${selectedOrderForDetails.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}\n\n*Your License Key(s):*\n${keysList}\n\nThank you for shopping with us! If you need support, visit your Customer Dashboard.`;
                                   
                                   return (
                                     <div className="space-y-2.5">
@@ -1465,7 +1807,7 @@ export default function CustomerDashboard({
                             .join("\n") || "No software keys in this order (Hardware items pending dispatch)";
                           const formattedPhone = (user?.phone || '9876543210').replace(/\D/g, '');
                           const cleanedPhone = formattedPhone.startsWith('91') && formattedPhone.length > 10 ? formattedPhone : `91${formattedPhone}`;
-                          const waText = `🛒 *Shri Saptashrungi Enterprises Order Confirmation!*\n\n*Order ID:* ${orderObj.id}\n*Products:* ${productsList}\n*Total Paid:* ₹${orderObj.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}\n\n*Your License Key(s):*\n${keysList}\n\nThank you for shopping with us! If you need support, visit your Customer Dashboard.`;
+                          const waText = `🛒 *Veera Computers Order Confirmation!*\n\n*Order ID:* ${orderObj.id}\n*Products:* ${productsList}\n*Total Paid:* ₹${orderObj.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}\n\n*Your License Key(s):*\n${keysList}\n\nThank you for shopping with us! If you need support, visit your Customer Dashboard.`;
                           
                           return (
                             <a
@@ -1534,7 +1876,7 @@ export default function CustomerDashboard({
                             <span className="text-[10px] bg-white/20 text-white font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider font-mono">Reseller Program</span>
                             <h4 className="text-xl md:text-2xl font-black font-sans tracking-tight">Become a B2B Reseller & Earn Commission on Every Sale!</h4>
                             <p className="text-xs text-emerald-50 leading-relaxed">
-                              Shri Saptashrungi's hybrid B2B/B2C pipeline allows you to either resell our digital items in bulk with a wholesale discount or share your referral key. When a retail customer buys through you, they receive a discount and your commission goes straight to your wallet!
+                              Veera Computers' hybrid B2B/B2C pipeline allows you to either resell our digital items in bulk with a wholesale discount or share your referral key. When a retail customer buys through you, they receive a discount and your commission goes straight to your wallet!
                             </p>
                           </div>
                         </div>
@@ -1646,7 +1988,7 @@ export default function CustomerDashboard({
                         </div>
                         <h4 className="text-base font-bold text-slate-900 font-sans">Partner Account Suspended</h4>
                         <p className="text-xs text-slate-500 mt-2 max-w-sm leading-relaxed">
-                          Your B2B Reseller account has been suspended by the system administrator due to regulatory policy updates. Please contact Shri Saptashrungi B2B Support desk.
+                          Your B2B Reseller account has been suspended by the system administrator due to regulatory policy updates. Please contact Veera Computers B2B Support desk.
                         </p>
                       </div>
                     );
@@ -2061,7 +2403,7 @@ export default function CustomerDashboard({
                   <div className="space-y-1">
                     <h1 className="text-lg font-black tracking-tight text-blue-600 flex items-center gap-1.5">
                       <Key className="w-5 h-5 text-blue-600" />
-                      Shri Saptashrungi Enterprises
+                      Veera Computers
                     </h1>
                     <p className="text-[10px] text-slate-400 font-medium">Digital Activation Keys & Softwares</p>
                     <p className="text-[9px] text-slate-400 leading-relaxed font-mono">GSTIN: 27BQIPS8843L1ZX<br />P. No. 1-11-42, Krishna Mandir, Bansipura, Mama Chowk, Jalna, Maharashtra - 431203</p>
@@ -2080,9 +2422,9 @@ export default function CustomerDashboard({
                 <div className="grid grid-cols-2 gap-8 border-y border-slate-150 py-5 text-[11px] text-slate-500">
                   <div className="space-y-1">
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">BILLING FROM</span>
-                    <strong className="text-slate-800 font-bold font-sans">Shri Saptashrungi Enterprises</strong>
+                    <strong className="text-slate-800 font-bold font-sans">Veera Computers</strong>
                     <p>P. No. 1-11-42, Krishna Mandir, Bansipura, Mama Chowk, Jalna, Maharashtra, 431203</p>
-                    <p>support@shrisaptashrungi.com | India</p>
+                    <p>support@veeracomputers.com | India</p>
                   </div>
                   <div className="space-y-1">
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">BILLING TO</span>
@@ -2183,169 +2525,6 @@ export default function CustomerDashboard({
           </div>
         );
       })()}
-
-      {/* Edit Profile Modal */}
-      {isEditing && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl relative my-8 animate-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <h3 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
-                <Edit3 className="w-5 h-5 text-blue-600" />
-                Edit Profile Details
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsEditing(false)}
-                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              const updated = {
-                ...user,
-                name: editName,
-                email: editEmail,
-                phone: editPhone,
-                alternateMobile: editAltMobile,
-                company: editCompany,
-                address: editAddress,
-                city: editCity,
-                state: editState,
-                pin: editPin,
-                gstNo: editGstNo
-              };
-              if (setUser) setUser(updated);
-              setIsEditing(false);
-              addNotification('Profile Saved', 'Your account profile details have been updated!', 'success');
-            }} className="space-y-4 mt-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Full Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
-                  <input
-                    type="email"
-                    required
-                    value={editEmail}
-                    onChange={(e) => setEditEmail(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number</label>
-                  <input
-                    type="tel"
-                    required
-                    value={editPhone}
-                    onChange={(e) => setEditPhone(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-mono"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Alternate Mobile</label>
-                  <input
-                    type="tel"
-                    value={editAltMobile}
-                    onChange={(e) => setEditAltMobile(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-mono"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Company / Business</label>
-                  <input
-                    type="text"
-                    value={editCompany}
-                    onChange={(e) => setEditCompany(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">GSTIN Number</label>
-                  <input
-                    type="text"
-                    value={editGstNo}
-                    onChange={(e) => setEditGstNo(e.target.value)}
-                    placeholder="e.g. 27AAAAA0000A1Z5"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-mono uppercase"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Address</label>
-                <textarea
-                  rows={2}
-                  value={editAddress}
-                  onChange={(e) => setEditAddress(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">City</label>
-                  <input
-                    type="text"
-                    value={editCity}
-                    onChange={(e) => setEditCity(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">State</label>
-                  <input
-                    type="text"
-                    value={editState}
-                    onChange={(e) => setEditState(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">PIN Code</label>
-                  <input
-                    type="text"
-                    value={editPin}
-                    onChange={(e) => setEditPin(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-mono"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setIsEditing(false)}
-                  className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-50 transition-colors cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-[#4C82E6] hover:bg-[#3b71d5] text-white font-bold text-xs transition-colors shadow-2xs cursor-pointer"
-                >
-                  Save Profile
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Change Password Modal */}
       {showChangePasswordModal && (

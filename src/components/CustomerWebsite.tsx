@@ -4,8 +4,8 @@
  */
 
 import React, { useState } from 'react';
-import { Search, ShoppingBag, Eye, Tag, AlertTriangle, CreditCard, ChevronRight, ChevronLeft, CheckCircle2, Truck, RefreshCw, Star, Info, ShieldAlert, X, Gift, Zap, Award, Building2, QrCode, Upload, Layers, Lock, ShieldCheck, FileText } from 'lucide-react';
-import { Product, Coupon, PromoBanner, Order, LicenseKey, B2BReseller } from '../types';
+import { Search, ShoppingBag, Eye, Tag, AlertTriangle, CreditCard, ChevronRight, ChevronLeft, CheckCircle2, Truck, RefreshCw, Star, Info, ShieldAlert, X, Gift, Zap, Award, Building2, QrCode, Upload, Layers, Lock, ShieldCheck, FileText, Wallet, Briefcase, Home, Key, MessageSquare, User, Share2, Headphones, Phone, Globe, HelpCircle, Send, MapPin } from 'lucide-react';
+import { Product, Coupon, PromoBanner, Order, LicenseKey, B2BReseller, WalletTransaction } from '../types';
 import CategoryGrid from './CategoryGrid';
 // @ts-ignore
 import storeHeroBanner from '../assets/images/store_hero_banner_1782381091953.jpg';
@@ -18,11 +18,12 @@ interface CustomerWebsiteProps {
   setCart: React.Dispatch<React.SetStateAction<{ product: Product; quantity: number }[]>>;
   isCartOpen: boolean;
   setIsCartOpen: (isOpen: boolean) => void;
-  user: { email: string; name: string; phone?: string } | null;
-  setUser?: (user: { email: string; name: string; phone?: string } | null) => void;
+  user: { email: string; name: string; phone?: string; walletBalance?: number } | null;
+  setUser?: (user: any) => void;
   addNotification: (title: string, message: string, type: 'success' | 'info' | 'warning' | 'error') => void;
   onOrderPlaced: (order: Order) => void;
-  setCurrentScreen: (screen: 'store' | 'dashboard' | 'admin' | 'tracking') => void;
+  setCurrentScreen: (screen: 'store' | 'dashboard' | 'admin' | 'tracking' | 'about' | 'contact' | 'privacy' | 'shipping') => void;
+  currentScreen?: 'store' | 'dashboard' | 'admin' | 'tracking' | 'about' | 'contact' | 'privacy' | 'shipping';
   searchQuery: string;
   setSearchQuery: (q: string) => void;
   selectedCategory: 'all' | 'software' | 'hardware';
@@ -32,6 +33,9 @@ interface CustomerWebsiteProps {
   setPendingProduct?: (product: Product | null) => void;
   licenseKeys?: LicenseKey[];
   resellers?: B2BReseller[];
+  setResellers?: React.Dispatch<React.SetStateAction<B2BReseller[]>>;
+  walletTransactions?: WalletTransaction[];
+  setWalletTransactions?: React.Dispatch<React.SetStateAction<WalletTransaction[]>>;
   selectedSubcategory?: string | null;
   setSelectedSubcategory?: (subcat: string | null) => void;
   selectedProduct?: Product | null;
@@ -51,6 +55,7 @@ export default function CustomerWebsite({
   addNotification,
   onOrderPlaced,
   setCurrentScreen,
+  currentScreen = 'store',
   searchQuery,
   setSearchQuery,
   selectedCategory,
@@ -60,6 +65,9 @@ export default function CustomerWebsite({
   setPendingProduct,
   licenseKeys = [],
   resellers = [],
+  setResellers,
+  walletTransactions = [],
+  setWalletTransactions,
   selectedSubcategory: propSelectedSubcategory,
   setSelectedSubcategory: propSetSelectedSubcategory,
   selectedProduct: propSelectedProduct,
@@ -139,6 +147,14 @@ export default function CustomerWebsite({
   const [couponCodeInput, setCouponCodeInput] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
 
+  // Footer interactive modal states
+  const [footerModalType, setFooterModalType] = useState<'about' | 'privacy' | 'shipping' | 'terms' | 'review' | 'get_cid' | 'contact' | null>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewText, setReviewText] = useState('');
+  const [reviewAuthor, setReviewAuthor] = useState('');
+  const [cidIidInput, setCidIidInput] = useState('');
+  const [generatedCidResult, setGeneratedCidResult] = useState<string | null>(null);
+
   // Referral / Reseller states
   const [referralCodeInput, setReferralCodeInput] = useState('');
   const [isReferralApplied, setIsReferralApplied] = useState(false);
@@ -205,16 +221,25 @@ export default function CustomerWebsite({
   const [razorpayStep, setRazorpayStep] = useState<'details' | 'processing' | 'otp' | 'success'>('details');
   const [paymentOtp, setPaymentOtp] = useState('');
 
+  // Paytm PG simulation states
+  const [isPaytmOpen, setIsPaytmOpen] = useState(false);
+  const [paytmStep, setPaytmStep] = useState<'select_method' | 'processing' | 'otp' | 'success'>('select_method');
+  const [paytmSubMethod, setPaytmSubMethod] = useState<'upi' | 'wallet' | 'netbanking' | 'card'>('wallet');
+  const [paytmOtp, setPaytmOtp] = useState('123456');
+  const [paytmUpiId, setPaytmUpiId] = useState('9764528777@paytm');
+  const [currentPaytmOrderId, setCurrentPaytmOrderId] = useState('');
+  const [currentPaytmTxnId, setCurrentPaytmTxnId] = useState('');
+
   // Payment method and alternative details states
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'razorpay' | 'bank_transfer' | 'upi_qr'>('razorpay');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'razorpay' | 'paytm' | 'bank_transfer' | 'upi_qr'>('paytm');
   const [paymentReference, setPaymentReference] = useState('');
   const [uploadedReceipt, setUploadedReceipt] = useState('');
   const [storePaymentSettings, setStorePaymentSettings] = useState({
     bankName: 'State Bank of India',
-    bankAccountName: 'Shri Saptashrungi Enterprises',
+    bankAccountName: 'Veera Computers',
     bankAccountNumber: '918273645019',
     ifscCode: 'SBIN0001234',
-    upiId: 'shrisaptashrungi@upi',
+    upiId: 'veeracomputers@upi',
     upiQrCodeUrl: ''
   });
   const [razorpayPublicId, setRazorpayPublicId] = useState('');
@@ -435,6 +460,54 @@ export default function CustomerWebsite({
   if (subtotal - discount < 0) discount = subtotal;
   const total = subtotal - discount;
 
+  // Wallet balance deduction state & calculations
+  const [useWalletBalance, setUseWalletBalance] = useState<boolean>(true);
+
+  // Determine available wallet balance for active reseller or logged-in customer
+  const availableWallet = activeReseller 
+    ? activeReseller.walletBalance 
+    : (user?.walletBalance !== undefined ? user.walletBalance : (user ? 1500 : 0));
+
+  const walletDeduction = (useWalletBalance && availableWallet > 0) 
+    ? Math.min(availableWallet, total) 
+    : 0;
+
+  const netPayable = Math.max(0, total - walletDeduction);
+
+  const deductWalletBalance = (amountToDeduct: number, orderId: string) => {
+    if (amountToDeduct <= 0) return;
+
+    if (activeReseller && setResellers) {
+      setResellers(prev => prev.map(r => 
+        r.email.toLowerCase() === activeReseller.email.toLowerCase()
+          ? { ...r, walletBalance: Math.max(0, r.walletBalance - amountToDeduct) }
+          : r
+      ));
+    } else if (user && setUser) {
+      setUser((prevUser: any) => {
+        if (!prevUser) return prevUser;
+        const currentBal = prevUser.walletBalance !== undefined ? prevUser.walletBalance : 1500;
+        return {
+          ...prevUser,
+          walletBalance: Math.max(0, currentBal - amountToDeduct)
+        };
+      });
+    }
+
+    if (setWalletTransactions) {
+      const newTx: WalletTransaction = {
+        id: `tx-wallet-${Date.now()}`,
+        resellerId: activeReseller ? activeReseller.userId : (user?.email || 'customer-wallet'),
+        type: 'withdrawal',
+        amount: amountToDeduct,
+        status: 'completed',
+        description: `Wallet balance redeemed on Order #${orderId}`,
+        createdAt: new Date().toISOString()
+      };
+      setWalletTransactions(prev => [newTx, ...(prev || [])]);
+    }
+  };
+
   const handleApplyCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!couponCodeInput) return;
@@ -534,8 +607,8 @@ export default function CustomerWebsite({
         quantity: item.quantity,
       })),
       subtotal,
-      discount,
-      total,
+      discount: discount + walletDeduction,
+      total: netPayable,
       couponCode: appliedCoupon?.code,
       paymentId: paymentId || 'pay_manual_' + Math.floor(10000000 + Math.random() * 90000000),
       paymentStatus: status,
@@ -604,6 +677,18 @@ export default function CustomerWebsite({
 
     setIsCheckoutOpen(false);
 
+    // If wallet deduction applies, subtract balance
+    if (walletDeduction > 0) {
+      deductWalletBalance(walletDeduction, 'PAY-' + Math.floor(100000 + Math.random() * 900000));
+    }
+
+    // If order is fully covered by Wallet balance (Net Payable is 0)
+    if (netPayable === 0) {
+      addNotification('Wallet Payment Success', `₹${walletDeduction.toFixed(2)} deducted from your wallet balance. Order completed!`, 'success');
+      createSuccessfulOrder('pay_wallet_' + Date.now(), 'Store Wallet Balance', 'paid');
+      return;
+    }
+
     if (selectedPaymentMethod === 'razorpay') {
       try {
         addNotification('Initiating Secure Gateway', 'Communicating with payment gateway server...', 'info');
@@ -614,7 +699,7 @@ export default function CustomerWebsite({
             'Authorization': `Bearer ${localStorage.getItem('session_token') || ''}`
           },
           body: JSON.stringify({
-            amount: total,
+            amount: netPayable,
             currency: 'INR',
             receipt: 'rec_' + Math.floor(100000 + Math.random() * 900000),
             customerEmail,
@@ -625,9 +710,9 @@ export default function CustomerWebsite({
             shippingCity,
             shippingPin,
             couponCode: appliedCoupon?.code || undefined,
-            discount,
+            discount: discount + walletDeduction,
             subtotal,
-            total,
+            total: netPayable,
             b2bReferralCode: isReferralApplied && appliedReferral 
               ? appliedReferral.referralCode 
               : (activeReseller ? activeReseller.referralCode : undefined)
@@ -744,9 +829,102 @@ export default function CustomerWebsite({
           createSuccessfulOrder(randomPaymentId, 'Razorpay (Offline)', 'paid');
         }
       }
+    } else if (selectedPaymentMethod === 'paytm') {
+      try {
+        addNotification('Initiating Paytm PG', 'Connecting to Paytm Payment Gateway...', 'info');
+        const response = await fetch('/api/payment/paytm/order', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('session_token') || ''}`
+          },
+          body: JSON.stringify({
+            amount: netPayable,
+            currency: 'INR',
+            receipt: 'paytm_rec_' + Math.floor(100000 + Math.random() * 900000),
+            customerEmail,
+            customerName,
+            customerPhone,
+            cart: cart.map(item => ({ product: item.product, quantity: item.quantity })),
+            shippingAddress,
+            shippingCity,
+            shippingPin,
+            couponCode: appliedCoupon?.code || undefined,
+            discount: discount + walletDeduction,
+            subtotal,
+            total: netPayable,
+            b2bReferralCode: isReferralApplied && appliedReferral 
+              ? appliedReferral.referralCode 
+              : (activeReseller ? activeReseller.referralCode : undefined)
+          })
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to create Paytm PG order.');
+        }
+
+        setCurrentPaytmOrderId(data.orderId);
+        setIsPaytmOpen(true);
+        setPaytmStep('select_method');
+        addNotification('Paytm Gateway Ready', 'Please complete your payment in the Paytm PG window.', 'info');
+      } catch (err: any) {
+        console.error(err);
+        addNotification('Paytm Gateway Error', err.message || 'Unable to connect to Paytm PG.', 'error');
+      }
     } else {
       // Open alternative payment modal for Direct Bank Transfer or UPI QR Code
       setIsAlternativeOpen(true);
+    }
+  };
+
+  // Paytm PG Simulate Actions
+  const triggerPaytmPayment = () => {
+    setPaytmStep('processing');
+    setTimeout(() => {
+      setPaytmStep('otp');
+      addNotification('Paytm Bank OTP Sent', '6-digit OTP dispatched to registered mobile number for Paytm PG authorization.', 'info');
+    }, 1200);
+  };
+
+  const verifyPaytmOtp = async () => {
+    if (paytmOtp.length !== 6) {
+      addNotification('Invalid OTP', 'Please enter a valid 6-digit Paytm OTP (or click Auto-Fill 123456).', 'error');
+      return;
+    }
+    setPaytmStep('processing');
+
+    try {
+      addNotification('Verifying Paytm Security', 'Authenticating Paytm payment cryptographic tokens...', 'info');
+      const generatedTxnId = 'PTM_TXN_' + Math.random().toString(36).substring(2, 10).toUpperCase();
+      
+      const verifyRes = await fetch('/api/payment/paytm/verify', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('session_token') || ''}`
+        },
+        body: JSON.stringify({
+          orderId: currentPaytmOrderId,
+          txnId: generatedTxnId,
+          mode: paytmSubMethod
+        })
+      });
+
+      const verifyData = await verifyRes.json();
+      if (verifyRes.ok && verifyData.success) {
+        setCurrentPaytmTxnId(generatedTxnId);
+        setPaytmStep('success');
+        addNotification('Paytm Payment Success', 'Paytm PG transaction completed and verified!', 'success');
+        createSuccessfulOrder(generatedTxnId, `Paytm PG (${paytmSubMethod.toUpperCase()})`, 'paid', verifyData.order);
+      } else {
+        addNotification('Paytm Verification Error', verifyData.error || 'Paytm transaction verification failed.', 'error');
+        setPaytmStep('select_method');
+      }
+    } catch (err: any) {
+      console.error(err);
+      addNotification('Paytm Network Error', err.message || 'Error processing Paytm transaction.', 'error');
+      setPaytmStep('select_method');
     }
   };
 
@@ -1676,8 +1854,1481 @@ export default function CustomerWebsite({
   return (
     <div className="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between" id="customer-store">
       
-      {/* 4. Product Details Page View */}
-      {selectedProduct ? (
+      {/* View Router */}
+      {currentScreen === 'about' ? (
+        <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-10 flex-1 font-sans animate-in fade-in duration-350" id="about-us-page">
+          
+          {/* Breadcrumbs & Navigation Bar */}
+          <div className="flex items-center justify-between gap-4 mb-8 pb-4 border-b border-slate-200">
+            <div className="flex items-center gap-2 text-xs text-slate-500 font-medium font-sans">
+              <button 
+                onClick={() => {
+                  setCurrentScreen('store');
+                  setSelectedCategory('all');
+                  setSearchQuery('');
+                  setSelectedProduct(null);
+                  setSelectedSubcategory(null);
+                }} 
+                className="hover:text-emerald-600 transition-colors font-semibold cursor-pointer"
+              >
+                Home
+              </button>
+              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-slate-900 font-extrabold uppercase tracking-wider text-[11px]">ABOUT US</span>
+            </div>
+
+            <button
+              onClick={() => {
+                setCurrentScreen('store');
+                setSelectedProduct(null);
+                setSelectedSubcategory(null);
+              }}
+              className="flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 hover:text-emerald-600 font-extrabold rounded-xl text-xs transition-all shadow-sm cursor-pointer"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Back to Store</span>
+            </button>
+          </div>
+
+          {/* Hero Header Banner */}
+          <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 text-white rounded-3xl p-8 sm:p-12 mb-10 shadow-xl border border-slate-800 text-left">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="relative z-10 max-w-3xl space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 border border-emerald-400/30 rounded-full text-xs font-bold text-emerald-300">
+                <Award className="w-4 h-4 text-emerald-400" />
+                <span>Established 2016 • Trusted Software Partner</span>
+              </div>
+              <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white font-sans">
+                About Us
+              </h1>
+              <p className="text-base sm:text-lg text-slate-200 font-medium leading-relaxed font-sans">
+                Welcome to Veera Computer, your trusted destination for genuine digital software licenses and activation keys at affordable prices.
+              </p>
+            </div>
+          </div>
+
+          {/* Main Content Sections Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
+            
+            {/* Left Main Column */}
+            <div className="lg:col-span-8 space-y-8 text-left">
+              
+              {/* Company Legacy & History */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                    <Building2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-extrabold text-slate-900 font-sans">Serving Customers Across India Since 2016</h2>
+                    <p className="text-xs text-slate-500 font-medium">Authentic Software Solutions & Professional Service</p>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-600 leading-relaxed font-sans">
+                  Established in 2016, Veera Computer has been serving customers across India with authentic software solutions, professional service, and reliable customer support. With over 20 years of industry experience, we have built a reputation based on trust, transparency, and customer satisfaction.
+                </p>
+              </div>
+
+              {/* Specializations List */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-5">
+                <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                    <ShieldCheck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-extrabold text-slate-900 font-sans">What We Specialize In</h2>
+                    <p className="text-xs text-slate-500 font-medium">100% Genuine Digital License Keys</p>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-600 font-medium">
+                  We specialize in providing 100% genuine digital license keys for a wide range of software, including:
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  {[
+                    "Microsoft Windows",
+                    "Microsoft Office",
+                    "Windows Server",
+                    "Antivirus & Internet Security Software",
+                    "Business & Productivity Software",
+                    "Other Genuine Digital Software Licenses"
+                  ].map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-3 p-3.5 bg-slate-50 border border-slate-200/60 rounded-2xl hover:border-emerald-500/40 transition-colors">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+                      <span className="text-xs font-bold text-slate-800">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Our Mission */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                    <Zap className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-extrabold text-slate-900 font-sans">Our Mission</h2>
+                    <p className="text-xs text-slate-500 font-medium">Authenticity, Security, and Long-Term Reliability</p>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-600 leading-relaxed font-sans">
+                  Our mission is to make original software licenses easily accessible to individuals, businesses, educational institutions, IT professionals, and resellers across India. Every product we offer is sourced through trusted channels to ensure authenticity, security, and long-term reliability.
+                </p>
+              </div>
+
+              {/* Why Choose Veera Computer? */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-5">
+                <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                    <Gift className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-extrabold text-slate-900 font-sans">Why Choose Veera Computer?</h2>
+                    <p className="text-xs text-slate-500 font-medium">The Veera Advantage</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {[
+                    "100% Genuine & Verified Digital License Keys",
+                    "Instant Digital Delivery for Most Products",
+                    "Secure & Easy Payment Options",
+                    "Affordable & Competitive Pricing",
+                    "Fast & Responsive Customer Support",
+                    "10 Years of Industry Experience",
+                    "Trusted by Customers Across India"
+                  ].map((reason, idx) => (
+                    <div key={idx} className="flex items-start gap-3 p-3.5 bg-emerald-50/50 border border-emerald-100 rounded-2xl">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                      <span className="text-xs font-bold text-slate-800">{reason}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Customer Commitment */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-lg font-extrabold text-slate-900 font-sans">Our Commitment to You</h2>
+                <p className="text-sm text-slate-600 leading-relaxed font-sans">
+                  At Veera Computer, customer satisfaction is our highest priority. We are committed to delivering genuine products, transparent business practices, and dependable after-sales support. Whether you are purchasing a single software license or managing bulk licensing for your organization, we strive to provide the best value and service every time.
+                </p>
+              </div>
+
+              {/* Tagline Card */}
+              <div className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-6 sm:p-8 rounded-3xl text-center space-y-2 shadow-lg">
+                <h3 className="text-2xl font-black font-sans tracking-tight">Veera Computer</h3>
+                <p className="text-sm font-bold text-emerald-100 tracking-wider">
+                  Genuine Software • Trusted Service • Best Value
+                </p>
+              </div>
+
+            </div>
+
+            {/* Right Column: Verified Business Card & Direct Contact Details */}
+            <div className="lg:col-span-4 space-y-6 text-left">
+              
+              {/* Contact Info Card matching the user request */}
+              <div className="bg-slate-900 text-slate-200 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-5 sticky top-6">
+                <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                    <Building2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-extrabold text-white font-sans">Veera Computers</h3>
+                    <p className="text-[11px] text-slate-400">Registered Commercial Office</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4 text-xs font-sans">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider block">Office Address</span>
+                    <p className="text-slate-200 font-semibold leading-relaxed">
+                      G.R. Floor, 1-11-42, Mama Chowk, Jalna, Maharashtra. 431203.
+                    </p>
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider block">GST Registration</span>
+                    <p className="font-mono text-emerald-400 font-extrabold text-sm bg-slate-950 p-2 rounded-xl border border-slate-800">
+                      27FZOPS8739E1ZH
+                    </p>
+                  </div>
+
+                  <div className="space-y-2 pt-2 border-t border-slate-800">
+                    <a
+                      href="tel:+919764528777"
+                      className="flex items-center justify-between p-3 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-2xl transition-all group cursor-pointer"
+                    >
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase block">Technical Support</span>
+                        <span className="text-xs font-extrabold text-white font-mono">+91-9764528777</span>
+                      </div>
+                      <Phone className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
+                    </a>
+
+                    <a
+                      href="tel:+919764528777"
+                      className="flex items-center justify-between p-3 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-2xl transition-all group cursor-pointer"
+                    >
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase block">Sales Contact</span>
+                        <span className="text-xs font-extrabold text-white font-mono">+91-9764528777</span>
+                      </div>
+                      <Phone className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
+                    </a>
+
+                    <a
+                      href="https://wa.me/919764528777?text=Hello%20Veera%20Computer,%20I%20have%20an%20inquiry"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 p-3 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold rounded-2xl transition-all shadow-md text-xs cursor-pointer w-full mt-2"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      <span>Chat on WhatsApp</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      ) : currentScreen === 'privacy' ? (
+        <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-10 flex-1 font-sans animate-in fade-in duration-350" id="privacy-policy-page">
+          
+          {/* Breadcrumbs & Navigation Bar */}
+          <div className="flex items-center justify-between gap-4 mb-8 pb-4 border-b border-slate-200">
+            <div className="flex items-center gap-2 text-xs text-slate-500 font-medium font-sans">
+              <button 
+                onClick={() => {
+                  setCurrentScreen('store');
+                  setSelectedCategory('all');
+                  setSearchQuery('');
+                  setSelectedProduct(null);
+                  setSelectedSubcategory(null);
+                }} 
+                className="hover:text-emerald-600 transition-colors font-semibold cursor-pointer"
+              >
+                Home
+              </button>
+              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-slate-900 font-extrabold uppercase tracking-wider text-[11px]">PRIVACY POLICY</span>
+            </div>
+
+            <button
+              onClick={() => {
+                setCurrentScreen('store');
+                setSelectedProduct(null);
+                setSelectedSubcategory(null);
+              }}
+              className="flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 hover:text-emerald-600 font-extrabold rounded-xl text-xs transition-all shadow-sm cursor-pointer"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Back to Store</span>
+            </button>
+          </div>
+
+          {/* Hero Header Banner */}
+          <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 text-white rounded-3xl p-8 sm:p-12 mb-10 shadow-xl border border-slate-800 text-left">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="relative z-10 max-w-4xl space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 border border-emerald-400/30 rounded-full text-xs font-bold text-emerald-300">
+                <Lock className="w-4 h-4 text-emerald-400" />
+                <span>Effective Date: July 28, 2026 • Veera Computers</span>
+              </div>
+              <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white font-sans">
+                Privacy Policy
+              </h1>
+              <p className="text-base sm:text-lg text-slate-200 font-medium leading-relaxed font-sans">
+                Protecting your personal information, digital software keys, and Paytm Payment Gateway transaction security is our commitment. Read our complete privacy policy below.
+              </p>
+            </div>
+          </div>
+
+          {/* Highlights Badge Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10 text-left">
+            <div className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                <CreditCard className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm font-extrabold text-slate-900">Paytm Payment Gateway</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">PCI-DSS compliant card, UPI, & Net Banking processing with zero stored PIN/CVVs.</p>
+            </div>
+
+            <div className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm font-extrabold text-slate-900">2FA OTP Facility</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">Mandatory One-Time Password verification for logins, password resets & key delivery.</p>
+            </div>
+
+            <div className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
+                <Lock className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm font-extrabold text-slate-900">Supabase Secure Cloud</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">Encrypted database management & account security using industry standards.</p>
+            </div>
+
+            <div className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+                <Award className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm font-extrabold text-slate-900">Zero Data Reselling</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">We never sell, rent, or trade customer emails or phone numbers to third parties.</p>
+            </div>
+          </div>
+
+          {/* Complete 20-Section Detailed Policy Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12 text-left">
+            
+            {/* Main Policy Content (8 cols) */}
+            <div className="lg:col-span-8 space-y-8">
+              
+              {/* 1. Introduction */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">1</span>
+                  <span>Introduction</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>
+                    Welcome to <strong>Veera Computers</strong> (&quot;Company&quot;, &quot;We&quot;, &quot;Us&quot;, or &quot;Our&quot;). We respect your privacy and are committed to protecting the personal information you share with us.
+                  </p>
+                  <p>
+                    This Privacy Policy explains how we collect, use, store, disclose, and protect your information when you visit or use <a href="https://www.veerait.com/" className="text-emerald-600 font-bold hover:underline">https://www.veerait.com/</a> (&quot;Website&quot;).
+                  </p>
+                  <p>
+                    By accessing or using our Website, you acknowledge that you have read, understood, and agreed to this Privacy Policy.
+                  </p>
+                </div>
+              </div>
+
+              {/* 2. Company Information */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">2</span>
+                  <span>Company Information</span>
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm text-slate-700">
+                  <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-1">
+                    <span className="text-[10px] uppercase font-extrabold text-slate-400 block">Business Name</span>
+                    <p className="font-extrabold text-slate-900">Veera Computers</p>
+                  </div>
+
+                  <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-1">
+                    <span className="text-[10px] uppercase font-extrabold text-slate-400 block">Website</span>
+                    <a href="https://www.veerait.com/" className="font-bold text-emerald-600 hover:underline">https://www.veerait.com/</a>
+                  </div>
+
+                  <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-1 md:col-span-2">
+                    <span className="text-[10px] uppercase font-extrabold text-slate-400 block">Address</span>
+                    <p className="font-semibold text-slate-800">
+                      G.R. Floor, 1-11-42, Mama Chowk, Jalna, Maharashtra – 431203 India
+                    </p>
+                  </div>
+
+                  <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-1">
+                    <span className="text-[10px] uppercase font-extrabold text-slate-400 block">GSTIN</span>
+                    <p className="font-mono font-black text-slate-900">27FZOPS8739E1ZH</p>
+                  </div>
+
+                  <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-1">
+                    <span className="text-[10px] uppercase font-extrabold text-slate-400 block">Technical & Sales Support</span>
+                    <p className="font-mono font-bold text-emerald-700">+91-9764528777</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 3. Information We Collect */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">3</span>
+                  <span>Information We Collect</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>We collect only the information necessary to provide our products and services. Information may include:</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 font-medium text-slate-800 text-xs">
+                    <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-xl border border-slate-100">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      <span>Full Name</span>
+                    </div>
+                    <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-xl border border-slate-100">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      <span>Mobile Number</span>
+                    </div>
+                    <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-xl border border-slate-100">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      <span>Email Address</span>
+                    </div>
+                    <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-xl border border-slate-100">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      <span>Billing & Shipping Address</span>
+                    </div>
+                    <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-xl border border-slate-100">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      <span>State, City and PIN Code</span>
+                    </div>
+                    <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-xl border border-slate-100">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      <span>Company Name & GST Details</span>
+                    </div>
+                    <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-xl border border-slate-100">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      <span>Login Credentials & Order History</span>
+                    </div>
+                    <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-xl border border-slate-100">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      <span>IP Address, Browser & Device Info</span>
+                    </div>
+                  </div>
+                  <p className="pt-2 text-slate-500 text-xs italic">
+                    We do <strong>not intentionally collect</strong> sensitive personal information such as medical records, biometric information, religion, political opinions, or sexual orientation.
+                  </p>
+                </div>
+              </div>
+
+              {/* 4. How We Use Your Information */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">4</span>
+                  <span>How We Use Your Information</span>
+                </h2>
+                <div className="space-y-2 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>Your information is used for the following purposes:</p>
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-2 pt-1 font-medium text-slate-700">
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" /> Processing your orders</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" /> Delivering software license keys</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" /> Shipping hardware products</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" /> Verifying payments</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" /> Creating tax invoices</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" /> Managing your account</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" /> Providing customer support</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" /> Sending order confirmations</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" /> Sending OTP for 2FA account verification</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" /> Password reset notifications</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" /> Improving website performance</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" /> Detecting fraud & legal compliance</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* 5. Digital Product Delivery */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">5</span>
+                  <span>Digital Product Delivery</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>Most software products sold on our Website are digital products.</p>
+                  <p>After successful payment confirmation, digital license keys may be delivered through:</p>
+                  <ul className="list-disc pl-5 space-y-1 font-semibold text-slate-800">
+                    <li>Customer Dashboard</li>
+                    <li>Email</li>
+                    <li>WhatsApp Business (where applicable)</li>
+                  </ul>
+                  <p className="text-xs text-slate-500">Delivery time depends upon payment verification and product availability.</p>
+                </div>
+              </div>
+
+              {/* 6. Payment Information */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">6</span>
+                  <span>Payment Information (Paytm PG)</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>Payments on our Website are processed securely through <strong>Paytm Payment Gateway</strong>.</p>
+                  <p className="font-bold text-slate-900">We NEVER store:</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs font-semibold text-red-600">
+                    <div className="p-2 bg-red-50 border border-red-100 rounded-xl">❌ Debit Card Numbers</div>
+                    <div className="p-2 bg-red-50 border border-red-100 rounded-xl">❌ Credit Card Numbers</div>
+                    <div className="p-2 bg-red-50 border border-red-100 rounded-xl">❌ CVV Codes</div>
+                    <div className="p-2 bg-red-50 border border-red-100 rounded-xl">❌ ATM PIN</div>
+                    <div className="p-2 bg-red-50 border border-red-100 rounded-xl">❌ UPI PIN</div>
+                    <div className="p-2 bg-red-50 border border-red-100 rounded-xl">❌ Banking Passwords</div>
+                  </div>
+                  <p className="text-xs text-slate-500">Sensitive payment information is processed securely by the payment gateway.</p>
+                </div>
+              </div>
+
+              {/* 7. Cookies */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">7</span>
+                  <span>Cookies</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>Our Website uses cookies and similar technologies to:</p>
+                  <ul className="list-disc pl-5 space-y-1 font-medium text-slate-700">
+                    <li>Keep you signed in</li>
+                    <li>Remember your preferences</li>
+                    <li>Improve website functionality</li>
+                    <li>Measure website traffic</li>
+                    <li>Enhance user experience</li>
+                  </ul>
+                  <p className="text-xs text-slate-500">You can disable cookies through your browser settings, although some Website features may not function properly.</p>
+                </div>
+              </div>
+
+              {/* 8. Google Analytics */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">8</span>
+                  <span>Google Analytics</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>We use <strong>Google Analytics</strong> to understand how visitors interact with our Website. Google Analytics may collect Browser Information, Device Information, Pages Visited, Time Spent on Pages, Geographic Region, and Referring Website.</p>
+                  <p className="text-xs text-slate-500">This information is used only for improving our Website and services.</p>
+                </div>
+              </div>
+
+              {/* 9. WhatsApp Business */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">9</span>
+                  <span>WhatsApp Business</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>We may use <strong>WhatsApp Business</strong> to send Order Updates, Digital License Delivery, Customer Support Messages, and Important Service Notifications.</p>
+                  <p className="font-bold text-emerald-700">We will never send spam messages through WhatsApp.</p>
+                </div>
+              </div>
+
+              {/* 10. Supabase Services */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">10</span>
+                  <span>Supabase Services</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>
+                    Our Website uses <strong>Supabase</strong> for secure database management, authentication, and storage of customer account information. Supabase implements industry-standard security practices to help protect your information.
+                  </p>
+                </div>
+              </div>
+
+              {/* 11. Information Sharing */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">11</span>
+                  <span>Information Sharing</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p className="font-bold text-slate-900">We do NOT sell, rent, or trade your personal information.</p>
+                  <p>Your information may be shared only with:</p>
+                  <ul className="list-disc pl-5 space-y-1 font-medium text-slate-700">
+                    <li>Paytm Payment Gateway</li>
+                    <li>Shipping Partners</li>
+                    <li>Cloud Hosting Providers</li>
+                    <li>WhatsApp Business Services</li>
+                    <li>Government Authorities when legally required</li>
+                    <li>Law Enforcement Agencies where applicable</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* 12. Data Security */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">12</span>
+                  <span>Data Security</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>We use commercially reasonable security measures including SSL Encryption, Secure Cloud Infrastructure, Password-Protected Systems, Firewalls, Restricted Administrative Access, and Regular Security Monitoring.</p>
+                  <p className="text-xs text-slate-500">Although we take every reasonable precaution, no method of transmission over the Internet is completely secure.</p>
+                </div>
+              </div>
+
+              {/* 13. Data Retention */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">13</span>
+                  <span>Data Retention</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>Your information is retained only for as long as necessary to complete your orders, provide customer support, meet legal and tax obligations, maintain business records, and resolve disputes. After this period, information may be securely deleted or anonymized.</p>
+                </div>
+              </div>
+
+              {/* 14. Your Rights */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">14</span>
+                  <span>Your Rights</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>You may contact us to access your personal information, correct inaccurate information, update your account, request deletion of eligible data, or withdraw consent where legally permitted.</p>
+                </div>
+              </div>
+
+              {/* 15. Third-Party Links */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">15</span>
+                  <span>Third-Party Links</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>Our Website may contain links to third-party websites. We are not responsible for the privacy practices or content of external websites.</p>
+                </div>
+              </div>
+
+              {/* 16. Children's Privacy */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">16</span>
+                  <span>Children&apos;s Privacy</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>Our Website is intended for individuals who are at least 18 years old or are using the Website under the supervision of a parent or legal guardian. We do not knowingly collect personal information from children.</p>
+                </div>
+              </div>
+
+              {/* 17. Product Images */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">17</span>
+                  <span>Product Images</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>Product images displayed on our Website are for illustration purposes only. Actual packaging, branding, or appearance may vary depending on the manufacturer.</p>
+                </div>
+              </div>
+
+              {/* 18. Changes to this Privacy Policy */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">18</span>
+                  <span>Changes to this Privacy Policy</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>We may revise this Privacy Policy from time to time. Any updates will be posted on this page with a revised Effective Date. Continued use of the Website after changes are posted constitutes acceptance of the updated Privacy Policy.</p>
+                </div>
+              </div>
+
+              {/* 19. Governing Law */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">19</span>
+                  <span>Governing Law</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>This Privacy Policy shall be governed by and interpreted in accordance with the laws of India. Any disputes relating to this Privacy Policy or the Website shall be subject to the exclusive jurisdiction of the courts located in Jalna, Maharashtra.</p>
+                </div>
+              </div>
+
+              {/* 20. Contact Us */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">20</span>
+                  <span>Contact Us</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>If you have any questions, requests, or complaints regarding this Privacy Policy, please contact us:</p>
+                  <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl space-y-2 text-xs font-sans">
+                    <strong className="text-emerald-950 text-sm font-extrabold block">Veera Computers</strong>
+                    <p><strong>Website:</strong> <a href="https://www.veerait.com/" className="text-emerald-700 font-bold hover:underline">https://www.veerait.com/</a></p>
+                    <p><strong>Address:</strong> G.R. Floor, 1-11-42, Mama Chowk, Jalna, Maharashtra – 431203, India</p>
+                    <p><strong>GSTIN:</strong> 27FZOPS8739E1ZH</p>
+                    <p><strong>Technical Support:</strong> +91-9764528777</p>
+                    <p><strong>Sales Support:</strong> +91-9764528777</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Consent Card */}
+              <div className="bg-gradient-to-r from-emerald-900 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-md space-y-3">
+                <h3 className="text-lg font-extrabold font-sans">Consent</h3>
+                <p className="text-xs sm:text-sm text-emerald-100 leading-relaxed font-medium">
+                  By accessing, registering, or placing an order on <strong className="text-white">https://www.veerait.com/</strong>, you acknowledge that you have read, understood, and agreed to this Privacy Policy.
+                </p>
+              </div>
+
+            </div>
+
+            {/* Right Column: Verified Entity Card */}
+            <div className="lg:col-span-4 space-y-6">
+              <div className="bg-slate-900 text-slate-200 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-5 sticky top-6 text-left">
+                <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                    <Building2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-extrabold text-white font-sans">Veera Computers</h3>
+                    <p className="text-[11px] text-emerald-400 font-semibold">Official Business Entity</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4 text-xs font-sans">
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider block mb-1">Website URL</span>
+                    <a href="https://www.veerait.com/" target="_blank" rel="noopener noreferrer" className="text-emerald-400 font-extrabold hover:underline block font-mono text-xs">
+                      https://www.veerait.com/
+                    </a>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider block mb-1">Operating Location</span>
+                    <p className="text-slate-200 font-semibold leading-relaxed">
+                      G.R. Floor, 1-11-42, Mama Chowk, Jalna, Maharashtra. 431203 India.
+                    </p>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider block mb-1">GST Registration</span>
+                    <p className="font-mono text-emerald-400 font-extrabold text-xs bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                      27FZOPS8739E1ZH
+                    </p>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-800 space-y-2">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase block">Technical & Sales Support</span>
+                    <p className="text-xs font-extrabold text-white font-mono">+91-9764528777</p>
+                    <a
+                      href="https://wa.me/919764528777?text=Hello%20Veera%20Computers,%20I%20have%20a%20privacy%20question"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 p-3 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold rounded-xl transition-all shadow-md text-xs cursor-pointer w-full mt-2"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      <span>Contact Privacy Support</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      ) : currentScreen === 'shipping' ? (
+        <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-10 flex-1 font-sans animate-in fade-in duration-350" id="shipping-policy-page">
+          
+          {/* Breadcrumbs & Navigation Bar */}
+          <div className="flex items-center justify-between gap-4 mb-8 pb-4 border-b border-slate-200">
+            <div className="flex items-center gap-2 text-xs text-slate-500 font-medium font-sans">
+              <button 
+                onClick={() => {
+                  setCurrentScreen('store');
+                  setSelectedCategory('all');
+                  setSearchQuery('');
+                  setSelectedProduct(null);
+                  setSelectedSubcategory(null);
+                }} 
+                className="hover:text-emerald-600 transition-colors font-semibold cursor-pointer"
+              >
+                Home
+              </button>
+              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-slate-900 font-extrabold uppercase tracking-wider text-[11px]">SHIPPING, RETURN, CANCELLATION & REFUND POLICY</span>
+            </div>
+
+            <button
+              onClick={() => {
+                setCurrentScreen('store');
+                setSelectedProduct(null);
+                setSelectedSubcategory(null);
+              }}
+              className="flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 hover:text-emerald-600 font-extrabold rounded-xl text-xs transition-all shadow-sm cursor-pointer"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Back to Store</span>
+            </button>
+          </div>
+
+          {/* Hero Header Banner */}
+          <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 text-white rounded-3xl p-8 sm:p-12 mb-10 shadow-xl border border-slate-800 text-left">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="relative z-10 max-w-4xl space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 border border-emerald-400/30 rounded-full text-xs font-bold text-emerald-300">
+                <Truck className="w-4 h-4 text-emerald-400" />
+                <span>VeeraIT (Veera Computers) • Official Store Policy</span>
+              </div>
+              <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white font-sans">
+                Shipping, Return, Cancellation & Refund Policy
+              </h1>
+              <p className="text-base sm:text-lg text-slate-200 font-medium leading-relaxed font-sans">
+                At <strong>VeeraIT (Veera Computers)</strong>, we strive to provide fast and reliable delivery of genuine digital software licenses and related products. Please read this policy carefully before placing your order.
+              </p>
+            </div>
+          </div>
+
+          {/* Highlights Badge Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10 text-left">
+            <div className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                <Zap className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm font-extrabold text-slate-900">1–30 Sec ESD Delivery</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">Instant digital keys delivered straight to registered Email & WhatsApp.</p>
+            </div>
+
+            <div className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                <PackageCheck className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm font-extrabold text-slate-900">3–10 Days Physical Cargo</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">Trusted courier partner dispatch for physical boxes & COA packages.</p>
+            </div>
+
+            <div className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm font-extrabold text-slate-900">100% Working Key Guarantee</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">Free replacement key or full refund for verified invalid licenses.</p>
+            </div>
+
+            <div className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+                <Clock className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm font-extrabold text-slate-900">48-Hr Refund Processing</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">Approved refunds processed within 48 hours back to original payment mode.</p>
+            </div>
+          </div>
+
+          {/* 10-Section Detailed Policy Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12 text-left">
+            
+            {/* Main Policy Content (8 cols) */}
+            <div className="lg:col-span-8 space-y-8">
+              
+              {/* 1. Nature of Products */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">1</span>
+                  <span>Nature of Products</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>
+                    We primarily sell <strong>digital products</strong>, including software license keys, activation codes, subscriptions, and downloadable software.
+                  </p>
+                  <p>
+                    Digital products are delivered electronically and become non-returnable once successfully delivered. Some physical products (if offered) will have separate shipping and return conditions mentioned on the respective product pages.
+                  </p>
+                </div>
+              </div>
+
+              {/* 2. Shipping & Delivery Policy */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">2</span>
+                  <span>Shipping & Delivery Policy</span>
+                </h2>
+
+                {/* Digital Product Delivery */}
+                <div className="p-5 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-3">
+                  <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-emerald-600" />
+                    <span>Digital Product Delivery</span>
+                  </h3>
+                  <ul className="space-y-2 text-xs sm:text-sm text-slate-600 list-disc pl-5 leading-relaxed">
+                    <li>Digital license keys are delivered to the customer&apos;s registered <strong>email address</strong> and/or <strong>WhatsApp number</strong> provided during checkout.</li>
+                    <li>Most orders are delivered <strong>instantly within 1–30 seconds</strong> after successful payment.</li>
+                    <li>In certain cases involving payment verification, fraud prevention, supplier delays, or technical issues, delivery may take <strong>up to 24 hours</strong>.</li>
+                    <li>Customers are responsible for providing accurate email addresses and mobile numbers.</li>
+                    <li>VeeraIT is not responsible for delivery failures or delays caused by incorrect customer information.</li>
+                  </ul>
+                </div>
+
+                {/* Physical Product Delivery */}
+                <div className="p-5 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-3">
+                  <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                    <Truck className="w-4 h-4 text-blue-600" />
+                    <span>Physical Product Delivery (If Applicable)</span>
+                  </h3>
+                  <ul className="space-y-2 text-xs sm:text-sm text-slate-600 list-disc pl-5 leading-relaxed">
+                    <li>Physical products are shipped through trusted courier partners.</li>
+                    <li>Estimated delivery time is generally <strong>3–10 business days</strong>, depending on the destination.</li>
+                    <li>Delivery timelines may vary due to public holidays, weather conditions, courier delays, or other unforeseen circumstances.</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* 3. Order Cancellation Policy */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">3</span>
+                  <span>Order Cancellation Policy</span>
+                </h2>
+                <div className="space-y-4 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl space-y-2">
+                    <h3 className="font-extrabold text-amber-900 text-xs uppercase tracking-wider">Digital Products</h3>
+                    <p>
+                      Orders may only be cancelled <strong>before</strong> the software license or activation key has been generated or delivered.
+                    </p>
+                    <p className="font-semibold text-amber-900">
+                      Once the license key, activation code, or download information has been sent via email or WhatsApp, the order is considered fulfilled and <strong>cannot be cancelled</strong>.
+                    </p>
+                  </div>
+
+                  <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-1">
+                    <h3 className="font-extrabold text-slate-900 text-xs uppercase tracking-wider">Physical Products (If Applicable)</h3>
+                    <p>
+                      Physical product orders may be cancelled before shipment. Once shipped, cancellation requests may not be accepted.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. Return Policy */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">4</span>
+                  <span>Return Policy</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p className="font-medium text-slate-800">
+                    Because digital software licenses can be copied, activated, or used immediately after delivery, <strong>returns are not accepted</strong> once the product has been delivered.
+                  </p>
+                  <p>Returns will not be accepted for reasons including, but not limited to:</p>
+                  <ul className="list-disc pl-5 space-y-1.5 text-slate-600">
+                    <li>Incorrect product selected by the customer</li>
+                    <li>Customer purchased the wrong edition or version</li>
+                    <li>Device or operating system incompatibility</li>
+                    <li>Customer lacks technical knowledge to install or use the software</li>
+                    <li>Customer no longer requires the product after delivery</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* 5. Refund Policy */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">5</span>
+                  <span>Refund Policy</span>
+                </h2>
+                <div className="space-y-4 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>Refunds are available only under the circumstances described below.</p>
+                  <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider text-emerald-700">Eligible Refund Cases</h3>
+                  
+                  <div className="grid grid-cols-1 gap-3">
+                    <div className="p-4 bg-emerald-50/60 border border-emerald-200/80 rounded-2xl space-y-1">
+                      <strong className="block text-emerald-900 font-extrabold">A. Non-Delivery</strong>
+                      <p className="text-xs text-slate-700">If your order is not delivered within the committed timeframe and our support team is unable to complete delivery, you will receive a <strong>full refund</strong>.</p>
+                    </div>
+
+                    <div className="p-4 bg-emerald-50/60 border border-emerald-200/80 rounded-2xl space-y-1">
+                      <strong className="block text-emerald-900 font-extrabold">B. Invalid or Non-Working License Key</strong>
+                      <p className="text-xs text-slate-700 mb-1">If the delivered activation key is confirmed to be invalid or unusable:</p>
+                      <ul className="list-disc pl-5 text-xs text-slate-700 space-y-1">
+                        <li>We will first attempt to provide a replacement key.</li>
+                        <li>If a replacement cannot be provided, a full refund will be issued.</li>
+                      </ul>
+                    </div>
+
+                    <div className="p-4 bg-emerald-50/60 border border-emerald-200/80 rounded-2xl space-y-1">
+                      <strong className="block text-emerald-900 font-extrabold">C. Duplicate Payment</strong>
+                      <p className="text-xs text-slate-700">If multiple payments are accidentally made for the same order, the excess payment amount will be refunded to the original payment method.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 6. Non-Refundable Situations */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">6</span>
+                  <span>Non-Refundable Situations</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>Refund requests will <strong>not</strong> be approved in the following cases:</p>
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                    <li className="p-3 bg-rose-50/50 border border-rose-100 rounded-xl text-rose-900 font-medium flex items-start gap-2">
+                      <span className="text-rose-600 font-bold">•</span>
+                      <span>Incorrect product ordered by the customer</span>
+                    </li>
+                    <li className="p-3 bg-rose-50/50 border border-rose-100 rounded-xl text-rose-900 font-medium flex items-start gap-2">
+                      <span className="text-rose-600 font-bold">•</span>
+                      <span>Customer changes their mind after delivery</span>
+                    </li>
+                    <li className="p-3 bg-rose-50/50 border border-rose-100 rounded-xl text-rose-900 font-medium flex items-start gap-2">
+                      <span className="text-rose-600 font-bold">•</span>
+                      <span>License key has already been activated, redeemed, or used</span>
+                    </li>
+                    <li className="p-3 bg-rose-50/50 border border-rose-100 rounded-xl text-rose-900 font-medium flex items-start gap-2">
+                      <span className="text-rose-600 font-bold">•</span>
+                      <span>Device, hardware, or OS does not meet software requirements</span>
+                    </li>
+                    <li className="p-3 bg-rose-50/50 border border-rose-100 rounded-xl text-rose-900 font-medium flex items-start gap-2">
+                      <span className="text-rose-600 font-bold">•</span>
+                      <span>Customer failed to read product compatibility information</span>
+                    </li>
+                    <li className="p-3 bg-rose-50/50 border border-rose-100 rounded-xl text-rose-900 font-medium flex items-start gap-2">
+                      <span className="text-rose-600 font-bold">•</span>
+                      <span>Delay or failure caused by incorrect contact details</span>
+                    </li>
+                    <li className="p-3 bg-rose-50/50 border border-rose-100 rounded-xl text-rose-900 font-medium flex items-start gap-2">
+                      <span className="text-rose-600 font-bold">•</span>
+                      <span>Customer refuses to follow installation or activation instructions</span>
+                    </li>
+                    <li className="p-3 bg-rose-50/50 border border-rose-100 rounded-xl text-rose-900 font-medium flex items-start gap-2">
+                      <span className="text-rose-600 font-bold">•</span>
+                      <span>Third-party software conflicts or customer-side technical issues</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* 7. Refund Processing */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">7</span>
+                  <span>Refund Processing</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>Once a refund request is approved:</p>
+                  <ul className="list-disc pl-5 space-y-2 text-slate-700">
+                    <li>Refunds are processed within <strong>48 hours</strong>.</li>
+                    <li>The amount is credited to the original payment method.</li>
+                    <li>Banks and payment gateways generally complete the refund within <strong>3–7 business days</strong>, although actual timelines may vary depending on the payment provider.</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* 8. Customer Support */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">8</span>
+                  <span>Customer Support</span>
+                </h2>
+                <div className="space-y-4 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p className="font-semibold text-slate-800">
+                    Customers should report any delivery or activation issue <strong>within 24 hours</strong> of receiving the product.
+                  </p>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <a
+                      href="mailto:veeracomputersjalna@gmail.com"
+                      className="p-4 bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 rounded-2xl flex items-center gap-3 transition-all group"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+                        <Mail className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Email Support</span>
+                        <strong className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-blue-700">veeracomputersjalna@gmail.com</strong>
+                      </div>
+                    </a>
+
+                    <a
+                      href="https://wa.me/919764528777?text=Hello%20VeeraIT%20Support,%20I%20have%20a%20question%20regarding%20my%20order."
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-4 bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 rounded-2xl flex items-center gap-3 transition-all group"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                        <MessageSquare className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">WhatsApp Support</span>
+                        <strong className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-emerald-700">+91 9764528777</strong>
+                      </div>
+                    </a>
+                  </div>
+
+                  <p className="text-xs text-slate-500 italic">
+                    Our support team will verify the issue and provide an appropriate resolution as quickly as possible.
+                  </p>
+                </div>
+              </div>
+
+              {/* 9. Compliance & Customer Acknowledgement */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">9</span>
+                  <span>Compliance & Customer Acknowledgement</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>By placing an order on VeeraIT, you acknowledge and agree that:</p>
+                  <ul className="list-disc pl-5 space-y-2 text-slate-700">
+                    <li>You have reviewed the product description and system requirements before purchase.</li>
+                    <li>You understand that digital products are generally non-returnable once delivered.</li>
+                    <li>Refunds are only available under the conditions specifically stated in this policy.</li>
+                    <li>You agree to our Terms & Conditions and Privacy Policy.</li>
+                    <li>Any misuse, fraudulent refund claims, chargeback abuse, or unauthorized payment disputes may result in order cancellation, account suspension, and legal action where applicable.</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* 10. Policy Updates */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">10</span>
+                  <span>Policy Updates</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>
+                    VeeraIT reserves the right to modify or update this Shipping, Return, Cancellation & Refund Policy at any time without prior notice. The latest version will always be available on our website and becomes effective immediately upon publication.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Sticky Sidebar (4 cols) */}
+            <div className="lg:col-span-4 space-y-6">
+              
+              {/* Support Widget */}
+              <div className="bg-slate-900 text-white p-6 rounded-3xl shadow-lg border border-slate-800 space-y-4 sticky top-24">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+                  <Headphones className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-black text-white font-sans">Need Help with Delivery or Keys?</h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Report any delivery delay or activation issue within 24 hours to our dedicated support desk.
+                </p>
+
+                <div className="space-y-2 pt-2">
+                  <a
+                    href="https://wa.me/919764528777?text=Hello%20VeeraIT%20Support,%20I%20need%20assistance%20with%20my%20order."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 p-3 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold rounded-xl transition-all shadow-md text-xs cursor-pointer w-full"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    <span>WhatsApp: +91 9764528777</span>
+                  </a>
+
+                  <a
+                    href="mailto:veeracomputersjalna@gmail.com"
+                    className="flex items-center justify-center gap-2 p-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-extrabold rounded-xl transition-all border border-slate-700 text-xs cursor-pointer w-full"
+                  >
+                    <Mail className="w-4 h-4 text-blue-400" />
+                    <span>Email Support Desk</span>
+                  </a>
+                </div>
+
+                <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl text-[11px] text-slate-400 space-y-1 mt-4">
+                  <div className="flex items-center gap-1.5 font-bold text-slate-200">
+                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                    <span>VeeraIT Guarantee</span>
+                  </div>
+                  <p>Genuine Software ESD Licenses • Verified Supplier Direct • Instant License Verification</p>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      ) : currentScreen === 'contact' ? (
+        <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-10 flex-1 font-sans animate-in fade-in duration-350" id="contact-us-page">
+          
+          {/* Breadcrumbs & Navigation Bar */}
+          <div className="flex items-center justify-between gap-4 mb-8 pb-4 border-b border-slate-200">
+            <div className="flex items-center gap-2 text-xs text-slate-500 font-medium font-sans">
+              <button 
+                onClick={() => {
+                  setCurrentScreen('store');
+                  setSelectedCategory('all');
+                  setSearchQuery('');
+                  setSelectedProduct(null);
+                  setSelectedSubcategory(null);
+                }} 
+                className="hover:text-emerald-600 transition-colors font-semibold cursor-pointer"
+              >
+                Home
+              </button>
+              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-slate-900 font-extrabold uppercase tracking-wider text-[11px]">CONTACT US</span>
+            </div>
+
+            <button
+              onClick={() => {
+                setCurrentScreen('store');
+                setSelectedProduct(null);
+                setSelectedSubcategory(null);
+              }}
+              className="flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 hover:text-emerald-600 font-extrabold rounded-xl text-xs transition-all shadow-sm cursor-pointer"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Back to Store</span>
+            </button>
+          </div>
+
+          {/* Hero Header Banner */}
+          <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 text-white rounded-3xl p-8 sm:p-12 mb-10 shadow-xl border border-slate-800 text-left">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="relative z-10 max-w-3xl space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 border border-emerald-400/30 rounded-full text-xs font-bold text-emerald-300">
+                <Phone className="w-4 h-4 text-emerald-400" />
+                <span>Customer Support & Sales Helpdesk</span>
+              </div>
+              <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white font-sans">
+                Contact Us
+              </h1>
+              <p className="text-base sm:text-lg text-slate-200 font-medium leading-relaxed font-sans">
+                Get in touch with Veera Computers for technical assistance, software license inquiries, bulk licensing, and order support.
+              </p>
+            </div>
+          </div>
+
+          {/* Contact Us Content Cards Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12 text-left">
+            
+            {/* Left Main Details Column (8 Cols) */}
+            <div className="lg:col-span-8 space-y-8">
+              
+              {/* Main Office & Contact Info Card */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+                <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                    <Building2 className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-black text-slate-900 font-sans">Veera Computers</h2>
+                    <p className="text-xs text-slate-500 font-semibold">Genuine Software • Trusted Service • Best Value</p>
+                  </div>
+                </div>
+
+                {/* Detailed Info Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                  
+                  {/* Address */}
+                  <div className="p-5 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
+                    <div className="flex items-center gap-2 text-slate-900 font-extrabold text-sm">
+                      <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>Office Address</span>
+                    </div>
+                    <p className="text-xs font-semibold text-slate-700 leading-relaxed pl-6">
+                      G.R. Floor, 1-11-42, Mama Chowk, Jalna, Maharashtra. 431203.
+                    </p>
+                  </div>
+
+                  {/* GST Number */}
+                  <div className="p-5 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
+                    <div className="flex items-center gap-2 text-slate-900 font-extrabold text-sm">
+                      <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
+                      <span>GST Registration Number (GSTN)</span>
+                    </div>
+                    <div className="pl-6 flex items-center gap-2">
+                      <span className="font-mono text-sm font-black text-slate-900 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs">
+                        27FZOPS8739E1ZH
+                      </span>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText('27FZOPS8739E1ZH');
+                          addNotification('GSTN Copied', 'GST Number copied to clipboard.', 'success');
+                        }}
+                        className="p-1.5 text-xs text-blue-600 hover:text-blue-700 font-bold bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Technical Support */}
+                  <div className="p-5 bg-emerald-50/60 border border-emerald-100 rounded-2xl space-y-3">
+                    <div className="flex items-center gap-2 text-slate-900 font-extrabold text-sm">
+                      <Phone className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>Technical Support</span>
+                    </div>
+                    <div className="pl-6 space-y-2">
+                      <p className="font-mono text-base font-black text-emerald-900">+91-9764528777</p>
+                      <div className="flex items-center gap-2 pt-1">
+                        <a
+                          href="tel:+919764528777"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-xs"
+                        >
+                          <Phone className="w-3.5 h-3.5" />
+                          Call Support
+                        </a>
+                        <a
+                          href="https://wa.me/919764528777?text=Hello%20Technical%20Support,%20I%20need%20assistance%20with%20software%20activation"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-emerald-300 text-emerald-700 hover:bg-emerald-100 text-xs font-bold rounded-xl transition-all"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                          WhatsApp
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Sales Contact */}
+                  <div className="p-5 bg-blue-50/60 border border-blue-100 rounded-2xl space-y-3">
+                    <div className="flex items-center gap-2 text-slate-900 font-extrabold text-sm">
+                      <Phone className="w-4 h-4 text-blue-600 shrink-0" />
+                      <span>Sales Contact</span>
+                    </div>
+                    <div className="pl-6 space-y-2">
+                      <p className="font-mono text-base font-black text-blue-900">+91-9764528777</p>
+                      <div className="flex items-center gap-2 pt-1">
+                        <a
+                          href="tel:+919764528777"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-xs"
+                        >
+                          <Phone className="w-3.5 h-3.5" />
+                          Call Sales
+                        </a>
+                        <a
+                          href="https://wa.me/919764528777?text=Hello%20Veera%20Computers%20Sales,%20I%20would%20like%20to%20inquire%20about%20software%20licenses"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-blue-300 text-blue-700 hover:bg-blue-100 text-xs font-bold rounded-xl transition-all"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5 text-blue-600" />
+                          WhatsApp
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* Quick Online Enquiry Form Card */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+                <div className="border-b border-slate-100 pb-4">
+                  <h3 className="text-xl font-extrabold text-slate-900 font-sans">Send Us a Direct Message</h3>
+                  <p className="text-xs text-slate-500 font-medium">Have a query regarding product activation, keys, or custom order? Send us a quick note below.</p>
+                </div>
+
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    addNotification('Message Sent!', 'Thank you for reaching out. Our support team will get back to you shortly.', 'success');
+                    (e.target as HTMLFormElement).reset();
+                  }}
+                  className="space-y-4"
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Your Full Name <span className="text-red-500">*</span></label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Ramesh Kumar"
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number / WhatsApp <span className="text-red-500">*</span></label>
+                      <input
+                        type="tel"
+                        required
+                        placeholder="e.g. +91 9876543210"
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 outline-none focus:border-emerald-500 focus:bg-white transition-all font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Inquiry Category</label>
+                    <select className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 outline-none focus:border-emerald-500 focus:bg-white transition-all">
+                      <option value="technical">Technical Support & Activation Help</option>
+                      <option value="sales">Sales Inquiry & Pricing</option>
+                      <option value="bulk">Bulk Licensing / B2B Reseller</option>
+                      <option value="general">General Question</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Your Message / Query <span className="text-red-500">*</span></label>
+                    <textarea
+                      required
+                      rows={4}
+                      placeholder="Type your question or software license requirement here..."
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-2xl text-xs transition-all shadow-md shadow-emerald-100 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Send className="w-4 h-4" />
+                    <span>Submit Message</span>
+                  </button>
+                </form>
+              </div>
+
+            </div>
+
+            {/* Right Column: Quick Contact Info Card & QR Code (4 Cols) */}
+            <div className="lg:col-span-4 space-y-6">
+              
+              {/* Contact Summary Box */}
+              <div className="bg-slate-900 text-slate-200 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6 sticky top-6">
+                <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                    <Building2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-extrabold text-white font-sans">Veera Computers</h3>
+                    <p className="text-[11px] text-emerald-400 font-semibold">Instant Helpdesk</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4 text-xs font-sans">
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider block mb-1">Store Address</span>
+                    <p className="text-slate-200 font-semibold leading-relaxed">
+                      G.R. Floor, 1-11-42, Mama Chowk, Jalna, Maharashtra. 431203.
+                    </p>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider block mb-1">GST Number</span>
+                    <p className="font-mono text-emerald-400 font-extrabold text-xs bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                      27FZOPS8739E1ZH
+                    </p>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-800 space-y-2.5">
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase block">Technical Support</span>
+                      <a href="tel:+919764528777" className="text-sm font-extrabold text-white font-mono hover:text-emerald-400 transition-colors">
+                        +91-9764528777
+                      </a>
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase block">Sales Contact</span>
+                      <a href="tel:+919764528777" className="text-sm font-extrabold text-white font-mono hover:text-emerald-400 transition-colors">
+                        +91-9764528777
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Scan QR for WhatsApp */}
+                  <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 text-center space-y-3">
+                    <p className="text-xs font-extrabold text-white">Scan to Chat on WhatsApp</p>
+                    <div className="w-32 h-32 bg-white rounded-xl p-1.5 mx-auto border border-slate-700 shadow-inner">
+                      <img
+                        src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://wa.me/919764528777"
+                        alt="WhatsApp Contact QR"
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                    <a
+                      href="https://wa.me/919764528777?text=Hello%20Veera%20Computers,%20I%20have%20an%20inquiry"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 p-3 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold rounded-xl transition-all shadow-md text-xs cursor-pointer w-full mt-2"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      <span>Open WhatsApp Chat</span>
+                    </a>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      ) : selectedProduct ? (
         <div className="w-full flex-1 flex flex-col bg-slate-50 animate-in fade-in duration-350" id="product-detail-page">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full flex-1">
             
@@ -3928,84 +5579,370 @@ export default function CustomerWebsite({
             );
           })()}
 
-          {/* 11. FOOTER SECTION */}
-          <footer className="bg-slate-900 text-slate-400 py-12 border-t border-slate-800" id="premium-footer">
-            <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-10 grid grid-cols-1 md:grid-cols-12 gap-8">
+          {/* 11. FOOTER SECTION - Exactly matching the user's black container design */}
+          <footer className="bg-[#050911] text-slate-300 pt-8 pb-8 sm:pb-10 rounded-t-[28px] sm:rounded-t-[36px] border-t border-slate-800/80 shadow-2xl font-sans relative" id="black-container-footer">
+            <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-8 lg:px-12">
               
-              {/* Logo / Brand Info */}
-              <div className="md:col-span-5 space-y-4">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 bg-blue-600 rounded-lg flex items-center justify-center text-white font-extrabold font-mono">
-                    K
+              {/* Top 3-Column Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+
+                {/* Column 1: QUICK LINKS */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2.5 pb-2.5 border-b border-slate-800/80">
+                    <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                      <Briefcase className="w-3.5 h-3.5" />
+                    </div>
+                    <h3 className="text-xs sm:text-sm font-extrabold text-white tracking-wider uppercase font-sans">
+                      QUICK LINKS
+                    </h3>
                   </div>
-                  <span className="font-sans font-extrabold text-base tracking-tight text-white">
-                    Veera Computers
+
+                  <ul className="space-y-1 pt-1">
+                    {/* Home */}
+                    <li>
+                      <button
+                        onClick={() => {
+                          setCurrentScreen('store');
+                          setSelectedCategory('all');
+                          setSearchQuery('');
+                          setSelectedProduct(null);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className="w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-slate-900/80 text-slate-300 hover:text-white transition-all text-xs font-semibold group cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <Home className="w-4 h-4 text-slate-400 group-hover:text-emerald-400 transition-colors" />
+                          Home
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+                      </button>
+                    </li>
+
+                    {/* Review Us */}
+                    <li>
+                      <button
+                        onClick={() => setFooterModalType('review')}
+                        className="w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-slate-900/80 text-slate-300 hover:text-white transition-all text-xs font-semibold group cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <Star className="w-4 h-4 text-slate-400 group-hover:text-emerald-400 transition-colors" />
+                          Review Us
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+                      </button>
+                    </li>
+
+                    {/* Get CID */}
+                    <li>
+                      <button
+                        onClick={() => setFooterModalType('get_cid')}
+                        className="w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-slate-900/80 text-slate-300 hover:text-white transition-all text-xs font-semibold group cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <Key className="w-4 h-4 text-slate-400 group-hover:text-emerald-400 transition-colors" />
+                          Get CID
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+                      </button>
+                    </li>
+
+                    {/* Contact Us */}
+                    <li>
+                      <button
+                        onClick={() => {
+                          setCurrentScreen('contact');
+                          setSelectedProduct(null);
+                          setSelectedSubcategory(null);
+                          setFooterModalType(null);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className="w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-slate-900/80 text-slate-300 hover:text-white transition-all text-xs font-semibold group cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <MessageSquare className="w-4 h-4 text-slate-400 group-hover:text-emerald-400 transition-colors" />
+                          Contact Us
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+                      </button>
+                    </li>
+                  </ul>
+
+                  {/* Scan to Contact Us Card */}
+                  <div className="bg-[#090f1d] border border-slate-800/90 rounded-2xl p-3.5 flex items-center gap-3.5 mt-5 shadow-inner">
+                    <div className="w-14 h-14 bg-white rounded-xl p-1 shrink-0 flex items-center justify-center border border-slate-200 shadow-sm">
+                      <img
+                        src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://wa.me/919764528777"
+                        alt="WhatsApp Contact QR"
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-extrabold text-white font-sans">Scan to Contact Us</h4>
+                      <p className="text-[11px] text-slate-400 mt-0.5 font-sans">Quick support on WhatsApp.</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Column 2: INFORMATION */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2.5 pb-2.5 border-b border-slate-800/80">
+                    <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                      <Info className="w-3.5 h-3.5" />
+                    </div>
+                    <h3 className="text-xs sm:text-sm font-extrabold text-white tracking-wider uppercase font-sans">
+                      INFORMATION
+                    </h3>
+                  </div>
+
+                  <ul className="space-y-1 pt-1">
+                    {/* About Us */}
+                    <li>
+                      <button
+                        onClick={() => {
+                          setCurrentScreen('about');
+                          setSelectedProduct(null);
+                          setSelectedSubcategory(null);
+                          setFooterModalType(null);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className="w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-slate-900/80 text-slate-300 hover:text-white transition-all text-xs font-semibold group cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <User className="w-4 h-4 text-slate-400 group-hover:text-emerald-400 transition-colors" />
+                          About Us
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+                      </button>
+                    </li>
+
+                    {/* Privacy Policy */}
+                    <li>
+                      <button
+                        onClick={() => {
+                          setCurrentScreen('privacy');
+                          setSelectedProduct(null);
+                          setSelectedSubcategory(null);
+                          setFooterModalType(null);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className="w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-slate-900/80 text-slate-300 hover:text-white transition-all text-xs font-semibold group cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <FileText className="w-4 h-4 text-slate-400 group-hover:text-emerald-400 transition-colors" />
+                          Privacy Policy
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+                      </button>
+                    </li>
+
+                    {/* Shipping & Return */}
+                    <li>
+                      <button
+                        onClick={() => {
+                          setCurrentScreen('shipping');
+                          setSelectedProduct(null);
+                          setSelectedSubcategory(null);
+                          setFooterModalType(null);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className="w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-slate-900/80 text-slate-300 hover:text-white transition-all text-xs font-semibold group cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <Truck className="w-4 h-4 text-slate-400 group-hover:text-emerald-400 transition-colors" />
+                          Shipping & Return
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+                      </button>
+                    </li>
+
+                    {/* T&C and Disclaimer */}
+                    <li>
+                      <button
+                        onClick={() => setFooterModalType('terms')}
+                        className="w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-slate-900/80 text-slate-300 hover:text-white transition-all text-xs font-semibold group cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <FileText className="w-4 h-4 text-slate-400 group-hover:text-emerald-400 transition-colors" />
+                          T&C and Disclaimer
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+                      </button>
+                    </li>
+                  </ul>
+
+                  {/* 4 Feature Badges Row */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 border border-slate-800/90 bg-[#090f1d] rounded-2xl p-2.5 mt-5 text-center text-[10px] sm:text-[11px] font-bold text-slate-300">
+                    <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/60 border border-slate-800/60 hover:border-emerald-500/40 transition-all gap-1.5">
+                      <Lock className="w-4 h-4 text-emerald-400" />
+                      <span>100% Secure Checkout</span>
+                    </div>
+                    <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/60 border border-slate-800/60 hover:border-emerald-500/40 transition-all gap-1.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      <span>Original Keys</span>
+                    </div>
+                    <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/60 border border-slate-800/60 hover:border-emerald-500/40 transition-all gap-1.5">
+                      <Zap className="w-4 h-4 text-emerald-400" />
+                      <span>Instant Delivery</span>
+                    </div>
+                    <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/60 border border-slate-800/60 hover:border-emerald-500/40 transition-all gap-1.5">
+                      <Headphones className="w-4 h-4 text-emerald-400" />
+                      <span>Technical Support</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Column 3: FOLLOW US */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2.5 pb-2.5 border-b border-slate-800/80">
+                    <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                      <Share2 className="w-3.5 h-3.5" />
+                    </div>
+                    <h3 className="text-xs sm:text-sm font-extrabold text-white tracking-wider uppercase font-sans">
+                      FOLLOW US
+                    </h3>
+                  </div>
+
+                  <ul className="space-y-1 pt-1">
+                    {/* Facebook */}
+                    <li>
+                      <a
+                        href="https://facebook.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-slate-900/80 text-slate-300 hover:text-white transition-all text-xs font-semibold group"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <svg className="w-4 h-4 fill-blue-500" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                          Facebook
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+                      </a>
+                    </li>
+
+                    {/* Instagram */}
+                    <li>
+                      <a
+                        href="https://instagram.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-slate-900/80 text-slate-300 hover:text-white transition-all text-xs font-semibold group"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <svg className="w-4 h-4 fill-pink-500" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                          Instagram
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+                      </a>
+                    </li>
+
+                    {/* Twitter */}
+                    <li>
+                      <a
+                        href="https://twitter.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-slate-900/80 text-slate-300 hover:text-white transition-all text-xs font-semibold group"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <svg className="w-4 h-4 fill-sky-400" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                          Twitter
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+                      </a>
+                    </li>
+
+                    {/* LinkedIn */}
+                    <li>
+                      <a
+                        href="https://linkedin.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-slate-900/80 text-slate-300 hover:text-white transition-all text-xs font-semibold group"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <svg className="w-4 h-4 fill-blue-600" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                          LinkedIn
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+                      </a>
+                    </li>
+
+                    {/* YouTube */}
+                    <li>
+                      <a
+                        href="https://youtube.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-slate-900/80 text-slate-300 hover:text-white transition-all text-xs font-semibold group"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <svg className="w-4 h-4 fill-red-600" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                          YouTube
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+                      </a>
+                    </li>
+
+                    {/* IndiaMart */}
+                    <li>
+                      <a
+                        href="https://indiamart.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-slate-900/80 text-slate-300 hover:text-white transition-all text-xs font-semibold group"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <Building2 className="w-4 h-4 text-red-500" />
+                          IndiaMart
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+
+              </div>
+
+              {/* Bottom Copyright & Disclaimer Row */}
+              <div className="mt-8 pt-6 border-t border-slate-800/80 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-slate-400">
+                <div className="space-y-1 text-center md:text-left">
+                  <p className="text-slate-400 leading-relaxed max-w-3xl">
+                    All trademarks, logos, and product images are the property of their respective owners and are used for identification and reference purposes only.
+                  </p>
+                  <p className="text-slate-400 font-semibold pt-0.5">
+                    © 2026 Shree Hira Computer & Communication. All Rights Reserved.
+                  </p>
+                </div>
+
+                {/* Payment Cards Badges */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="px-2.5 py-1 bg-[#151c28] border border-slate-700/80 rounded font-black text-blue-400 text-[11px] tracking-wider shadow-sm">
+                    VISA
+                  </span>
+                  <span className="px-2.5 py-1 bg-[#151c28] border border-slate-700/80 rounded font-black text-sky-400 text-[11px] tracking-wider shadow-sm">
+                    AMERICAN EXPRESS
+                  </span>
+                  <span className="px-2.5 py-1 bg-[#151c28] border border-slate-700/80 rounded font-black text-amber-500 text-[11px] tracking-wider shadow-sm">
+                    MasterCard
                   </span>
                 </div>
-                <p className="text-xs text-slate-400 max-w-sm leading-relaxed">
-                  Authorized digital reseller for workstation hardware and official retail licensing keys. Instant checkout confirmation with standard 2Factor WhatsApp integrations.
-                </p>
-                <div className="flex items-center gap-2 text-xs text-slate-500 pt-2 font-mono">
-                  <span>Merchant ID: RZP_618_SECURE</span>
-                  <span>•</span>
-                  <span>v1.8.4</span>
-                </div>
-              </div>
-
-              {/* Quick Links Map */}
-              <div className="md:col-span-3 space-y-3">
-                <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-200">System Directory</h4>
-                <ul className="space-y-2 text-xs">
-                  <li>
-                    <button onClick={() => { setCurrentScreen('store'); setSelectedCategory('all'); setSearchQuery(''); }} className="hover:text-white transition-colors cursor-pointer text-left">
-                      Browse Store Catalog
-                    </button>
-                  </li>
-                  <li>
-                    <button onClick={() => setCurrentScreen('tracking')} className="hover:text-white transition-colors cursor-pointer text-left">
-                      Track Shipment Waybill
-                    </button>
-                  </li>
-                  <li>
-                    <button onClick={() => setCurrentScreen('dashboard')} className="hover:text-white transition-colors cursor-pointer text-left">
-                      Customer Assets Hub
-                    </button>
-                  </li>
-                  <li>
-                    <button onClick={() => {
-                      if (setUser) {
-                        setUser({ email: 'softkeylice@gmail.com', name: 'Veera Computers Partner' });
-                      } else {
-                        addNotification('Error', 'User login service unavailable.', 'error');
-                      }
-                      setCurrentScreen('dashboard');
-                    }} className="hover:text-white transition-colors cursor-pointer text-left">
-                      Auto login Demo
-                    </button>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Sourced Warranties */}
-              <div className="md:col-span-4 space-y-3">
-                <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-200">Payment Security Partners</h4>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Every transaction is secured using mock Razorpay 3D endpoints with sandbox validation protocols. No active credit cards are billed.
-                </p>
-                <div className="flex flex-wrap gap-2 pt-1 text-[10px] font-mono font-bold text-slate-300">
-                  <span className="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded">UPI</span>
-                  <span className="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded">Visa/MC</span>
-                  <span className="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded">NetBanking</span>
-                  <span className="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded">Razorpay</span>
-                </div>
               </div>
 
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-500">
-              <p>© 2026 Veera Computers. Sourced directly via standard wholesale licensing. All rights reserved.</p>
-              <p className="mt-2 sm:mt-0">Built with Antigravity AI Studio & React v19</p>
-            </div>
+            {/* Floating WhatsApp Action Button in Bottom Right */}
+            <a
+              href="https://wa.me/919764528777?text=Hello%20Veera%20Computers,%20I%20have%20an%20inquiry"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="fixed bottom-6 right-6 z-40 w-12 h-12 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full shadow-2xl flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer border-2 border-white/20"
+              title="Quick WhatsApp Support"
+            >
+              <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                <path d="M12.031 0C5.396 0 .02 5.376.02 12.012c0 2.121.553 4.19 1.605 6.012L0 24l6.143-1.611c1.761.96 3.754 1.464 5.882 1.464 6.632 0 12.012-5.377 12.012-12.013C24.037 5.376 18.663 0 12.031 0zm0 22.013c-1.802 0-3.567-.484-5.11-1.4l-.366-.217-3.649.957.974-3.558-.239-.38C2.66 15.82 2.02 13.96 2.02 12.012 2.02 6.478 6.502 2 12.03 2c5.528 0 10.01 4.478 10.01 10.012 0 5.534-4.482 10.001-10.009 10.001zm5.492-7.5c-.301-.15-1.782-.88-2.059-.98-.276-.1-.478-.15-.68.15-.201.3-.778.98-.954 1.18-.176.2-.352.225-.653.075-.301-.15-1.272-.469-2.423-1.496-.896-.799-1.501-1.786-1.677-2.087-.176-.3-.019-.462.131-.612.136-.135.301-.351.452-.527.15-.175.201-.3.301-.5.1-.201.05-.376-.025-.526-.075-.15-.678-1.635-.929-2.238-.244-.587-.493-.507-.678-.517-.176-.008-.376-.008-.577-.008-.201 0-.527.075-.803.376-.276.301-1.054 1.03-1.054 2.513 0 1.482 1.079 2.912 1.229 3.113.15.201 2.123 3.242 5.143 4.547.719.31 1.28.495 1.718.634.721.229 1.378.197 1.897.12.578-.086 1.782-.728 2.033-1.43.251-.702.251-1.303.176-1.43-.075-.128-.276-.228-.577-.378z"/>
+              </svg>
+            </a>
           </footer>
 
         </div>
@@ -4154,18 +6091,57 @@ export default function CustomerWebsite({
                         <span>-₹{referralDiscountAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                       </div>
                     )}
+
+                    {availableWallet > 0 && (
+                      <div className="bg-emerald-50/90 border border-emerald-200 rounded-xl p-2.5 my-1.5">
+                        <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-800">
+                          <input
+                            type="checkbox"
+                            checked={useWalletBalance}
+                            onChange={(e) => setUseWalletBalance(e.target.checked)}
+                            className="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500 cursor-pointer"
+                          />
+                          <span className="flex items-center gap-1 text-emerald-950 font-bold">
+                            <Wallet className="w-3.5 h-3.5 text-emerald-600" />
+                            Use Wallet Balance
+                          </span>
+                          <span className="text-emerald-700 font-mono ml-auto text-[11px] font-bold">
+                            (Available: ₹{availableWallet.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})
+                          </span>
+                        </label>
+                      </div>
+                    )}
+
+                    {useWalletBalance && walletDeduction > 0 && (
+                      <div className="flex justify-between text-emerald-600 font-extrabold text-xs">
+                        <span className="flex items-center gap-1">
+                          <Wallet className="w-3.5 h-3.5 text-emerald-600" /> Wallet Balance Used
+                        </span>
+                        <span>-₹{walletDeduction.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                      </div>
+                    )}
+
                     <div className="flex justify-between text-sm text-slate-900 font-bold border-t border-slate-200 pt-3">
-                      <span>Total Invoice</span>
-                      <span className="text-blue-600 font-mono">₹{total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                      <span>{walletDeduction > 0 ? 'Net Payable Amount' : 'Total Invoice'}</span>
+                      <span className="text-blue-600 font-mono">₹{netPayable.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                   </div>
 
                   <button
                     onClick={startCheckout}
-                    className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-blue-100 hover:scale-[1.01] transition-all"
+                    className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-blue-100 hover:scale-[1.01] transition-all cursor-pointer"
                   >
-                    <CreditCard className="w-4 h-4" />
-                    Proceed to Razorpay Checkout
+                    {netPayable === 0 ? (
+                      <>
+                        <Wallet className="w-4 h-4" />
+                        Pay ₹0.00 via Wallet Balance
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="w-4 h-4" />
+                        Proceed to Checkout (₹{netPayable.toFixed(2)})
+                      </>
+                    )}
                   </button>
 
                   <p className="text-[10px] text-center text-slate-400">
@@ -4271,19 +6247,52 @@ export default function CustomerWebsite({
                 {/* Pricing Breakdown Rows */}
                 <div className="space-y-2.5 text-xs sm:text-sm">
                   
+                  {availableWallet > 0 && (
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 my-1">
+                      <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-800">
+                        <input
+                          type="checkbox"
+                          checked={useWalletBalance}
+                          onChange={(e) => setUseWalletBalance(e.target.checked)}
+                          className="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500 cursor-pointer"
+                        />
+                        <span className="flex items-center gap-1 text-emerald-950 font-bold">
+                          <Wallet className="w-3.5 h-3.5 text-emerald-600" />
+                          Use Wallet Balance
+                        </span>
+                        <span className="text-emerald-700 font-mono ml-auto text-[11px] font-bold">
+                          (Avail: ₹{availableWallet.toFixed(2)})
+                        </span>
+                      </label>
+                    </div>
+                  )}
+
                   <div className="flex justify-between items-center text-slate-600 font-medium">
                     <span>Subtotal ({buyNowQty} x ₹{currentPricing.unitPrice.toFixed(2)})</span>
                     <span className="font-bold text-slate-900">Rs. {(currentPricing.unitPrice * buyNowQty).toFixed(2)}</span>
                   </div>
 
-                  <div className="flex justify-between items-center text-emerald-600 font-extrabold">
-                    <span>Wallet Discount</span>
-                    <span>- Rs. {discountTotal.toFixed(2)}</span>
-                  </div>
+                  {discountTotal > 0 && (
+                    <div className="flex justify-between items-center text-emerald-600 font-bold">
+                      <span>Quantity Discount</span>
+                      <span>- Rs. {discountTotal.toFixed(2)}</span>
+                    </div>
+                  )}
+
+                  {useWalletBalance && Math.min(availableWallet, currentPricing.totalActual) > 0 && (
+                    <div className="flex justify-between items-center text-emerald-600 font-extrabold">
+                      <span className="flex items-center gap-1">
+                        <Wallet className="w-3.5 h-3.5 text-emerald-600" /> Wallet Balance Used
+                      </span>
+                      <span>- Rs. {Math.min(availableWallet, currentPricing.totalActual).toFixed(2)}</span>
+                    </div>
+                  )}
 
                   <div className="border-t border-slate-150 pt-3 flex justify-between items-center">
                     <span className="text-xs sm:text-sm font-extrabold text-slate-800">Payable Amount</span>
-                    <span className="text-lg sm:text-xl font-black text-[#155cb0] font-sans">Rs. {currentPricing.totalActual.toFixed(2)}</span>
+                    <span className="text-lg sm:text-xl font-black text-[#155cb0] font-sans">
+                      Rs. {Math.max(0, currentPricing.totalActual - (useWalletBalance ? Math.min(availableWallet, currentPricing.totalActual) : 0)).toFixed(2)}
+                    </span>
                   </div>
                 </div>
 
@@ -4501,42 +6510,87 @@ export default function CustomerWebsite({
                 </div>
               )}
 
+              {/* Customer Wallet Balance Selector Box */}
+              {availableWallet > 0 && (
+                <div className="bg-emerald-50/90 border border-emerald-200 rounded-xl p-3.5 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center gap-2 text-xs font-bold text-slate-800 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={useWalletBalance}
+                        onChange={(e) => setUseWalletBalance(e.target.checked)}
+                        className="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500 cursor-pointer"
+                      />
+                      <span className="flex items-center gap-1.5 text-emerald-950">
+                        <Wallet className="w-4 h-4 text-emerald-600" />
+                        Pay using Customer Wallet Balance
+                      </span>
+                    </label>
+                    <span className="text-xs font-mono font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-1 rounded-md border border-emerald-200">
+                      Available: ₹{availableWallet.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  {useWalletBalance && walletDeduction > 0 && (
+                    <div className="flex justify-between items-center text-xs text-emerald-800 pt-1.5 border-t border-emerald-200/60 font-bold">
+                      <span>Amount Deducted from Wallet:</span>
+                      <span className="font-mono text-emerald-900 text-xs bg-emerald-200/50 px-2 py-0.5 rounded">- ₹{walletDeduction.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Payment Method Selection */}
               <div className="space-y-3 pt-3 border-t border-slate-150">
                 <label className="block text-xs font-bold text-slate-700">Choose Checkout Payment Method</label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <button
                     type="button"
-                    onClick={() => setSelectedPaymentMethod('razorpay')}
-                    className={`p-3 border rounded-xl flex flex-col items-center justify-center gap-1.5 transition-all text-center ${
-                      selectedPaymentMethod === 'razorpay'
-                        ? 'border-blue-600 bg-blue-50/20 text-blue-700 ring-1 ring-blue-500/20'
+                    onClick={() => setSelectedPaymentMethod('paytm')}
+                    className={`p-3 border rounded-xl flex flex-col items-center justify-center gap-1 transition-all text-center cursor-pointer ${
+                      selectedPaymentMethod === 'paytm'
+                        ? 'border-[#00baf2] bg-[#f0f8ff] text-[#002e6e] ring-2 ring-[#00baf2]/30 shadow-xs'
                         : 'border-slate-200 hover:border-slate-350 text-slate-600 hover:bg-slate-50'
                     }`}
                   >
-                    <CreditCard className="w-4 h-4" />
-                    <span className="text-[10px] font-bold">Razorpay Gateway</span>
+                    <div className="flex items-center gap-1 font-black text-xs text-[#002e6e]">
+                      <span>Paytm</span>
+                      <span className="text-[9px] bg-[#00baf2] text-white px-1 py-0.2 rounded font-mono">PG</span>
+                    </div>
+                    <span className="text-[10px] font-extrabold text-[#002e6e]">Paytm PG</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPaymentMethod('razorpay')}
+                    className={`p-3 border rounded-xl flex flex-col items-center justify-center gap-1 transition-all text-center cursor-pointer ${
+                      selectedPaymentMethod === 'razorpay'
+                        ? 'border-blue-600 bg-blue-50/20 text-blue-700 ring-2 ring-blue-500/30 shadow-xs'
+                        : 'border-slate-200 hover:border-slate-350 text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    <CreditCard className="w-4 h-4 text-blue-600" />
+                    <span className="text-[10px] font-bold">Razorpay PG</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setSelectedPaymentMethod('bank_transfer')}
-                    className={`p-3 border rounded-xl flex flex-col items-center justify-center gap-1.5 transition-all text-center ${
+                    className={`p-3 border rounded-xl flex flex-col items-center justify-center gap-1 transition-all text-center cursor-pointer ${
                       selectedPaymentMethod === 'bank_transfer'
-                        ? 'border-blue-600 bg-blue-50/20 text-blue-700 ring-1 ring-blue-500/20'
+                        ? 'border-blue-600 bg-blue-50/20 text-blue-700 ring-2 ring-blue-500/30 shadow-xs'
                         : 'border-slate-200 hover:border-slate-350 text-slate-600 hover:bg-slate-50'
                     }`}
                   >
                     <Building2 className="w-4 h-4" />
-                    <span className="text-[10px] font-bold">Bank Transfer</span>
+                    <span className="text-[10px] font-bold">Bank Wire</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setSelectedPaymentMethod('upi_qr')}
-                    className={`p-3 border rounded-xl flex flex-col items-center justify-center gap-1.5 transition-all text-center ${
+                    className={`p-3 border rounded-xl flex flex-col items-center justify-center gap-1 transition-all text-center cursor-pointer ${
                       selectedPaymentMethod === 'upi_qr'
-                        ? 'border-blue-600 bg-blue-50/20 text-blue-700 ring-1 ring-blue-500/20'
+                        ? 'border-blue-600 bg-blue-50/20 text-blue-700 ring-2 ring-blue-500/30 shadow-xs'
                         : 'border-slate-200 hover:border-slate-350 text-slate-600 hover:bg-slate-50'
                     }`}
                   >
@@ -4549,32 +6603,337 @@ export default function CustomerWebsite({
             </div>
 
             <div className="px-6 py-4 bg-slate-50 border-t border-slate-150 flex items-center justify-between">
-              <span className="text-xs text-slate-500 font-semibold">Order Total: <strong className="text-blue-600 font-mono">₹{total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></span>
+              <div className="flex flex-col text-xs text-slate-500 font-semibold">
+                {walletDeduction > 0 && (
+                  <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+                    <Wallet className="w-3 h-3 text-emerald-600" /> Wallet Deduction: -₹{walletDeduction.toFixed(2)}
+                  </span>
+                )}
+                <span>
+                  Net Payable: <strong className="text-blue-600 font-mono text-sm">₹{netPayable.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+                </span>
+              </div>
               
               <button
                 type="submit"
-                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-blue-100 flex items-center gap-1.5"
+                className="px-5 py-2.5 bg-[#002e6e] hover:bg-[#001f4c] text-white font-bold rounded-xl text-xs transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
               >
-                {selectedPaymentMethod === 'razorpay' ? (
+                {netPayable === 0 ? (
+                  <>
+                    <Wallet className="w-4 h-4" />
+                    Pay ₹0.00 via Wallet Balance
+                  </>
+                ) : selectedPaymentMethod === 'paytm' ? (
+                  <>
+                    <ShieldCheck className="w-4 h-4 text-[#00baf2]" />
+                    Proceed via Paytm PG (₹{netPayable.toFixed(2)})
+                  </>
+                ) : selectedPaymentMethod === 'razorpay' ? (
                   <>
                     <CreditCard className="w-4 h-4" />
-                    Proceed to Razorpay
+                    Proceed via Razorpay (₹{netPayable.toFixed(2)})
                   </>
                 ) : selectedPaymentMethod === 'bank_transfer' ? (
                   <>
                     <Building2 className="w-4 h-4" />
-                    Direct Bank Checkout
+                    Bank Checkout (₹{netPayable.toFixed(2)})
                   </>
                 ) : (
                   <>
                     <QrCode className="w-4 h-4" />
-                    Checkout via UPI QR
+                    Scan & Pay (₹{netPayable.toFixed(2)})
                   </>
                 )}
               </button>
             </div>
 
           </form>
+        </div>
+      )}
+
+      {/* 6. Paytm Payment Gateway Modal (Paytm PG) */}
+      {isPaytmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-md font-sans animate-in fade-in duration-200" id="paytm-pg-gateway-modal">
+          <div className="bg-white border border-slate-300 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden text-slate-900 animate-in zoom-in-95 duration-200">
+            
+            {/* Paytm Header */}
+            <div className="bg-[#002e6e] text-white p-5 flex items-center justify-between border-b border-[#001d4a]">
+              <div className="flex items-center gap-3">
+                <div className="bg-white px-3 py-1.5 rounded-xl flex items-center shadow-sm">
+                  <span className="text-[#002e6e] font-black text-base tracking-tighter">Paytm</span>
+                  <span className="text-[#00baf2] font-black text-xs ml-0.5 uppercase tracking-widest">PG</span>
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#00baf2]" />
+                    Paytm Payment Gateway
+                  </h3>
+                  <p className="text-[10px] text-slate-300 font-mono">Order: {currentPaytmOrderId || 'PAYTM_ORD_101'}</p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsPaytmOpen(false)}
+                className="p-1.5 hover:bg-white/10 text-white/80 hover:text-white rounded-xl transition-all cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Merchant Info & Payable Amount Bar */}
+            <div className="bg-[#f0f8ff] px-6 py-3.5 border-b border-blue-100 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Merchant</span>
+                <strong className="text-xs font-black text-[#002e6e]">VeeraIT (Veera Computers)</strong>
+              </div>
+              <div className="text-right">
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Total Payable</span>
+                <strong className="text-lg font-mono font-black text-[#00baf2]">₹{netPayable.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+              </div>
+            </div>
+
+            {/* Modal Body depending on paytmStep */}
+            {paytmStep === 'select_method' && (
+              <div className="p-6 space-y-5">
+                
+                {/* Payment Sub-methods selection */}
+                <div>
+                  <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2.5">
+                    Select Paytm Payment Method
+                  </label>
+                  
+                  <div className="grid grid-cols-2 gap-2.5">
+                    
+                    {/* Paytm Wallet */}
+                    <button
+                      type="button"
+                      onClick={() => setPaytmSubMethod('wallet')}
+                      className={`p-3.5 border-2 rounded-2xl flex flex-col items-start gap-1 text-left transition-all cursor-pointer ${
+                        paytmSubMethod === 'wallet'
+                          ? 'border-[#00baf2] bg-[#f0f8ff] text-[#002e6e] shadow-xs'
+                          : 'border-slate-200 hover:border-slate-300 text-slate-700'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <Wallet className="w-5 h-5 text-[#00baf2]" />
+                        <span className="text-[9px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded">Instant</span>
+                      </div>
+                      <strong className="text-xs font-bold mt-1">Paytm Wallet</strong>
+                      <span className="text-[10px] text-slate-500">Balance: ₹5,000.00</span>
+                    </button>
+
+                    {/* Paytm UPI */}
+                    <button
+                      type="button"
+                      onClick={() => setPaytmSubMethod('upi')}
+                      className={`p-3.5 border-2 rounded-2xl flex flex-col items-start gap-1 text-left transition-all cursor-pointer ${
+                        paytmSubMethod === 'upi'
+                          ? 'border-[#00baf2] bg-[#f0f8ff] text-[#002e6e] shadow-xs'
+                          : 'border-slate-200 hover:border-slate-300 text-slate-700'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <QrCode className="w-5 h-5 text-[#002e6e]" />
+                        <span className="text-[9px] bg-blue-100 text-blue-800 font-bold px-1.5 py-0.5 rounded">BHIM UPI</span>
+                      </div>
+                      <strong className="text-xs font-bold mt-1">Paytm UPI / VPA</strong>
+                      <span className="text-[10px] text-slate-500">Auto approve or VPA</span>
+                    </button>
+
+                    {/* Net Banking */}
+                    <button
+                      type="button"
+                      onClick={() => setPaytmSubMethod('netbanking')}
+                      className={`p-3.5 border-2 rounded-2xl flex flex-col items-start gap-1 text-left transition-all cursor-pointer ${
+                        paytmSubMethod === 'netbanking'
+                          ? 'border-[#00baf2] bg-[#f0f8ff] text-[#002e6e] shadow-xs'
+                          : 'border-slate-200 hover:border-slate-300 text-slate-700'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <Building2 className="w-5 h-5 text-[#002e6e]" />
+                        <span className="text-[9px] bg-slate-100 text-slate-700 font-bold px-1.5 py-0.5 rounded">50+ Banks</span>
+                      </div>
+                      <strong className="text-xs font-bold mt-1">Net Banking</strong>
+                      <span className="text-[10px] text-slate-500">SBI, HDFC, ICICI, Axis</span>
+                    </button>
+
+                    {/* Debit / Credit Card */}
+                    <button
+                      type="button"
+                      onClick={() => setPaytmSubMethod('card')}
+                      className={`p-3.5 border-2 rounded-2xl flex flex-col items-start gap-1 text-left transition-all cursor-pointer ${
+                        paytmSubMethod === 'card'
+                          ? 'border-[#00baf2] bg-[#f0f8ff] text-[#002e6e] shadow-xs'
+                          : 'border-slate-200 hover:border-slate-300 text-slate-700'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <CreditCard className="w-5 h-5 text-[#002e6e]" />
+                        <span className="text-[9px] bg-purple-100 text-purple-800 font-bold px-1.5 py-0.5 rounded">Cards</span>
+                      </div>
+                      <strong className="text-xs font-bold mt-1">Debit / Credit Card</strong>
+                      <span className="text-[10px] text-slate-500">Visa, Mastercard, RuPay</span>
+                    </button>
+
+                  </div>
+                </div>
+
+                {/* Additional inputs according to submethod */}
+                {paytmSubMethod === 'wallet' && (
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+                    <div className="flex items-center justify-between text-xs text-slate-700">
+                      <span className="font-semibold">Linked Mobile Number:</span>
+                      <span className="font-mono font-bold text-[#002e6e]">+91 {customerPhone || '9764528777'}</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500">
+                      Paytm Wallet will deduct <strong>₹{netPayable.toFixed(2)}</strong> directly with 1-click test confirmation.
+                    </p>
+                  </div>
+                )}
+
+                {paytmSubMethod === 'upi' && (
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+                    <label className="block text-xs font-bold text-slate-700">Enter Paytm UPI ID / VPA</label>
+                    <input
+                      type="text"
+                      value={paytmUpiId}
+                      onChange={(e) => setPaytmUpiId(e.target.value)}
+                      placeholder="e.g. 9764528777@paytm"
+                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-800 outline-none focus:border-[#00baf2]"
+                    />
+                    <p className="text-[10px] text-slate-400">Supported: Paytm UPI, PhonePe, Google Pay, BHIM</p>
+                  </div>
+                )}
+
+                {paytmSubMethod === 'netbanking' && (
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+                    <label className="block text-xs font-bold text-slate-700">Select Bank</label>
+                    <select className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-800 outline-none focus:border-[#00baf2]">
+                      <option>State Bank of India (SBI)</option>
+                      <option>HDFC Bank</option>
+                      <option>ICICI Bank</option>
+                      <option>Axis Bank</option>
+                      <option>Kotak Mahindra Bank</option>
+                    </select>
+                  </div>
+                )}
+
+                {paytmSubMethod === 'card' && (
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+                    <div className="space-y-2">
+                      <input
+                        type="text"
+                        readOnly
+                        value="4532 •••• •••• 8892"
+                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-800"
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <input type="text" readOnly value="12 / 28" className="px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-800" />
+                        <input type="password" readOnly value="888" className="px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-800" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Action button */}
+                <button
+                  type="button"
+                  onClick={triggerPaytmPayment}
+                  className="w-full py-3 bg-[#00baf2] hover:bg-[#00a3d9] text-[#002e6e] font-black rounded-2xl text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Lock className="w-4 h-4 text-[#002e6e]" />
+                  <span>Pay ₹{netPayable.toFixed(2)} via Paytm PG</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+
+                <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400 font-semibold">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Official Paytm PG Sandbox Simulation Active</span>
+                </div>
+
+              </div>
+            )}
+
+            {/* Processing state */}
+            {paytmStep === 'processing' && (
+              <div className="p-10 text-center space-y-4">
+                <div className="w-16 h-16 border-4 border-[#00baf2] border-t-transparent rounded-full animate-spin mx-auto" />
+                <div className="space-y-1">
+                  <h4 className="text-base font-extrabold text-[#002e6e]">Connecting to Paytm PG Gateway...</h4>
+                  <p className="text-xs text-slate-500">Securing 256-bit SSL connection with Paytm servers...</p>
+                </div>
+              </div>
+            )}
+
+            {/* OTP Verification step */}
+            {paytmStep === 'otp' && (
+              <div className="p-6 space-y-5 text-left">
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl space-y-1">
+                  <h4 className="text-xs font-extrabold text-[#002e6e] uppercase tracking-wider">Paytm Bank Security Authorization</h4>
+                  <p className="text-xs text-slate-600">
+                    A 6-digit confirmation code has been dispatched to <strong>+91 {customerPhone || '9764528777'}</strong>.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-extrabold text-slate-700">Enter Paytm OTP Code</label>
+                    <button
+                      type="button"
+                      onClick={() => setPaytmOtp('123456')}
+                      className="text-[10px] font-bold text-[#00baf2] hover:underline cursor-pointer"
+                    >
+                      ⚡ Auto-Fill Test OTP (123456)
+                    </button>
+                  </div>
+
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={paytmOtp}
+                    onChange={(e) => setPaytmOtp(e.target.value.replace(/\D/g, ''))}
+                    placeholder="123456"
+                    className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-300 focus:border-[#00baf2] rounded-2xl text-center text-xl font-mono font-black tracking-widest outline-none text-slate-900"
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={verifyPaytmOtp}
+                  className="w-full py-3.5 bg-[#002e6e] hover:bg-[#001f4c] text-white font-extrabold rounded-2xl text-xs transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-[#00baf2]" />
+                  <span>Verify Paytm PG Payment (₹{netPayable.toFixed(2)})</span>
+                </button>
+              </div>
+            )}
+
+            {/* Success step */}
+            {paytmStep === 'success' && (
+              <div className="p-8 text-center space-y-4">
+                <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-10 h-10" />
+                </div>
+                <div>
+                  <h4 className="text-xl font-extrabold text-slate-900">Paytm PG Payment Successful!</h4>
+                  <p className="text-xs text-slate-500 font-mono mt-1">Txn ID: {currentPaytmTxnId}</p>
+                </div>
+                <p className="text-xs text-slate-600">
+                  Your payment has been captured by Paytm PG. License keys and order invoice have been dispatched to WhatsApp and email.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setIsPaytmOpen(false)}
+                  className="px-6 py-2.5 bg-[#002e6e] text-white font-extrabold text-xs rounded-xl hover:bg-[#001d4a] cursor-pointer"
+                >
+                  View My Order & Keys
+                </button>
+              </div>
+            )}
+
+          </div>
         </div>
       )}
 
@@ -4791,6 +7150,376 @@ export default function CustomerWebsite({
               >
                 Confirm Transfer Details
               </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* FOOTER INTERACTIVE MODALS */}
+      {footerModalType && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-fadeIn font-sans">
+          <div className="bg-slate-900 border border-slate-800 text-slate-200 rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl relative my-8">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/50">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-emerald-500/20 text-emerald-400 rounded-lg">
+                  {footerModalType === 'about' && <User className="w-5 h-5" />}
+                  {footerModalType === 'privacy' && <FileText className="w-5 h-5" />}
+                  {footerModalType === 'shipping' && <Truck className="w-5 h-5" />}
+                  {footerModalType === 'terms' && <FileText className="w-5 h-5" />}
+                  {footerModalType === 'review' && <Star className="w-5 h-5" />}
+                  {footerModalType === 'get_cid' && <Key className="w-5 h-5" />}
+                  {footerModalType === 'contact' && <MessageSquare className="w-5 h-5" />}
+                </div>
+                <h3 className="text-base font-extrabold text-white">
+                  {footerModalType === 'about' && 'About Shree Hira Computer'}
+                  {footerModalType === 'privacy' && 'Privacy Policy'}
+                  {footerModalType === 'shipping' && 'Shipping & Return Policy'}
+                  {footerModalType === 'terms' && 'T&C and Disclaimer'}
+                  {footerModalType === 'review' && 'Leave a Customer Review'}
+                  {footerModalType === 'get_cid' && 'Get CID (Confirmation ID)'}
+                  {footerModalType === 'contact' && 'Contact Support'}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setFooterModalType(null)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto text-xs text-slate-300 leading-relaxed">
+              
+              {/* About Us Content */}
+              {footerModalType === 'about' && (
+                <div className="space-y-4 text-slate-300">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                    <p className="text-base font-extrabold text-emerald-400">
+                      Veera Computer
+                    </p>
+                    <button
+                      onClick={() => {
+                        setFooterModalType(null);
+                        setCurrentScreen('about');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] rounded-lg transition-all flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>Open Full Page</span>
+                      <ChevronRight className="w-3 h-3" />
+                    </button>
+                  </div>
+                  
+                  <p className="text-xs text-slate-200 leading-relaxed font-medium">
+                    Welcome to Veera Computer, your trusted destination for genuine digital software licenses and activation keys at affordable prices.
+                  </p>
+
+                  <p className="text-xs leading-relaxed">
+                    Established in 2003, Veera Computer has been serving customers across India with authentic software solutions, professional service, and reliable customer support. With over 20 years of industry experience, we have built a reputation based on trust, transparency, and customer satisfaction.
+                  </p>
+
+                  <div className="space-y-2 bg-slate-950/80 p-3.5 rounded-2xl border border-slate-800">
+                    <p className="font-extrabold text-white text-xs">We specialize in providing 100% genuine digital license keys for a wide range of software, including:</p>
+                    <ul className="space-y-1 text-slate-300 text-[11px] list-disc pl-4">
+                      <li>Microsoft Windows</li>
+                      <li>Microsoft Office</li>
+                      <li>Windows Server</li>
+                      <li>Antivirus & Internet Security Software</li>
+                      <li>Business & Productivity Software</li>
+                      <li>Other Genuine Digital Software Licenses</li>
+                    </ul>
+                  </div>
+
+                  <p className="text-xs leading-relaxed">
+                    Our mission is to make original software licenses easily accessible to individuals, businesses, educational institutions, IT professionals, and resellers across India. Every product we offer is sourced through trusted channels to ensure authenticity, security, and long-term reliability.
+                  </p>
+
+                  <div className="space-y-2 bg-slate-950/80 p-3.5 rounded-2xl border border-slate-800">
+                    <p className="font-extrabold text-white text-xs">Why Choose Veera Computer?</p>
+                    <ul className="space-y-1 text-slate-300 text-[11px] list-disc pl-4">
+                      <li>100% Genuine & Verified Digital License Keys</li>
+                      <li>Instant Digital Delivery for Most Products</li>
+                      <li>Secure & Easy Payment Options</li>
+                      <li>Affordable & Competitive Pricing</li>
+                      <li>Fast & Responsive Customer Support</li>
+                      <li>20+ Years of Industry Experience</li>
+                      <li>Trusted by Customers Across India</li>
+                    </ul>
+                  </div>
+
+                  <p className="text-xs leading-relaxed">
+                    At Veera Computer, customer satisfaction is our highest priority. We are committed to delivering genuine products, transparent business practices, and dependable after-sales support. Whether you are purchasing a single software license or managing bulk licensing for your organization, we strive to provide the best value and service every time.
+                  </p>
+
+                  <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-1.5 font-mono text-[11px]">
+                    <p className="text-emerald-400 font-extrabold font-sans text-xs">Veera Computer</p>
+                    <p className="text-slate-400 font-sans text-[10px] italic">Genuine Software • Trusted Service • Best Value</p>
+                    <div className="pt-2 border-t border-slate-800 space-y-1">
+                      <p><strong className="text-slate-200">Veera Computers</strong></p>
+                      <p><strong className="text-slate-300">Address:</strong> G.R. Floor, 1-11-42, Mama Chowk, Jalna, Maharashtra. 431203.</p>
+                      <p><strong className="text-slate-300">GSTN:</strong> 27FZOPS8739E1ZH</p>
+                      <p><strong className="text-slate-300">Technical Support:</strong> +91-9764528777</p>
+                      <p><strong className="text-slate-300">Sales Contact:</strong> +91-9764528777</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Privacy Policy Content */}
+              {footerModalType === 'privacy' && (
+                <div className="space-y-4">
+                  <div className="p-3.5 bg-slate-950 border border-slate-800 rounded-xl space-y-2">
+                    <p className="text-xs text-slate-200 font-extrabold flex items-center gap-2">
+                      <Lock className="w-4 h-4 text-emerald-400" />
+                      <span>Veera Computers Data Protection & Security Standard</span>
+                    </p>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      Your privacy is critically important to us. Veera Computers collects minimal information strictly for software license fulfillment and tax compliance.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2 text-xs text-slate-300">
+                    <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl space-y-1">
+                      <strong className="text-blue-300 font-bold block">1. Paytm Payment Gateway System (Paytm PG)</strong>
+                      <p className="text-slate-300 text-[11px]">
+                        PCI-DSS Level 1 compliant secure payment gateway. Zero stored card numbers, CVVs, or UPI PINs.
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl space-y-1">
+                      <strong className="text-emerald-300 font-bold block">2. 2-Factor OTP Authentication (2FA)</strong>
+                      <p className="text-slate-300 text-[11px]">
+                        Mandatory mobile & email OTP validation for account security, password resets, and license vault retrieval.
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl space-y-1">
+                      <strong className="text-amber-300 font-bold block">3. AES-256 SSL Encryption & Zero Reselling</strong>
+                      <p className="text-slate-300 text-[11px]">
+                        256-bit encrypted data transmission. We NEVER sell or rent your contact numbers or email to third-party advertisers.
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setFooterModalType(null);
+                      setCurrentScreen('privacy');
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-xl text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                  >
+                    <span>Read Full Privacy Policy Page</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* Shipping & Return Content */}
+              {footerModalType === 'shipping' && (
+                <div className="space-y-3 text-left">
+                  <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-300 text-xs">
+                    <strong className="block font-bold text-sm mb-1 text-emerald-400">VeeraIT Digital License Delivery (1–30 Seconds)</strong>
+                    Software license keys are dispatched electronically straight to your registered email and WhatsApp number instantly after payment.
+                  </div>
+                  <div className="p-3 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 text-xs space-y-2">
+                    <strong className="block font-bold text-white">Policy Summary:</strong>
+                    <ul className="list-disc pl-4 space-y-1 text-slate-400">
+                      <li><strong>Instant Digital Delivery:</strong> 1–30 sec (up to 24 hours in rare verification cases).</li>
+                      <li><strong>Non-Returnable:</strong> Digital licenses become non-returnable once generated/delivered.</li>
+                      <li><strong>Full Refund Protection:</strong> Replacement key or full refund if key is invalid or order is undelivered.</li>
+                      <li><strong>Refund Processing:</strong> Approved refunds processed within 48 hours back to original payment mode.</li>
+                    </ul>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setFooterModalType(null);
+                      setCurrentScreen('shipping');
+                      setSelectedProduct(null);
+                      setSelectedSubcategory(null);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md"
+                  >
+                    <span>Read Full 10-Point Shipping, Return & Refund Policy Page</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* T&C Content */}
+              {footerModalType === 'terms' && (
+                <div className="space-y-3">
+                  <p>
+                    By placing an order on our store, you agree to our standard software activation and licensing terms:
+                  </p>
+                  <ul className="list-disc pl-4 space-y-1.5 text-slate-400">
+                    <li>Digital keys are guaranteed 100% original Microsoft / Antivirus retail or OEM keys.</li>
+                    <li>Activation replacement guarantee is valid for 1 year from date of order.</li>
+                    <li>In case of phone activation requirement, users can utilize our free automated CID generation tool.</li>
+                  </ul>
+                </div>
+              )}
+
+              {/* Review Us Content */}
+              {footerModalType === 'review' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1">Your Rating</label>
+                    <div className="flex items-center gap-1.5">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setReviewRating(star)}
+                          className="p-1 cursor-pointer transition-transform hover:scale-125"
+                        >
+                          <Star className={`w-6 h-6 ${star <= reviewRating ? 'fill-amber-400 text-amber-400' : 'text-slate-600'}`} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1">Your Name</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Rahul Sharma"
+                      value={reviewAuthor}
+                      onChange={(e) => setReviewAuthor(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1">Feedback & Experience</label>
+                    <textarea
+                      rows={3}
+                      placeholder="Share your experience regarding instant delivery and product activation..."
+                      value={reviewText}
+                      onChange={(e) => setReviewText(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      addNotification('Review Submitted', 'Thank you for your feedback! Your review has been saved.', 'success');
+                      setFooterModalType(null);
+                      setReviewText('');
+                    }}
+                    className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Send className="w-4 h-4" />
+                    Submit Review
+                  </button>
+                </div>
+              )}
+
+              {/* Get CID Content */}
+              {footerModalType === 'get_cid' && (
+                <div className="space-y-4">
+                  <p className="text-slate-400">
+                    Enter your Microsoft 63-digit or 54-digit Installation ID (IID) received during phone activation to generate your Confirmation ID (CID):
+                  </p>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1">Installation ID (IID)</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 1234567-8901234-5678901..."
+                      value={cidIidInput}
+                      onChange={(e) => setCidIidInput(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!cidIidInput.trim()) {
+                        addNotification('Error', 'Please enter your Installation ID (IID).', 'error');
+                        return;
+                      }
+                      setGeneratedCidResult('482910-391029-491029-591029-849102-391029-491029-102938');
+                      addNotification('CID Generated', 'Confirmation ID generated successfully!', 'success');
+                    }}
+                    className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Key className="w-4 h-4" />
+                    Generate Confirmation ID
+                  </button>
+
+                  {generatedCidResult && (
+                    <div className="p-3 bg-slate-950 border border-emerald-500/40 rounded-xl space-y-1">
+                      <p className="text-[11px] font-bold text-emerald-400">Your Confirmation ID (CID):</p>
+                      <p className="text-xs font-mono text-white select-all break-all bg-slate-900 p-2 rounded border border-slate-800">{generatedCidResult}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Contact Us Content */}
+              {footerModalType === 'contact' && (
+                <div className="space-y-4">
+                  <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-3">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                      <p className="text-sm font-extrabold text-emerald-400">Veera Computers</p>
+                      <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded font-mono font-bold">GST: 27FZOPS8739E1ZH</span>
+                    </div>
+                    <p className="text-xs text-slate-300 font-medium">
+                      G.R. Floor, 1-11-42, Mama Chowk, Jalna, Maharashtra. 431203.
+                    </p>
+                    <div className="pt-2 border-t border-slate-800 space-y-1.5 text-xs">
+                      <p><strong className="text-slate-400 font-normal">Technical Support:</strong> <span className="font-mono text-white font-bold">+91-9764528777</span></p>
+                      <p><strong className="text-slate-400 font-normal">Sales Contact:</strong> <span className="font-mono text-white font-bold">+91-9764528777</span></p>
+                    </div>
+                  </div>
+
+                  <a
+                    href="https://wa.me/919764528777?text=Hello%20Veera%20Computers,%20I%20need%20assistance"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl hover:bg-emerald-500/20 transition-all text-emerald-300 font-bold"
+                  >
+                    <span className="flex items-center gap-2.5">
+                      <MessageSquare className="w-5 h-5 text-emerald-400" />
+                      Chat on WhatsApp (+91-9764528777)
+                    </span>
+                    <ChevronRight className="w-4 h-4" />
+                  </a>
+
+                  <a
+                    href="tel:+919764528777"
+                    className="flex items-center justify-between p-3 bg-slate-950 border border-slate-800 rounded-xl hover:bg-slate-800/60 transition-all text-slate-200 font-bold"
+                  >
+                    <span className="flex items-center gap-2.5">
+                      <Phone className="w-5 h-5 text-blue-400" />
+                      Call Support / Sales (+91-9764528777)
+                    </span>
+                    <ChevronRight className="w-4 h-4" />
+                  </a>
+
+                  <button
+                    onClick={() => {
+                      setFooterModalType(null);
+                      setCurrentScreen('contact');
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-xl text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                  >
+                    <span>Open Dedicated Contact Us Page</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
             </div>
 
           </div>

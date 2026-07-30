@@ -82,10 +82,10 @@ export default function AdminPanel({
 
   // Payment configuration states
   const [bankName, setBankName] = useState('State Bank of India');
-  const [bankAccountName, setBankAccountName] = useState('Shri Saptashrungi Enterprises');
+  const [bankAccountName, setBankAccountName] = useState('Veera Computers');
   const [bankAccountNumber, setBankAccountNumber] = useState('918273645019');
   const [ifscCode, setIfscCode] = useState('SBIN0001234');
-  const [upiId, setUpiId] = useState('shrisaptashrungi@upi');
+  const [upiId, setUpiId] = useState('veeracomputers@upi');
   const [upiQrCodeUrl, setUpiQrCodeUrl] = useState('');
   const [razorpayKeyId, setRazorpayKeyId] = useState('');
   const [razorpayConfigured, setRazorpayConfigured] = useState(false);
@@ -339,10 +339,10 @@ export default function AdminPanel({
       .then(data => {
         if (data.settings) {
           setBankName(data.settings.bankName || 'State Bank of India');
-          setBankAccountName(data.settings.bankAccountName || 'Shri Saptashrungi Enterprises');
+          setBankAccountName(data.settings.bankAccountName || 'Veera Computers');
           setBankAccountNumber(data.settings.bankAccountNumber || '918273645019');
           setIfscCode(data.settings.ifscCode || 'SBIN0001234');
-          setUpiId(data.settings.upiId || 'shrisaptashrungi@upi');
+          setUpiId(data.settings.upiId || 'veeracomputers@upi');
           setUpiQrCodeUrl(data.settings.upiQrCodeUrl || '');
         }
         if (data.razorpay) {
@@ -2072,8 +2072,8 @@ export default function AdminPanel({
   const [newCatIcon, setNewCatIcon] = useState('');
 
   // General Store Settings
-  const [storeName, setStoreName] = useState('Shri Saptashrungi Enterprises');
-  const [storeEmail, setStoreEmail] = useState('support@shrisaptashrungi.com');
+  const [storeName, setStoreName] = useState('Veera Computers');
+  const [storeEmail, setStoreEmail] = useState('support@veeracomputers.com');
   const [storePhone, setStorePhone] = useState('+91 80 4123 5678');
   const [storeCurrency, setStoreCurrency] = useState('INR (₹)');
   const [lowStockThreshold, setLowStockThreshold] = useState(5);
@@ -2295,7 +2295,7 @@ export default function AdminPanel({
       <div className="md:hidden bg-slate-900 text-white flex items-center justify-between px-4 py-3 shrink-0 z-20">
         <div className="flex items-center gap-2">
           <Layers className="w-5 h-5 text-blue-500 animate-pulse" />
-          <span className="font-extrabold text-sm tracking-wider uppercase font-sans">Saptashrungi Admin</span>
+          <span className="font-extrabold text-sm tracking-wider uppercase font-sans">Veera Admin</span>
         </div>
         <button 
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -2318,7 +2318,7 @@ export default function AdminPanel({
                 <Layers className="w-5 h-5 animate-pulse" />
               </div>
               <div>
-                <h2 className="text-sm font-black text-white tracking-wider uppercase">SAPTASHRUNGI</h2>
+                <h2 className="text-sm font-black text-white tracking-wider uppercase">VEERA COMPUTERS</h2>
                 <p className="text-[10px] text-slate-500 font-bold uppercase font-mono tracking-widest">Admin Hub</p>
               </div>
             </div>
@@ -3505,14 +3505,14 @@ export default function AdminPanel({
                               </p>
                               <div className="p-4 bg-white border border-slate-200 rounded-xl shadow-sm text-left">
                                 <div className="text-[11px] text-slate-500 flex items-center gap-1">
-                                  <span>https://shrisaptashrungi.com</span>
+                                  <span>https://veeracomputers.com</span>
                                   <span>›</span>
                                   <span className="truncate">products</span>
                                   <span>›</span>
                                   <span className="truncate font-mono">{editingProduct?.id || 'new-product'}</span>
                                 </div>
                                 <h4 className="text-sm font-semibold text-blue-800 hover:underline leading-tight mt-1 line-clamp-1">
-                                  {formSeoTitle || formName || 'New Product Catalog Listing'} - Shri Saptashrungi
+                                  {formSeoTitle || formName || 'New Product Catalog Listing'} - Veera Computers
                                 </h4>
                                 <p className="text-[11px] text-slate-650 leading-relaxed mt-1 line-clamp-2">
                                   {formSeoDesc || formDesc || 'Genuine high-performance solution. Genuine professional premium grade solution. Instant digital validation delivery directly to your verified address.'}
