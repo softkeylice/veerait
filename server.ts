@@ -5206,39 +5206,52 @@ app.use(async (req, res, next) => {
     });
   }
 
+  function startListening() {
+    if (typeof PORT === "string") {
+      app.listen(PORT, () => {
+        console.log(`Server fully running on socket: ${PORT}`);
+      });
+    } else {
+      app.listen(PORT, "0.0.0.0", () => {
+        console.log(`Server fully running on http://0.0.0.0:${PORT}`);
+      });
+    }
+  }
+
   if (!isNetlify) {
-    if (process.env.NODE_ENV !== "production") {
+    const distPath = path.join(process.cwd(), "dist");
+    const distIndex = path.join(distPath, "index.html");
+
+    if (process.env.NODE_ENV === "production") {
+      app.use(express.static(distPath));
+      app.get("*", (req, res) => {
+        if (fs.existsSync(distIndex)) {
+          res.sendFile(distIndex);
+        } else {
+          res.status(500).send("Build error: dist/index.html missing. Run 'npm run build'.");
+        }
+      });
+      startListening();
+    } else {
+      // Development mode with Vite middleware
       import("vite").then(({ createServer }) => {
         createServer({
           server: { middlewareMode: true },
           appType: "spa",
         }).then((vite) => {
           app.use(vite.middlewares);
-          if (typeof PORT === "string") {
-            app.listen(PORT, () => {
-              console.log(`Server fully running on socket: ${PORT}`);
-            });
-          } else {
-            app.listen(PORT, "0.0.0.0", () => {
-              console.log(`Server fully running on http://localhost:${PORT}`);
-            });
-          }
+          startListening();
+        }).catch((viteErr) => {
+          console.error("Vite server initialization error, falling back to static:", viteErr);
+          app.use(express.static(distPath));
+          app.get("*", (req, res) => res.sendFile(distIndex));
+          startListening();
         });
+      }).catch((importErr) => {
+        console.error("Vite import error, falling back to static:", importErr);
+        app.use(express.static(distPath));
+        app.get("*", (req, res) => res.sendFile(distIndex));
+        startListening();
       });
-    } else {
-      const distPath = path.join(process.cwd(), "dist");
-      app.use(express.static(distPath));
-      app.get("*", (req, res) => {
-        res.sendFile(path.join(distPath, "index.html"));
-      });
-      if (typeof PORT === "string") {
-        app.listen(PORT, () => {
-          console.log(`Server fully running on socket: ${PORT}`);
-        });
-      } else {
-        app.listen(PORT, "0.0.0.0", () => {
-          console.log(`Server fully running on http://localhost:${PORT}`);
-        });
-      }
     }
   }
