@@ -3483,7 +3483,7 @@ app.use(async (req, res, next) => {
         orderId: paytmOrderId,
         amount: total || amount,
         currency: currency || "INR",
-        merchantId: "PAYTM_MCH_VEERA_IT_DEMO",
+        merchantId: process.env.PAYTM_MERCHANT_ID || "PAYTM_MCH_VEERA_IT_DEMO",
         callbackUrl: "/api/payment/paytm/webhook"
       });
     } catch (error: any) {
