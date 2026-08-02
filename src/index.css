@@ -8,6 +8,10 @@
 }
 
 /* Base style resets */
+html {
+  zoom: 92%;
+}
+
 body {
   font-family: var(--font-sans);
   background-color: #FAF7F2; /* Light Creamy Background */
