@@ -226,7 +226,7 @@ export default function CustomerWebsite({
   const [paytmStep, setPaytmStep] = useState<'select_method' | 'processing' | 'otp' | 'success'>('select_method');
   const [paytmSubMethod, setPaytmSubMethod] = useState<'upi' | 'wallet' | 'netbanking' | 'card'>('wallet');
   const [paytmOtp, setPaytmOtp] = useState('123456');
-  const [paytmUpiId, setPaytmUpiId] = useState('9764528777@paytm');
+  const [paytmUpiId, setPaytmUpiId] = useState('8485865677@paytm');
   const [currentPaytmOrderId, setCurrentPaytmOrderId] = useState('');
   const [currentPaytmTxnId, setCurrentPaytmTxnId] = useState('');
 
@@ -2055,29 +2055,29 @@ export default function CustomerWebsite({
 
                   <div className="space-y-2 pt-2 border-t border-slate-800">
                     <a
-                      href="tel:+919764528777"
+                      href="tel:+918485865677"
                       className="flex items-center justify-between p-3 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-2xl transition-all group cursor-pointer"
                     >
                       <div className="space-y-0.5">
                         <span className="text-[10px] font-bold text-slate-400 uppercase block">Technical Support</span>
-                        <span className="text-xs font-extrabold text-white font-mono">+91-9764528777</span>
+                        <span className="text-xs font-extrabold text-white font-mono">+91-8485865677</span>
                       </div>
                       <Phone className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
                     </a>
 
                     <a
-                      href="tel:+919764528777"
+                      href="tel:+918485865677"
                       className="flex items-center justify-between p-3 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-2xl transition-all group cursor-pointer"
                     >
                       <div className="space-y-0.5">
                         <span className="text-[10px] font-bold text-slate-400 uppercase block">Sales Contact</span>
-                        <span className="text-xs font-extrabold text-white font-mono">+91-9764528777</span>
+                        <span className="text-xs font-extrabold text-white font-mono">+91-8485865677</span>
                       </div>
                       <Phone className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
                     </a>
 
                     <a
-                      href="https://wa.me/919764528777?text=Hello%20Veera%20Computer,%20I%20have%20an%20inquiry"
+                      href="https://wa.me/918485865677?text=Hello%20Veera%20Computer,%20I%20have%20an%20inquiry"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center justify-center gap-2 p-3 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold rounded-2xl transition-all shadow-md text-xs cursor-pointer w-full mt-2"
@@ -2237,7 +2237,7 @@ export default function CustomerWebsite({
 
                   <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-1">
                     <span className="text-[10px] uppercase font-extrabold text-slate-400 block">Technical & Sales Support</span>
-                    <p className="font-mono font-bold text-emerald-700">+91-9764528777</p>
+                    <p className="font-mono font-bold text-emerald-700">+91-8485865677</p>
                   </div>
                 </div>
               </div>
@@ -2532,8 +2532,8 @@ export default function CustomerWebsite({
                     <p><strong>Website:</strong> <a href="https://www.veerait.com/" className="text-emerald-700 font-bold hover:underline">https://www.veerait.com/</a></p>
                     <p><strong>Address:</strong> G.R. Floor, 1-11-42, Mama Chowk, Jalna, Maharashtra – 431203, India</p>
                     <p><strong>GSTIN:</strong> 27FZOPS8739E1ZH</p>
-                    <p><strong>Technical Support:</strong> +91-9764528777</p>
-                    <p><strong>Sales Support:</strong> +91-9764528777</p>
+                    <p><strong>Technical Support:</strong> +91-8485865677</p>
+                    <p><strong>Sales Support:</strong> +91-8485865677</p>
                   </div>
                 </div>
               </div>
@@ -2585,9 +2585,9 @@ export default function CustomerWebsite({
 
                   <div className="pt-2 border-t border-slate-800 space-y-2">
                     <span className="text-[10px] font-bold text-slate-400 uppercase block">Technical & Sales Support</span>
-                    <p className="text-xs font-extrabold text-white font-mono">+91-9764528777</p>
+                    <p className="text-xs font-extrabold text-white font-mono">+91-8485865677</p>
                     <a
-                      href="https://wa.me/919764528777?text=Hello%20Veera%20Computers,%20I%20have%20a%20privacy%20question"
+                      href="https://wa.me/918485865677?text=Hello%20Veera%20Computers,%20I%20have%20a%20privacy%20question"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center justify-center gap-2 p-3 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold rounded-xl transition-all shadow-md text-xs cursor-pointer w-full mt-2"
@@ -2915,7 +2915,7 @@ export default function CustomerWebsite({
                     </a>
 
                     <a
-                      href="https://wa.me/919764528777?text=Hello%20VeeraIT%20Support,%20I%20have%20a%20question%20regarding%20my%20order."
+                      href="https://wa.me/918485865677?text=Hello%20VeeraIT%20Support,%20I%20have%20a%20question%20regarding%20my%20order."
                       target="_blank"
                       rel="noopener noreferrer"
                       className="p-4 bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 rounded-2xl flex items-center gap-3 transition-all group"
@@ -2925,7 +2925,7 @@ export default function CustomerWebsite({
                       </div>
                       <div>
                         <span className="text-[10px] uppercase font-bold text-slate-400 block">WhatsApp Support</span>
-                        <strong className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-emerald-700">+91 9764528777</strong>
+                        <strong className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-emerald-700">+91 8485865677</strong>
                       </div>
                     </a>
                   </div>
@@ -2984,13 +2984,13 @@ export default function CustomerWebsite({
 
                 <div className="space-y-2 pt-2">
                   <a
-                    href="https://wa.me/919764528777?text=Hello%20VeeraIT%20Support,%20I%20need%20assistance%20with%20my%20order."
+                    href="https://wa.me/918485865677?text=Hello%20VeeraIT%20Support,%20I%20need%20assistance%20with%20my%20order."
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 p-3 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold rounded-xl transition-all shadow-md text-xs cursor-pointer w-full"
                   >
                     <MessageSquare className="w-4 h-4" />
-                    <span>WhatsApp: +91 9764528777</span>
+                    <span>WhatsApp: +91 8485865677</span>
                   </a>
 
                   <a
@@ -3129,17 +3129,17 @@ export default function CustomerWebsite({
                       <span>Technical Support</span>
                     </div>
                     <div className="pl-6 space-y-2">
-                      <p className="font-mono text-base font-black text-emerald-900">+91-9764528777</p>
+                      <p className="font-mono text-base font-black text-emerald-900">+91-8485865677</p>
                       <div className="flex items-center gap-2 pt-1">
                         <a
-                          href="tel:+919764528777"
+                          href="tel:+918485865677"
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-xs"
                         >
                           <Phone className="w-3.5 h-3.5" />
                           Call Support
                         </a>
                         <a
-                          href="https://wa.me/919764528777?text=Hello%20Technical%20Support,%20I%20need%20assistance%20with%20software%20activation"
+                          href="https://wa.me/918485865677?text=Hello%20Technical%20Support,%20I%20need%20assistance%20with%20software%20activation"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-emerald-300 text-emerald-700 hover:bg-emerald-100 text-xs font-bold rounded-xl transition-all"
@@ -3158,17 +3158,17 @@ export default function CustomerWebsite({
                       <span>Sales Contact</span>
                     </div>
                     <div className="pl-6 space-y-2">
-                      <p className="font-mono text-base font-black text-blue-900">+91-9764528777</p>
+                      <p className="font-mono text-base font-black text-blue-900">+91-8485865677</p>
                       <div className="flex items-center gap-2 pt-1">
                         <a
-                          href="tel:+919764528777"
+                          href="tel:+918485865677"
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-xs"
                         >
                           <Phone className="w-3.5 h-3.5" />
                           Call Sales
                         </a>
                         <a
-                          href="https://wa.me/919764528777?text=Hello%20Veera%20Computers%20Sales,%20I%20would%20like%20to%20inquire%20about%20software%20licenses"
+                          href="https://wa.me/918485865677?text=Hello%20Veera%20Computers%20Sales,%20I%20would%20like%20to%20inquire%20about%20software%20licenses"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-blue-300 text-blue-700 hover:bg-blue-100 text-xs font-bold rounded-xl transition-all"
@@ -3285,15 +3285,15 @@ export default function CustomerWebsite({
                   <div className="pt-2 border-t border-slate-800 space-y-2.5">
                     <div>
                       <span className="text-[10px] font-bold text-slate-400 uppercase block">Technical Support</span>
-                      <a href="tel:+919764528777" className="text-sm font-extrabold text-white font-mono hover:text-emerald-400 transition-colors">
-                        +91-9764528777
+                      <a href="tel:+918485865677" className="text-sm font-extrabold text-white font-mono hover:text-emerald-400 transition-colors">
+                        +91-8485865677
                       </a>
                     </div>
 
                     <div>
                       <span className="text-[10px] font-bold text-slate-400 uppercase block">Sales Contact</span>
-                      <a href="tel:+919764528777" className="text-sm font-extrabold text-white font-mono hover:text-emerald-400 transition-colors">
-                        +91-9764528777
+                      <a href="tel:+918485865677" className="text-sm font-extrabold text-white font-mono hover:text-emerald-400 transition-colors">
+                        +91-8485865677
                       </a>
                     </div>
                   </div>
@@ -3303,14 +3303,14 @@ export default function CustomerWebsite({
                     <p className="text-xs font-extrabold text-white">Scan to Chat on WhatsApp</p>
                     <div className="w-32 h-32 bg-white rounded-xl p-1.5 mx-auto border border-slate-700 shadow-inner">
                       <img
-                        src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://wa.me/919764528777"
+                        src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://wa.me/918485865677"
                         alt="WhatsApp Contact QR"
                         referrerPolicy="no-referrer"
                         className="w-full h-full object-contain"
                       />
                     </div>
                     <a
-                      href="https://wa.me/919764528777?text=Hello%20Veera%20Computers,%20I%20have%20an%20inquiry"
+                      href="https://wa.me/918485865677?text=Hello%20Veera%20Computers,%20I%20have%20an%20inquiry"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center justify-center gap-2 p-3 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold rounded-xl transition-all shadow-md text-xs cursor-pointer w-full mt-2"
@@ -5671,7 +5671,7 @@ export default function CustomerWebsite({
                   <div className="bg-[#090f1d] border border-slate-800/90 rounded-2xl p-3.5 flex items-center gap-3.5 mt-5 shadow-inner">
                     <div className="w-14 h-14 bg-white rounded-xl p-1 shrink-0 flex items-center justify-center border border-slate-200 shadow-sm">
                       <img
-                        src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://wa.me/919764528777"
+                        src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://wa.me/918485865677"
                         alt="WhatsApp Contact QR"
                         referrerPolicy="no-referrer"
                         className="w-full h-full object-contain"
@@ -5933,7 +5933,7 @@ export default function CustomerWebsite({
 
             {/* Floating WhatsApp Action Button in Bottom Right */}
             <a
-              href="https://wa.me/919764528777?text=Hello%20Veera%20Computers,%20I%20have%20an%20inquiry"
+              href="https://wa.me/918485865677?text=Hello%20Veera%20Computers,%20I%20have%20an%20inquiry"
               target="_blank"
               rel="noopener noreferrer"
               className="fixed bottom-6 right-6 z-40 w-12 h-12 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full shadow-2xl flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer border-2 border-white/20"
@@ -6785,7 +6785,7 @@ export default function CustomerWebsite({
                   <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
                     <div className="flex items-center justify-between text-xs text-slate-700">
                       <span className="font-semibold">Linked Mobile Number:</span>
-                      <span className="font-mono font-bold text-[#002e6e]">+91 {customerPhone || '9764528777'}</span>
+                      <span className="font-mono font-bold text-[#002e6e]">+91 {customerPhone || '8485865677'}</span>
                     </div>
                     <p className="text-[11px] text-slate-500">
                       Paytm Wallet will deduct <strong>₹{netPayable.toFixed(2)}</strong> directly with 1-click test confirmation.
@@ -6800,7 +6800,7 @@ export default function CustomerWebsite({
                       type="text"
                       value={paytmUpiId}
                       onChange={(e) => setPaytmUpiId(e.target.value)}
-                      placeholder="e.g. 9764528777@paytm"
+                      placeholder="e.g. 8485865677@paytm"
                       className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-800 outline-none focus:border-[#00baf2]"
                     />
                     <p className="text-[10px] text-slate-400">Supported: Paytm UPI, PhonePe, Google Pay, BHIM</p>
@@ -6873,7 +6873,7 @@ export default function CustomerWebsite({
                 <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl space-y-1">
                   <h4 className="text-xs font-extrabold text-[#002e6e] uppercase tracking-wider">Paytm Bank Security Authorization</h4>
                   <p className="text-xs text-slate-600">
-                    A 6-digit confirmation code has been dispatched to <strong>+91 {customerPhone || '9764528777'}</strong>.
+                    A 6-digit confirmation code has been dispatched to <strong>+91 {customerPhone || '8485865677'}</strong>.
                   </p>
                 </div>
 
@@ -7263,8 +7263,8 @@ export default function CustomerWebsite({
                       <p><strong className="text-slate-200">Veera Computers</strong></p>
                       <p><strong className="text-slate-300">Address:</strong> G.R. Floor, 1-11-42, Mama Chowk, Jalna, Maharashtra. 431203.</p>
                       <p><strong className="text-slate-300">GSTN:</strong> 27FZOPS8739E1ZH</p>
-                      <p><strong className="text-slate-300">Technical Support:</strong> +91-9764528777</p>
-                      <p><strong className="text-slate-300">Sales Contact:</strong> +91-9764528777</p>
+                      <p><strong className="text-slate-300">Technical Support:</strong> +91-8485865677</p>
+                      <p><strong className="text-slate-300">Sales Contact:</strong> +91-8485865677</p>
                     </div>
                   </div>
                 </div>
@@ -7477,31 +7477,31 @@ export default function CustomerWebsite({
                       G.R. Floor, 1-11-42, Mama Chowk, Jalna, Maharashtra. 431203.
                     </p>
                     <div className="pt-2 border-t border-slate-800 space-y-1.5 text-xs">
-                      <p><strong className="text-slate-400 font-normal">Technical Support:</strong> <span className="font-mono text-white font-bold">+91-9764528777</span></p>
-                      <p><strong className="text-slate-400 font-normal">Sales Contact:</strong> <span className="font-mono text-white font-bold">+91-9764528777</span></p>
+                      <p><strong className="text-slate-400 font-normal">Technical Support:</strong> <span className="font-mono text-white font-bold">+91-8485865677</span></p>
+                      <p><strong className="text-slate-400 font-normal">Sales Contact:</strong> <span className="font-mono text-white font-bold">+91-8485865677</span></p>
                     </div>
                   </div>
 
                   <a
-                    href="https://wa.me/919764528777?text=Hello%20Veera%20Computers,%20I%20need%20assistance"
+                    href="https://wa.me/918485865677?text=Hello%20Veera%20Computers,%20I%20need%20assistance"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-between p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl hover:bg-emerald-500/20 transition-all text-emerald-300 font-bold"
                   >
                     <span className="flex items-center gap-2.5">
                       <MessageSquare className="w-5 h-5 text-emerald-400" />
-                      Chat on WhatsApp (+91-9764528777)
+                      Chat on WhatsApp (+91-8485865677)
                     </span>
                     <ChevronRight className="w-4 h-4" />
                   </a>
 
                   <a
-                    href="tel:+919764528777"
+                    href="tel:+918485865677"
                     className="flex items-center justify-between p-3 bg-slate-950 border border-slate-800 rounded-xl hover:bg-slate-800/60 transition-all text-slate-200 font-bold"
                   >
                     <span className="flex items-center gap-2.5">
                       <Phone className="w-5 h-5 text-blue-400" />
-                      Call Support / Sales (+91-9764528777)
+                      Call Support / Sales (+91-8485865677)
                     </span>
                     <ChevronRight className="w-4 h-4" />
                   </a>

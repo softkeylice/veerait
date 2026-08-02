@@ -68,7 +68,7 @@ export default function CustomerHeader({
           <div className="flex items-center gap-5">
             <span className="flex items-center gap-1.5 text-zinc-300">
               <Phone className="w-3.5 h-3.5 text-[#8cc33f]" />
-              <span>Technical Help: <strong className="text-white font-mono">+91-9764528777</strong> | Sales: <strong className="text-white font-mono">+91-9764528777</strong> <span className="text-zinc-500">(Mon - Sat, 11 AM - 7 PM)</span></span>
+              <span>Technical Help: <strong className="text-white font-mono">+91-8485865677</strong> | Sales: <strong className="text-white font-mono">+91-8485865677</strong> <span className="text-zinc-500">(Mon - Sat, 11 AM - 7 PM)</span></span>
             </span>
           </div>
           <div className="flex items-center gap-5 font-medium text-zinc-300 text-[10px] md:text-xs">
