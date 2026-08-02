@@ -3129,17 +3129,17 @@ export default function CustomerWebsite({
                       <span>Technical Support</span>
                     </div>
                     <div className="pl-6 space-y-2">
-                      <p className="font-mono text-base font-black text-emerald-900">+91-8485865677</p>
+                      <p className="font-mono text-base font-black text-emerald-900">+91-9764528777</p>
                       <div className="flex items-center gap-2 pt-1">
                         <a
-                          href="tel:+918485865677"
+                          href="tel:+919764528777"
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-xs"
                         >
                           <Phone className="w-3.5 h-3.5" />
                           Call Support
                         </a>
                         <a
-                          href="https://wa.me/918485865677?text=Hello%20Technical%20Support,%20I%20need%20assistance%20with%20software%20activation"
+                          href="https://wa.me/919764528777?text=Hello%20Technical%20Support,%20I%20need%20assistance%20with%20software%20activation"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-emerald-300 text-emerald-700 hover:bg-emerald-100 text-xs font-bold rounded-xl transition-all"
@@ -3285,8 +3285,8 @@ export default function CustomerWebsite({
                   <div className="pt-2 border-t border-slate-800 space-y-2.5">
                     <div>
                       <span className="text-[10px] font-bold text-slate-400 uppercase block">Technical Support</span>
-                      <a href="tel:+918485865677" className="text-sm font-extrabold text-white font-mono hover:text-emerald-400 transition-colors">
-                        +91-8485865677
+                      <a href="tel:+919764528777" className="text-sm font-extrabold text-white font-mono hover:text-emerald-400 transition-colors">
+                        +91-9764528777
                       </a>
                     </div>
 
