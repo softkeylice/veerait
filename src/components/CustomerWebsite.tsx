@@ -2533,7 +2533,7 @@ export default function CustomerWebsite({
                     <p><strong>Address:</strong> G.R. Floor, 1-11-42, Mama Chowk, Jalna, Maharashtra – 431203, India</p>
                     <p><strong>GSTIN:</strong> 27FZOPS8739E1ZH</p>
                     <p><strong>Technical Support:</strong> +91-8485865677</p>
-                    <p><strong>Sales Support:</strong> +91-8485865677</p>
+                    <p><strong>Sales Support:</strong> +91-9764528777</p>
                   </div>
                 </div>
               </div>
@@ -3158,17 +3158,17 @@ export default function CustomerWebsite({
                       <span>Sales Contact</span>
                     </div>
                     <div className="pl-6 space-y-2">
-                      <p className="font-mono text-base font-black text-blue-900">+91-8485865677</p>
+                      <p className="font-mono text-base font-black text-blue-900">+91-9764528777</p>
                       <div className="flex items-center gap-2 pt-1">
                         <a
-                          href="tel:+918485865677"
+                          href="tel:+919764528777"
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-xs"
                         >
                           <Phone className="w-3.5 h-3.5" />
                           Call Sales
                         </a>
                         <a
-                          href="https://wa.me/918485865677?text=Hello%20Veera%20Computers%20Sales,%20I%20would%20like%20to%20inquire%20about%20software%20licenses"
+                          href="https://wa.me/919764528777?text=Hello%20Veera%20Computers%20Sales,%20I%20would%20like%20to%20inquire%20about%20software%20licenses"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-blue-300 text-blue-700 hover:bg-blue-100 text-xs font-bold rounded-xl transition-all"
@@ -3292,8 +3292,8 @@ export default function CustomerWebsite({
 
                     <div>
                       <span className="text-[10px] font-bold text-slate-400 uppercase block">Sales Contact</span>
-                      <a href="tel:+918485865677" className="text-sm font-extrabold text-white font-mono hover:text-emerald-400 transition-colors">
-                        +91-8485865677
+                      <a href="tel:+919764528777" className="text-sm font-extrabold text-white font-mono hover:text-emerald-400 transition-colors">
+                        +91-9764528777
                       </a>
                     </div>
                   </div>
@@ -7264,7 +7264,7 @@ export default function CustomerWebsite({
                       <p><strong className="text-slate-300">Address:</strong> G.R. Floor, 1-11-42, Mama Chowk, Jalna, Maharashtra. 431203.</p>
                       <p><strong className="text-slate-300">GSTN:</strong> 27FZOPS8739E1ZH</p>
                       <p><strong className="text-slate-300">Technical Support:</strong> +91-8485865677</p>
-                      <p><strong className="text-slate-300">Sales Contact:</strong> +91-8485865677</p>
+                      <p><strong className="text-slate-300">Sales Contact:</strong> +91-9764528777</p>
                     </div>
                   </div>
                 </div>
@@ -7478,7 +7478,7 @@ export default function CustomerWebsite({
                     </p>
                     <div className="pt-2 border-t border-slate-800 space-y-1.5 text-xs">
                       <p><strong className="text-slate-400 font-normal">Technical Support:</strong> <span className="font-mono text-white font-bold">+91-8485865677</span></p>
-                      <p><strong className="text-slate-400 font-normal">Sales Contact:</strong> <span className="font-mono text-white font-bold">+91-8485865677</span></p>
+                      <p><strong className="text-slate-400 font-normal">Sales Contact:</strong> <span className="font-mono text-white font-bold">+91-9764528777</span></p>
                     </div>
                   </div>
 
