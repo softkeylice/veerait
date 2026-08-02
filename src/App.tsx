@@ -1783,6 +1783,22 @@ export default function App() {
             <span>•</span>
             <span>Version: 3.4.1 (Stable)</span>
           </div>
+          <div className="pt-2 flex justify-center">
+            <button
+              id="admin-login-footer-btn"
+              onClick={() => {
+                if (user && user.role === 'admin') {
+                  setCurrentScreen('admin');
+                } else {
+                  handleSetIsAuthOpen(true, true);
+                }
+              }}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-amber-400 font-medium text-xs rounded-lg transition-all shadow-sm border border-slate-700 hover:border-amber-500/50 cursor-pointer"
+            >
+              <ShieldAlert className="w-4 h-4 text-amber-400" />
+              <span>Admin Login / Portal</span>
+            </button>
+          </div>
         </div>
       </footer>
 
