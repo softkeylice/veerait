@@ -5221,10 +5221,11 @@ app.use(async (req, res, next) => {
   if (!isNetlify) {
     const distPath = path.join(process.cwd(), "dist");
     const distIndex = path.join(distPath, "index.html");
+    const rootIndex = path.join(process.cwd(), "index.html");
 
     if (process.env.NODE_ENV === "production") {
       app.use(express.static(distPath));
-      app.get("*all", (req, res) => {
+      app.use((req, res) => {
         if (fs.existsSync(distIndex)) {
           res.sendFile(distIndex);
         } else {
@@ -5240,17 +5241,49 @@ app.use(async (req, res, next) => {
           appType: "spa",
         }).then((vite) => {
           app.use(vite.middlewares);
+          // SPA Fallback for development if Vite middleware misses non-file routes
+          app.use(async (req, res) => {
+            if (fs.existsSync(rootIndex)) {
+              try {
+                let html = fs.readFileSync(rootIndex, "utf-8");
+                html = await vite.transformIndexHtml(req.originalUrl || req.url, html);
+                return res.status(200).set({ "Content-Type": "text/html" }).end(html);
+              } catch (err) {
+                console.error("Vite index transform error:", err);
+              }
+            }
+            if (fs.existsSync(distIndex)) {
+              return res.sendFile(distIndex);
+            }
+            res.status(404).send("Not Found");
+          });
           startListening();
         }).catch((viteErr) => {
           console.error("Vite server initialization error, falling back to static:", viteErr);
           app.use(express.static(distPath));
-          app.get("*all", (req, res) => res.sendFile(distIndex));
+          app.use((req, res) => {
+            if (fs.existsSync(distIndex)) {
+              res.sendFile(distIndex);
+            } else if (fs.existsSync(rootIndex)) {
+              res.sendFile(rootIndex);
+            } else {
+              res.status(404).send("Not Found");
+            }
+          });
           startListening();
         });
       }).catch((importErr) => {
         console.error("Vite import error, falling back to static:", importErr);
         app.use(express.static(distPath));
-        app.get("*all", (req, res) => res.sendFile(distIndex));
+        app.use((req, res) => {
+          if (fs.existsSync(distIndex)) {
+            res.sendFile(distIndex);
+          } else if (fs.existsSync(rootIndex)) {
+            res.sendFile(rootIndex);
+          } else {
+            res.status(404).send("Not Found");
+          }
+        });
         startListening();
       });
     }
