@@ -32,6 +32,9 @@ export default function AdminAuthModal({
 
   // Sign up state variables
   const [isSignUp, setIsSignUp] = useState(false);
+  const [adminSecretKey, setAdminSecretKey] = useState('');
+  const [isSecretKeyVerified, setIsSecretKeyVerified] = useState(false);
+  const [keyError, setKeyError] = useState('');
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -43,11 +46,27 @@ export default function AdminAuthModal({
     setOtp('');
     setSessionId('');
     setIsSignUp(false);
+    setAdminSecretKey('');
+    setIsSecretKeyVerified(false);
+    setKeyError('');
     setFullName('');
     setUsername('');
     setPassword('');
     setConfirmPassword('');
     onClose();
+  };
+
+  const handleVerifyMasterKey = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setKeyError('');
+    const cleanKey = adminSecretKey.trim();
+    if (cleanKey === '8497veer' || adminSecretKey === '8497veer ') {
+      setIsSecretKeyVerified(true);
+      addNotification('Master Key Verified', 'Admin registration unlocked and ready!', 'success');
+    } else {
+      setKeyError('Incorrect Master Password. Please enter "8497veer" to unlock.');
+      addNotification('Access Refused', 'Incorrect Admin Master Password.', 'error');
+    }
   };
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -150,6 +169,11 @@ export default function AdminAuthModal({
   const handleSignUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!isSecretKeyVerified) {
+      handleVerifyMasterKey(e);
+      return;
+    }
+
     if (!fullName || !username || !email || !phone || !password || !confirmPassword) {
       addNotification('Input Required', 'Please fill in all the required fields.', 'warning');
       return;
@@ -176,7 +200,8 @@ export default function AdminAuthModal({
           email,
           phone,
           password,
-          role: 'admin'
+          role: 'admin',
+          adminSecretKey: adminSecretKey
         })
       });
 
@@ -327,8 +352,62 @@ export default function AdminAuthModal({
 
           <form onSubmit={isSignUp ? handleSignUpSubmit : handleLoginSubmit} className="space-y-4">
             {/* 1. SIGN UP VIEWS */}
-            {isSignUp && (
+            {isSignUp && !isSecretKeyVerified && (
+              <div className="space-y-4 animate-in fade-in duration-200">
+                <div className="p-4 bg-amber-950/30 border border-amber-900/50 rounded-xl text-center space-y-2">
+                  <div className="w-10 h-10 mx-auto rounded-full bg-amber-900/40 border border-amber-700/50 flex items-center justify-center text-amber-400">
+                    <KeyRound className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-xs font-bold text-amber-400 uppercase tracking-wider">Admin Security Password Required</h3>
+                  <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
+                    Please enter the Master Admin Password to unlock registration.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Master Password</label>
+                  <div className="relative">
+                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
+                      <Lock className="w-4 h-4" />
+                    </span>
+                    <input
+                      type="password"
+                      required
+                      autoFocus
+                      value={adminSecretKey}
+                      onChange={(e) => {
+                        setAdminSecretKey(e.target.value);
+                        setKeyError('');
+                      }}
+                      placeholder="Enter Master Password..."
+                      className="w-full pl-9 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all font-mono"
+                    />
+                  </div>
+                  {keyError && (
+                    <p className="text-[10px] font-semibold text-red-400 mt-2 flex items-center gap-1">
+                      <X className="w-3.5 h-3.5 inline" /> {keyError}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {isSignUp && isSecretKeyVerified && (
               <div className="space-y-3.5 animate-in fade-in duration-200">
+                <div className="flex items-center justify-between p-2.5 bg-emerald-950/40 border border-emerald-900/50 rounded-xl text-emerald-400 text-[10px] font-bold">
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    Master Password Verified (Ready for Sign Up)
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsSecretKeyVerified(false)}
+                    className="text-slate-400 hover:text-slate-200 underline text-[9px] cursor-pointer"
+                  >
+                    Lock
+                  </button>
+                </div>
+
                 <div>
                   <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Full Name</label>
                   <div className="relative">
@@ -687,8 +766,11 @@ export default function AdminAuthModal({
               disabled={loading || (!isSignUp && authMethod !== 'password' && !otpSent)}
               className="w-full py-3 mt-4 bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-lg shadow-red-950/50 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none transition-all cursor-pointer uppercase tracking-wider font-sans"
             >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-              {isSignUp ? 'Register Admin Profile' : (authMethod === 'password' ? 'Sign In as Admin' : 'Verify & Authorize')}
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : (isSignUp && !isSecretKeyVerified ? <KeyRound className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />)}
+              {isSignUp 
+                ? (isSecretKeyVerified ? 'Register Admin Profile' : 'Verify Password & Unlock Sign Up') 
+                : (authMethod === 'password' ? 'Sign In as Admin' : 'Verify & Authorize')
+              }
             </button>
 
             {/* Toggle Login/Signup link */}
@@ -706,6 +788,9 @@ export default function AdminAuthModal({
                   setPassword('');
                   setConfirmPassword('');
                   setSecurityAgreement(false);
+                  setAdminSecretKey('');
+                  setIsSecretKeyVerified(false);
+                  setKeyError('');
                 }}
                 className="text-amber-500 hover:text-amber-400 font-bold underline transition-all cursor-pointer decoration-dotted"
               >

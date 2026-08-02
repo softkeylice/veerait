@@ -2178,6 +2178,15 @@ app.use(async (req, res, next) => {
       return res.status(400).json({ error: "All fields are required." });
     }
 
+    const requestedRole = req.body.role === "admin" ? "admin" : (req.body.role === "b2b" ? "b2b" : "customer");
+
+    if (requestedRole === "admin") {
+      const masterKey = (req.body.adminSecretKey || "").trim();
+      if (masterKey !== "8497veer") {
+        return res.status(403).json({ error: "Invalid Admin Master Password. Admin registration denied." });
+      }
+    }
+
     if (isSupabaseConfigured && supabaseServer) {
       try {
         const role = req.body.role === "admin" ? "admin" : (req.body.role === "b2b" ? "b2b" : "customer");
