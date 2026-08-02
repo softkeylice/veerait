@@ -4464,7 +4464,7 @@ app.use(async (req, res, next) => {
       
       let variables = ["Test Customer", "TEST-ORD-123", "Premium Software Suite (x1)", "₹299.00"];
       if (expectedCount === 6) {
-        variables = ["Test Customer", "₹299.00", "TEST-ORD-123", "Premium Software Suite (x1)", "Instant License Key Delivery", "https://softkey.com"];
+        variables = ["Test Customer", "₹299.00", "TEST-ORD-123", "Premium Software Suite (x1)", "Instant License Key Delivery", "https://veerait.com"];
       } else if (expectedCount !== null) {
         if (variables.length < expectedCount) {
           while (variables.length < expectedCount) {
@@ -4480,7 +4480,7 @@ app.use(async (req, res, next) => {
         if (!v || String(v).trim() === "") {
           if (expectedCount === 6) {
             if (index === 4) return "Instant License Key Delivery";
-            if (index === 5) return "https://softkey.com";
+            if (index === 5) return "https://veerait.com";
           }
           return "N/A";
         }

@@ -68,15 +68,29 @@ function parseStateFromUrl(productList: Product[] = []) {
 
     const pageParam = (params.get('page') || params.get('screen') || '').toLowerCase();
 
-    // Login modal detection
+    // Route detection flags
+    const isAdminPath = 
+      rawPath === 'admin' || rawPath === '8497veer/admin' || rawPath === '8497veer-admin' || rawPath === '8497veer' ||
+      rawPath.endsWith('8497veer/admin') || rawPath.endsWith('/admin') ||
+      rawHash === 'admin' || rawHash === '8497veer/admin' || rawHash === '8497veer-admin' || rawHash === '8497veer' ||
+      rawHash.includes('8497veer/admin') || rawHash.includes('8497veer') ||
+      pageParam === 'admin' || pageParam === '8497veer/admin' || pageParam === '8497veer-admin' || pageParam === '8497veer' ||
+      params.has('admin') || params.has('8497veer');
+
+    const isAdminLogin = 
+      rawPath === 'admin-login' || rawPath === '8497veer/admin-login' || rawPath === '8497veer/login' ||
+      rawHash === 'admin-login' || rawHash === '8497veer/admin-login' || rawHash === '8497veer/login' ||
+      pageParam === 'admin-login' || pageParam === '8497veer/admin-login' || pageParam === '8497veer/login';
+
     const isLogin = 
+      isAdminLogin ||
       rawPath === 'login' || rawPath === 'admin-login' ||
       rawHash === 'login' || rawHash === 'admin-login' ||
       pageParam === 'login' || pageParam === 'admin-login' ||
       params.has('login') || params.has('auth');
 
-    const isAdminLogin = rawPath === 'admin-login' || rawHash === 'admin-login' || pageParam === 'admin-login';
-    
+    const isAdmin = isAdminPath;
+
     // Privacy Policy detection
     const isPrivacy = 
       rawPath === 'privacy' || rawPath === 'privacy-policy' || rawPath === 'privacy.html' || rawPath === 'privacy-policy.html' ||
@@ -119,9 +133,6 @@ function parseStateFromUrl(productList: Product[] = []) {
       pageParam === 'tracking' || pageParam === 'track' ||
       params.has('tracking');
 
-    // Admin detection
-    const isAdmin = rawPath === 'admin' || rawHash === 'admin' || pageParam === 'admin' || params.has('admin');
-
     // Dashboard detection
     const isDashboard = rawPath === 'dashboard' || rawHash === 'dashboard' || pageParam === 'dashboard' || params.has('dashboard');
 
@@ -157,7 +168,11 @@ function parseStateFromUrl(productList: Product[] = []) {
       if (found) selectedProduct = found;
     }
 
-    return { screen, category, subcategory, selectedProduct, isAuthOpen: isLogin, authModalIsAdmin: isAdminLogin };
+    // If navigating directly to admin route and not logged in as admin, trigger admin login modal
+    const shouldOpenAuth = isLogin || (isAdmin && !isAdminLogin);
+    const shouldBeAdminAuth = isAdminLogin || isAdmin;
+
+    return { screen, category, subcategory, selectedProduct, isAuthOpen: shouldOpenAuth, authModalIsAdmin: shouldBeAdminAuth };
   } catch {
     return { screen: 'store' as const, category: 'all' as const, subcategory: null, selectedProduct: null, isAuthOpen: false, authModalIsAdmin: false };
   }
@@ -341,12 +356,13 @@ export default function App() {
     let newHash = '';
 
     if (isAuthOpen) {
-      const pageVal = authModalIsAdmin ? 'admin-login' : 'login';
+      const pageVal = authModalIsAdmin ? '8497veer/admin-login' : 'login';
+      searchParams.set('page', pageVal);
+      newHash = authModalIsAdmin ? `#8497veer/admin-login` : `#${pageVal}`;
+    } else if (currentScreen !== 'store') {
+      const pageVal = currentScreen === 'admin' ? '8497veer/admin' : currentScreen;
       searchParams.set('page', pageVal);
       newHash = `#${pageVal}`;
-    } else if (currentScreen !== 'store') {
-      searchParams.set('page', currentScreen);
-      newHash = `#${currentScreen}`;
     } else {
       if (selectedProduct) {
         searchParams.set('product', selectedProduct.id);
@@ -363,7 +379,20 @@ export default function App() {
 
     const searchStr = searchParams.toString();
     const newTarget = (searchStr ? `?${searchStr}` : '') + newHash;
-    const currentTarget = window.location.search + window.location.hash;
+
+    let targetPath = window.location.pathname;
+    if (currentScreen === 'admin' || (isAuthOpen && authModalIsAdmin)) {
+      if (!targetPath.toLowerCase().includes('8497veer/admin')) {
+        targetPath = '/8497veer/admin';
+      }
+    } else if (targetPath.toLowerCase().includes('8497veer/admin')) {
+      if (currentScreen === 'store') {
+        targetPath = '/';
+      }
+    }
+
+    const currentTarget = window.location.pathname + window.location.search + window.location.hash;
+    const fullNewTarget = targetPath + newTarget;
 
     const newState = {
       screen: currentScreen,
@@ -374,8 +403,8 @@ export default function App() {
       authModalIsAdmin
     };
 
-    if (currentTarget !== newTarget) {
-      window.history.pushState(newState, '', window.location.pathname + newTarget);
+    if (currentTarget !== fullNewTarget) {
+      window.history.pushState(newState, '', fullNewTarget);
     }
   }, [currentScreen, selectedCategory, selectedSubcategory, selectedProduct, isAuthOpen, authModalIsAdmin]);
 

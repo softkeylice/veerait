@@ -305,7 +305,7 @@ export function generateTemplateVariables(eventType: WhatsAppEvent, data: any): 
       return [
         data.customerName || "Customer",
         data.productName || "Software Product",
-        data.downloadUrl || "https://softkey.com/downloads"
+        data.downloadUrl || "https://veerait.com/downloads"
       ];
       
     case "shipping_update":
@@ -429,7 +429,7 @@ export function getFallbackOrderConfirmationVariables(eventType: WhatsAppEvent, 
   let orderId = "N/A";
   let productName = "Software License";
   let deliveryDetails = "Instant Delivery";
-  let link = "https://softkey.com";
+  let link = "https://veerait.com";
 
   if (eventType === "registration") {
     name = d.name || "Customer";
@@ -437,91 +437,91 @@ export function getFallbackOrderConfirmationVariables(eventType: WhatsAppEvent, 
     orderId = "REGISTRATION";
     productName = "SoftKey Account Registration";
     deliveryDetails = `Welcome! Your account under email ${d.email || "N/A"} was registered successfully.`;
-    link = "https://softkey.com";
+    link = "https://veerait.com";
   } else if (eventType === "login_otp") {
     name = d.name || "Customer";
     amount = "N/A";
     orderId = "LOGIN_OTP";
     productName = "Two-Factor Verification Code";
     deliveryDetails = `Your One-Time Password (OTP) is: ${d.otp || "000000"}. Expiring in ${d.expiry || "5 minutes"}.`;
-    link = "https://softkey.com";
+    link = "https://veerait.com";
   } else if (eventType === "payment_success") {
     name = d.customerName || d.name || "Customer";
     amount = d.amount || "N/A";
     orderId = d.orderId || "N/A";
     productName = "Payment Successful";
     deliveryDetails = `Transaction ID: ${d.transactionId || "N/A"}. Order is confirmed.`;
-    link = "https://softkey.com";
+    link = "https://veerait.com";
   } else if (eventType === "payment_failed") {
     name = d.customerName || d.name || "Customer";
     amount = d.amount || "0.00";
     orderId = d.orderId || "N/A";
     productName = "Payment Attempt Failed";
     deliveryDetails = `Reason: ${d.reason || "Declined by bank"}. Please try again.`;
-    link = "https://softkey.com";
+    link = "https://veerait.com";
   } else if (eventType === "order_confirmation") {
     name = d.customerName || d.name || "Customer";
     amount = d.amount || "0.00";
     orderId = d.orderId || "N/A";
     productName = d.items || "Catalog Purchase";
     deliveryDetails = "Order is confirmed. License keys and download instructions are sent.";
-    link = "https://softkey.com";
+    link = "https://veerait.com";
   } else if (eventType === "license_key_delivery") {
     name = d.customerName || d.name || "Customer";
     amount = "N/A";
     orderId = d.orderId || "N/A";
     productName = d.productName || "License Key Delivery";
     deliveryDetails = `Keys: ${d.licenseKeys || "N/A"}`;
-    link = "https://softkey.com";
+    link = "https://veerait.com";
   } else if (eventType === "software_download") {
     name = d.customerName || d.name || "Customer";
     amount = "N/A";
     orderId = "DOWNLOAD";
     productName = d.productName || "Software Product";
-    deliveryDetails = `Download Link: ${d.downloadUrl || "https://softkey.com/downloads"}`;
-    link = d.downloadUrl || "https://softkey.com";
+    deliveryDetails = `Download Link: ${d.downloadUrl || "https://veerait.com/downloads"}`;
+    link = d.downloadUrl || "https://veerait.com";
   } else if (eventType === "shipping_update") {
     name = d.customerName || d.name || "Customer";
     amount = "N/A";
     orderId = d.orderId || "N/A";
     productName = "Physical Product Shipping";
     deliveryDetails = `Tracking ID: ${d.trackingId || "PENDING"} (${d.estDelivery || "2-3 business days"})`;
-    link = "https://softkey.com";
+    link = "https://veerait.com";
   } else if (eventType === "delivery_confirmation") {
     name = d.customerName || d.name || "Customer";
     amount = "N/A";
     orderId = d.orderId || "N/A";
     productName = "Product Delivered";
     deliveryDetails = `Status: Marked as Delivered at ${d.deliveredAt || new Date().toLocaleString()}`;
-    link = "https://softkey.com";
+    link = "https://veerait.com";
   } else if (eventType === "refund_initiated") {
     name = d.customerName || d.name || "Customer";
     amount = d.amount || "0.00";
     orderId = d.orderId || "N/A";
     productName = "Refund Initiated";
     deliveryDetails = `Estimated Timeline: ${d.timeline || "5-7 bank working days"}`;
-    link = "https://softkey.com";
+    link = "https://veerait.com";
   } else if (eventType === "refund_completed") {
     name = d.customerName || d.name || "Customer";
     amount = d.amount || "0.00";
     orderId = d.orderId || "N/A";
     productName = "Refund Completed";
     deliveryDetails = `Refund Transaction ID: ${d.refundId || "N/A"}`;
-    link = "https://softkey.com";
+    link = "https://veerait.com";
   } else if (eventType === "low_stock_alerts") {
     name = "Administrator";
     amount = "N/A";
     orderId = "LOW_STOCK";
     productName = d.productName || "Product Alert";
     deliveryDetails = `Current Stock Level: ${d.currentStock ?? 0} (Threshold: ${d.threshold ?? 5})`;
-    link = "https://softkey.com";
+    link = "https://veerait.com";
   } else if (eventType === "new_order_notifications") {
     name = "Administrator";
     amount = "N/A";
     orderId = d.orderId || "N/A";
     productName = "New Order Notification";
     deliveryDetails = `Customer: ${d.customerName || "Customer"}. Summary: ${d.summary || "N/A"}`;
-    link = "https://softkey.com";
+    link = "https://veerait.com";
   }
 
   return [name, amount, orderId, productName, deliveryDetails, link];
@@ -597,7 +597,7 @@ export async function dispatchWhatsAppTemplate(
     if (!v || String(v).trim() === "") {
       if (expectedCount === 6) {
         if (index === 4) return "Instant Digital Delivery";
-        if (index === 5) return "https://softkey.com";
+        if (index === 5) return "https://veerait.com";
       }
       return "N/A";
     }
@@ -765,7 +765,7 @@ export async function dispatchWhatsAppTemplate(
             if (!v || String(v).trim() === "") {
               if (fallbackCount === 6) {
                 if (index === 4) return "Instant Digital Delivery";
-                if (index === 5) return "https://softkey.com";
+                if (index === 5) return "https://veerait.com";
               }
               return "N/A";
             }

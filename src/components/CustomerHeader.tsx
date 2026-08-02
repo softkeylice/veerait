@@ -215,7 +215,7 @@ export default function CustomerHeader({
                 onClick={() => {
                   if (!user || user.role !== 'admin') {
                     setIsAuthOpen(true, true);
-                    addNotification('Admin Entry', 'Please sign in with admin credentials (admin@softkey.com / admin123).', 'info');
+                    addNotification('Admin Entry', 'Please sign in with admin credentials (admin@veerait.com / admin123).', 'info');
                   } else {
                     setCurrentScreen('admin');
                   }
@@ -486,7 +486,7 @@ export default function CustomerHeader({
                   onClick={() => {
                     if (!user) {
                       setIsAuthOpen(true, true);
-                      addNotification('Admin Login', 'Please sign in as admin@softkey.com / admin123', 'info');
+                      addNotification('Admin Login', 'Please sign in as admin@veerait.com / admin123', 'info');
                     } else {
                       setCurrentScreen('admin');
                     }
@@ -653,7 +653,7 @@ export default function CustomerHeader({
               onClick={() => {
                 if (!user) {
                   setIsAuthOpen(true, true);
-                  addNotification('Admin Login', 'Please sign in as admin@softkey.com / admin123', 'info');
+                  addNotification('Admin Login', 'Please sign in as admin@veerait.com / admin123', 'info');
                 } else {
                   setCurrentScreen('admin');
                 }

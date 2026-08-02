@@ -698,7 +698,7 @@ export default function AdminPanel({
                 } else {
                   deliveryDetails = 'Instant Key Email Delivery Confirmed';
                 }
-                const helpLink = 'https://softkey.com';
+                const helpLink = 'https://veerait.com';
                 const defaultPrefills = [customerName, amount, orderId, itemsSummary, deliveryDetails, helpLink];
                 
                 const newVars: string[] = [];
@@ -744,7 +744,7 @@ export default function AdminPanel({
           } else {
             deliveryDetails = 'Instant Key Email Delivery Confirmed';
           }
-          const helpLink = 'https://softkey.com';
+          const helpLink = 'https://veerait.com';
           const defaultPrefills = [customerName, amount, orderId, itemsSummary, deliveryDetails, helpLink];
           
           const newVars: string[] = [];
@@ -786,7 +786,7 @@ export default function AdminPanel({
         } else {
           deliveryDetails = 'Instant Key Email Delivery Confirmed';
         }
-        const helpLink = 'https://softkey.com';
+        const helpLink = 'https://veerait.com';
         const defaultPrefills = [customerName, amount, orderId, itemsSummary, deliveryDetails, helpLink];
         
         const newVars: string[] = [];
@@ -835,7 +835,7 @@ export default function AdminPanel({
         } else {
           deliveryDetails = 'Instant Key Email Delivery Confirmed';
         }
-        const helpLink = 'https://softkey.com';
+        const helpLink = 'https://veerait.com';
         const defaultPrefills = [customerName, amount, ordId, itemsSummary, deliveryDetails, helpLink];
         
         const newVars: string[] = [];
