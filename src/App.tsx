@@ -393,17 +393,8 @@ export default function App() {
     const searchStr = searchParams.toString();
     const newTarget = (searchStr ? `?${searchStr}` : '') + newHash;
 
-    let targetPath = window.location.pathname;
-    if (currentScreen === 'admin' || (isAuthOpen && authModalIsAdmin)) {
-      if (!targetPath.toLowerCase().includes('8497veer/admin')) {
-        targetPath = '/8497veer/admin';
-      }
-    } else if (targetPath.toLowerCase().includes('8497veer/admin')) {
-      if (currentScreen === 'store') {
-        targetPath = '/';
-      }
-    }
-
+    // Use current pathname or base '/' to prevent 404s on static hosting platforms
+    const targetPath = window.location.pathname.startsWith('/8497veer') ? '/8497veer/admin' : window.location.pathname;
     const currentTarget = window.location.pathname + window.location.search + window.location.hash;
     const fullNewTarget = targetPath + newTarget;
 

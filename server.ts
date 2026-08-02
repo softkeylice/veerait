@@ -5224,7 +5224,7 @@ app.use(async (req, res, next) => {
 
     if (process.env.NODE_ENV === "production") {
       app.use(express.static(distPath));
-      app.get("*all", (req, res) => {
+      app.get("*", (req, res) => {
         if (fs.existsSync(distIndex)) {
           res.sendFile(distIndex);
         } else {
@@ -5244,13 +5244,13 @@ app.use(async (req, res, next) => {
         }).catch((viteErr) => {
           console.error("Vite server initialization error, falling back to static:", viteErr);
           app.use(express.static(distPath));
-          app.get("*all", (req, res) => res.sendFile(distIndex));
+          app.get("*", (req, res) => res.sendFile(distIndex));
           startListening();
         });
       }).catch((importErr) => {
         console.error("Vite import error, falling back to static:", importErr);
         app.use(express.static(distPath));
-        app.get("*all", (req, res) => res.sendFile(distIndex));
+        app.get("*", (req, res) => res.sendFile(distIndex));
         startListening();
       });
     }
