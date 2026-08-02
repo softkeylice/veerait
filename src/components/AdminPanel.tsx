@@ -172,7 +172,7 @@ export default function AdminPanel({
   const [previewDeviceMode, setPreviewDeviceMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
 
   // Notification API tester helpers
-  const [notifyWhatsAppTemplate, setNotifyWhatsAppTemplate] = useState('Your order {{order_id}} has been processed. Here is your activation key: {{license_key}}');
+  const [notifyWhatsAppTemplate, setNotifyWhatsAppTemplate] = useState('Your order {{order_id}} has been processed. Here is your activation key: {{license_key}}. Visit https://veerait.com for support.');
   const [notifySmtpSubject, setNotifySmtpSubject] = useState('SoftKey Store - Order Invoice {{order_id}}');
   
   // Real Notification/SMTP credentials

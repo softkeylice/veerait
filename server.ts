@@ -490,7 +490,7 @@ async function dispatchOrderNotifications(order: any) {
         console.log(`[NOTIFY-ENGINE] 2Factor Gateway active as fallback. Dispatching order confirmation to +91 ${formattedPhone}...`);
         
         const cleanedPhone = formattedPhone.startsWith("91") && formattedPhone.length > 10 ? formattedPhone : `91${formattedPhone}`;
-        const msgBody = `🛒 *SoftKey Store Order Confirmation!*\n\n*Order ID:* ${orderId}\n*Products:* ${productsList}\n*Total Paid:* ${amount}\n\n*Your License Key(s):*\n${keysList}\n\nThank you for shopping with us! If you need support, visit your Customer Dashboard.`;
+        const msgBody = `🛒 *Veera IT Order Confirmation!*\n\n*Order ID:* ${orderId}\n*Products:* ${productsList}\n*Total Paid:* ₹${amount}\n\n*Your License Key(s):*\n${keysList}\n\nThank you for shopping with us! Visit https://veerait.com for details and support.`;
         
         const tsmsUrl = `https://2factor.in/API/V1/${apiKey}/ADDON_SERVICES/SEND/TSMS`;
         const waUrl = `https://2factor.in/API/V1/${apiKey}/ADDON_SERVICES/SEND/WHATSAPP`;
@@ -4937,7 +4937,7 @@ app.use(async (req, res, next) => {
         }
       } else {
         // Fallback or 2Factor Active Integration
-        const apiKey = process.env.TWO_FACTOR_API_KEY;
+        const apiKey = cleanConfigValue(settings.twoFactorApiKey, process.env.TWO_FACTOR_API_KEY);
         const isDummyKey = !apiKey || apiKey === "YOUR_2FACTOR_API_KEY" || apiKey.trim() === "";
 
         if (!isDummyKey) {
@@ -4952,7 +4952,7 @@ app.use(async (req, res, next) => {
               const cleanedPhone = formattedPhone.startsWith("91") && formattedPhone.length > 10 ? formattedPhone : `91${formattedPhone}`;
               
               // 2Factor Transactional SMS API & WhatsApp addon API
-              const msgBody = `🛒 *SoftKey Store Order Confirmation!*\n\n*Order ID:* ${orderId}\n*Products:* ${productsList}\n*Total Paid:* ${amount}\n\n*Your License Key(s):*\n${keysList}\n\nThank you for shopping with us! If you need support, visit your Customer Dashboard.`;
+              const msgBody = `🛒 *Veera IT Order Confirmation!*\n\n*Order ID:* ${orderId}\n*Products:* ${productsList}\n*Total Paid:* ₹${amount}\n\n*Your License Key(s):*\n${keysList}\n\nThank you for shopping with us! Visit https://veerait.com for details and support.`;
               
               const tsmsUrl = `https://2factor.in/API/V1/${apiKey}/ADDON_SERVICES/SEND/TSMS`;
               const waUrl = `https://2factor.in/API/V1/${apiKey}/ADDON_SERVICES/SEND/WHATSAPP`;
