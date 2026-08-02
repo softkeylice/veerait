@@ -374,7 +374,7 @@ export default function AdminAuthModal({
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="admin@softkey.com"
+                      placeholder="admin@veerait.com"
                       className="w-full pl-9 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all font-mono"
                     />
                   </div>

@@ -71,10 +71,10 @@ function parseStateFromUrl(productList: Product[] = []) {
     // Route detection flags
     const isAdminPath = 
       rawPath === 'admin' || rawPath === '8497veer/admin' || rawPath === '8497veer-admin' || rawPath === '8497veer' ||
-      rawPath.endsWith('8497veer/admin') || rawPath.endsWith('/admin') ||
+      rawPath.endsWith('8497veer/admin') || rawPath.endsWith('/admin') || rawPath.includes('8497veer') || rawPath.includes('admin') ||
       rawHash === 'admin' || rawHash === '8497veer/admin' || rawHash === '8497veer-admin' || rawHash === '8497veer' ||
-      rawHash.includes('8497veer/admin') || rawHash.includes('8497veer') ||
-      pageParam === 'admin' || pageParam === '8497veer/admin' || pageParam === '8497veer-admin' || pageParam === '8497veer' ||
+      rawHash.includes('8497veer') || rawHash.includes('admin') ||
+      pageParam.includes('admin') || pageParam.includes('8497veer') ||
       params.has('admin') || params.has('8497veer');
 
     const isAdminLogin = 
@@ -325,6 +325,19 @@ export default function App() {
       window.history.replaceState(initialState, '');
     }
   }, []);
+
+  // Automatically open Admin Login modal if on 'admin' screen and not authenticated as admin
+  useEffect(() => {
+    if (currentScreen === 'admin') {
+      if (!user || user.role !== 'admin') {
+        setIsAuthOpen(true);
+        setAuthModalIsAdmin(true);
+      } else if (authModalIsAdmin) {
+        setIsAuthOpen(false);
+        setAuthModalIsAdmin(false);
+      }
+    }
+  }, [currentScreen, user, authModalIsAdmin]);
 
   // Synchronize state changes with browser history (pushState)
   useEffect(() => {
