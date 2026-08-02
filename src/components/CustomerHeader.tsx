@@ -186,50 +186,9 @@ export default function CustomerHeader({
             {/* Header Rightside Actions (Login/Profile & Cart) */}
             <div className="flex items-center gap-3 flex-shrink-0" id="header-controls">
               
-              {/* Demo Login helper */}
-              {!user && (
-                <button
-                  onClick={() => {
-                    setUser({ email: 'softkeylice@gmail.com', name: 'Veera Partner' });
-                    addNotification('Demo Authenticated', 'Logged in as softkeylice@gmail.com', 'success');
-                  }}
-                  className="hidden lg:block text-[10px] text-slate-500 hover:text-blue-600 border border-dashed border-slate-300 px-2 py-1 rounded bg-slate-50 hover:bg-blue-50/50 transition-colors font-mono"
-                >
-                  Demo Quick-Login
-                </button>
-              )}
 
-              {/* Order Tracker Shortcut */}
-              <button
-                onClick={() => setCurrentScreen('tracking')}
-                className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${
-                  currentScreen === 'tracking' ? 'bg-[#8cc33f]/15 border-[#8cc33f]/30 text-[#7cb232]' : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                <Truck className="w-3.5 h-3.5" />
-                Track Order
-              </button>
 
-              {/* Admin Panel button - prominent and always accessible in main header */}
-              <button
-                onClick={() => {
-                  if (!user || user.role !== 'admin') {
-                    setIsAuthOpen(true, true);
-                    addNotification('Admin Entry', 'Please sign in with admin credentials (admin@veerait.com / admin123).', 'info');
-                  } else {
-                    setCurrentScreen('admin');
-                  }
-                }}
-                className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${
-                  currentScreen === 'admin' 
-                    ? 'bg-blue-50 border-blue-200 text-blue-600 font-extrabold shadow-sm' 
-                    : 'border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800'
-                }`}
-                id="header-admin-panel-btn"
-              >
-                <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />
-                Admin Panel
-              </button>
+
 
               {/* My Dashboard/Assets button - prominent if logged in as customer/reseller */}
               {user && user.role !== 'admin' && (
@@ -481,24 +440,7 @@ export default function CustomerHeader({
                   My Assets
                 </button>
               )}
-              {true && (
-                <button
-                  onClick={() => {
-                    if (!user) {
-                      setIsAuthOpen(true, true);
-                      addNotification('Admin Login', 'Please sign in as admin@veerait.com / admin123', 'info');
-                    } else {
-                      setCurrentScreen('admin');
-                    }
-                  }}
-                  className={`px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 hover:text-white hover:bg-white/5 transition-all ${
-                    currentScreen === 'admin' ? 'text-white bg-white/10' : 'text-slate-300'
-                  }`}
-                >
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  Admin
-                </button>
-              )}
+
             </div>
           </div>
 
@@ -623,14 +565,7 @@ export default function CustomerHeader({
             </button>
           ))}
 
-          <button
-            onClick={() => { setCurrentScreen('tracking'); setMobileMenuOpen(false); }}
-            className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium ${
-              currentScreen === 'tracking' ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-slate-600 hover:bg-slate-50'
-            }`}
-          >
-            Order Tracker Waybill Lookup
-          </button>
+
           {(!user || user.role !== 'admin') && (
             <button
               onClick={() => {
@@ -648,25 +583,7 @@ export default function CustomerHeader({
               My Asset Dashboard
             </button>
           )}
-          {true && (
-            <button
-              onClick={() => {
-                if (!user) {
-                  setIsAuthOpen(true, true);
-                  addNotification('Admin Login', 'Please sign in as admin@veerait.com / admin123', 'info');
-                } else {
-                  setCurrentScreen('admin');
-                }
-                setMobileMenuOpen(false);
-              }}
-              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium flex items-center gap-1.5 ${
-                currentScreen === 'admin' ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              <ShieldCheck className="w-4 h-4" />
-              Admin Control Center
-            </button>
-          )}
+
 
           {/* User Details in Mobile Menu */}
           {user ? (
