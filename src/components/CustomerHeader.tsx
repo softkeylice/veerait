@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 import { ShoppingCart, ShieldCheck, LogIn, LogOut, Menu, X, User, Search, ChevronDown, Zap, Shield, Award, Truck, Home, Phone, HelpCircle, LayoutDashboard, Coins, Wallet, FileText, UserCheck, Plus } from 'lucide-react';
 import { Product } from '../types';
 import { BRAND_CATEGORIES } from './CategoryGrid';
+import veeraitLogoImg from '../assets/images/veerait_logo_1785754248259.jpg';
 
 interface CustomerHeaderProps {
   currentScreen: 'store' | 'dashboard' | 'admin' | 'tracking' | 'about' | 'contact' | 'privacy' | 'shipping';
@@ -105,12 +106,13 @@ export default function CustomerHeader({
               }} 
               id="header-logo"
             >
-              <div className="p-2 bg-zinc-900 rounded-xl shadow-md border border-zinc-800 flex items-center justify-center hover:scale-105 transition-transform">
-                <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none">
-                  <rect x="2" y="3" width="20" height="13" rx="2" fill="#8cc33f" />
-                  <path d="M6 16L4 21H20L18 16" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-                  <path d="M9 10L12 7L15 10" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+              <div className="p-1 bg-zinc-900 rounded-xl shadow-md border border-zinc-800 flex items-center justify-center hover:scale-105 transition-transform overflow-hidden">
+                <img 
+                  src={veeraitLogoImg} 
+                  alt="Veerait Logo" 
+                  className="w-10 h-10 object-cover rounded-lg"
+                  referrerPolicy="no-referrer"
+                />
               </div>
               <div>
                 <div className="flex items-baseline gap-1">
@@ -119,7 +121,7 @@ export default function CustomerHeader({
                   </span>
                 </div>
                 <span className="text-[10px] font-mono font-bold tracking-[0.35em] uppercase text-[#8cc33f] block mt-0.5 pl-0.5">
-                  HUB
+                  STORE
                 </span>
               </div>
             </div>

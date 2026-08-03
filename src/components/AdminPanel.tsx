@@ -8,6 +8,7 @@ import { LayoutDashboard, ShoppingCart, Tag, Smartphone, Layers, Key, Plus, Tras
 import { Product, Order, Coupon, PromoBanner, LicenseKey, CategoryType, LicenseHistoryEntry, Category, B2BReseller, WalletTransaction } from '../types';
 import * as XLSX from 'xlsx';
 import ImageUploader from './ImageUploader';
+import veeraitLogoImg from '../assets/images/veerait_logo_1785754248259.jpg';
 
 interface AdminPanelProps {
   products: Product[];
@@ -2319,13 +2320,16 @@ export default function AdminPanel({
         <div>
           {/* Logo Brand Area */}
           <div className="p-6 border-b border-slate-800 hidden md:flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-blue-600 rounded-xl text-white">
-                <Layers className="w-5 h-5 animate-pulse" />
-              </div>
+            <div className="flex items-center gap-3">
+              <img 
+                src={veeraitLogoImg} 
+                alt="Veerait Logo" 
+                className="w-9 h-9 rounded-xl object-cover border border-slate-700 shadow-sm"
+                referrerPolicy="no-referrer"
+              />
               <div>
-                <h2 className="text-sm font-black text-white tracking-wider uppercase">VEERA COMPUTERS</h2>
-                <p className="text-[10px] text-slate-500 font-bold uppercase font-mono tracking-widest">Admin Hub</p>
+                <h2 className="text-sm font-black text-white tracking-wider uppercase">VEERAIT</h2>
+                <p className="text-[10px] text-emerald-400 font-bold uppercase font-mono tracking-widest">Admin Hub</p>
               </div>
             </div>
             {/* Supabase Indicator status dot */}
