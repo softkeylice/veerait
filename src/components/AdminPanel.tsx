@@ -90,9 +90,8 @@ export default function AdminPanel({
   const [upiQrCodeUrl, setUpiQrCodeUrl] = useState('');
   const [razorpayKeyId, setRazorpayKeyId] = useState('');
   const [razorpayConfigured, setRazorpayConfigured] = useState(false);
-  const [payuKey, setPayuKey] = useState('oDRFaS');
-  const [payuSalt, setPayuSalt] = useState('CWl2kpiyqWE5RJBagrnApmUI0KEfQ5u');
-  const [payuMode, setPayuMode] = useState<'test' | 'live'>('test');
+  const [paytmMid, setPaytmMid] = useState('87885950');
+  const [paytmMode, setPaytmMode] = useState<'test' | 'live'>('test');
   const [isSavingPaymentSettings, setIsSavingPaymentSettings] = useState(false);
 
   // Product Manager Display Configuration
@@ -447,9 +446,8 @@ export default function AdminPanel({
           ifscCode,
           upiId,
           upiQrCodeUrl,
-          payuKey,
-          payuSalt,
-          payuMode
+          paytmMid,
+          paytmMode
         })
       });
       const data = await response.json();
@@ -6088,50 +6086,44 @@ export default function AdminPanel({
                   </div>
                 </div>
 
-                {/* PayU Payment Gateway Section */}
+                {/* Paytm Payment Gateway Section */}
                 <div className="space-y-4 border-t border-slate-100 pt-4">
                   <div className="flex items-center justify-between">
-                    <h5 className="text-xs font-bold text-emerald-600 uppercase tracking-wider font-mono">PayU Payment Gateway Credentials</h5>
-                    <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">
-                      PayU Active
+                    <h5 className="text-xs font-bold text-[#002e6e] uppercase tracking-wider font-mono flex items-center gap-1.5">
+                      <span className="bg-[#00baf2] text-white text-[9px] px-1.5 py-0.5 rounded font-black">Paytm PG</span>
+                      Paytm Payment Gateway Credentials
+                    </h5>
+                    <span className="text-[10px] bg-[#f0f8ff] text-[#002e6e] border border-[#00baf2]/30 px-2 py-0.5 rounded-full font-extrabold">
+                      Active Merchant Gateway
                     </span>
                   </div>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-500 mb-1">PayU Key (Merchant Key)</label>
+                      <label className="block text-xs font-semibold text-slate-500 mb-1">Paytm Merchant ID (MID)</label>
                       <input
                         type="text"
-                        value={payuKey}
-                        onChange={(e) => setPayuKey(e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-emerald-600 font-mono"
-                        placeholder="e.g. oDRFaS"
+                        value={paytmMid}
+                        onChange={(e) => setPaytmMid(e.target.value)}
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-[#00baf2] font-mono font-bold"
+                        placeholder="e.g. 87885950"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-500 mb-1">PayU Salt</label>
-                      <input
-                        type="text"
-                        value={payuSalt}
-                        onChange={(e) => setPayuSalt(e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-emerald-600 font-mono"
-                        placeholder="e.g. CWl2kpiyqWE5RJBagrnApmUI0KEfQ5u"
-                      />
+                      <label className="block text-xs font-semibold text-slate-500 mb-1">Environment Mode</label>
+                      <div className="flex items-center justify-between bg-[#f0f8ff] border border-[#00baf2]/30 px-3 py-2 rounded-xl">
+                        <span className="text-xs font-extrabold text-[#002e6e]">
+                          {paytmMode === 'test' ? 'Test / Staging Mode' : 'Live Production'}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setPaytmMode(paytmMode === 'test' ? 'live' : 'test')}
+                          className="text-[10px] bg-[#00baf2] hover:bg-[#0092bf] text-white font-bold px-2.5 py-1 rounded-lg transition-all cursor-pointer"
+                        >
+                          Switch
+                        </button>
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="flex items-center justify-between bg-emerald-50/60 border border-emerald-100 p-3 rounded-xl">
-                    <div className="text-[11px] text-emerald-900">
-                      <span className="font-bold">PayU Environment Mode: </span>
-                      <span className="font-mono">{payuMode === 'test' ? 'Test Mode (Sandbox)' : 'Live Production'}</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setPayuMode(payuMode === 'test' ? 'live' : 'test')}
-                      className="text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1 rounded-lg transition-all"
-                    >
-                      Switch to {payuMode === 'test' ? 'Live' : 'Test Mode'}
-                    </button>
                   </div>
                 </div>
 
@@ -6166,38 +6158,38 @@ export default function AdminPanel({
               {/* Status and QR Preview column */}
               <div className="space-y-6">
                 
-                {/* PayU connection status panel */}
-                <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-4">
-                  <h4 className="text-xs font-bold text-emerald-600 uppercase tracking-widest font-mono flex items-center gap-1.5">
-                    <CreditCard className="w-4 h-4 text-emerald-600" />
-                    PayU Gateway Test Credentials Status
+                {/* Paytm PG connection status panel */}
+                <div className="bg-white border border-[#00baf2]/30 p-6 rounded-2xl shadow-xs space-y-4">
+                  <h4 className="text-xs font-bold text-[#002e6e] uppercase tracking-widest font-mono flex items-center gap-1.5">
+                    <span className="bg-[#00baf2] text-white text-[9px] px-1.5 py-0.5 rounded font-black">Paytm PG</span>
+                    Paytm Payment Gateway Status
                   </h4>
 
-                  <div className="p-4 bg-emerald-50/50 border border-emerald-150 rounded-xl space-y-3">
+                  <div className="p-4 bg-[#f0f8ff] border border-[#00baf2]/20 rounded-xl space-y-3">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-slate-600">Merchant Key</span>
-                      <span className="font-mono bg-emerald-100 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded text-[11px] font-bold">
-                        {payuKey || 'oDRFaS'}
+                      <span className="font-semibold text-slate-600">Merchant MID</span>
+                      <span className="font-mono bg-[#00baf2]/10 text-[#002e6e] border border-[#00baf2]/30 px-2 py-0.5 rounded text-[11px] font-extrabold">
+                        {paytmMid || '87885950'}
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-slate-600">PayU Salt</span>
-                      <span className="font-mono bg-emerald-100 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded text-[11px] font-bold">
-                        {payuSalt ? `${payuSalt.substring(0, 8)}...` : 'CWl2kpiy...'}
+                      <span className="font-semibold text-slate-600">Gateway Status</span>
+                      <span className="font-mono bg-emerald-100 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded text-[10px] font-bold">
+                        Connected & Active
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between text-xs border-t border-emerald-200/50 pt-2">
+                    <div className="flex items-center justify-between text-xs border-t border-[#00baf2]/20 pt-2">
                       <span className="font-semibold text-slate-600">Environment</span>
-                      <span className="font-mono text-emerald-700 font-bold uppercase text-[10px]">
-                        {payuMode} Mode
+                      <span className="font-mono text-[#002e6e] font-bold uppercase text-[10px]">
+                        {paytmMode} Mode
                       </span>
                     </div>
                   </div>
 
                   <p className="text-[11px] text-slate-500 leading-relaxed">
-                    PayU Test Mode is currently active with key <strong className="font-mono text-slate-700">{payuKey}</strong>. You can test transactions using PayU dummy test cards or UPI IDs.
+                    Paytm PG Gateway is configured with MID <strong className="font-mono text-slate-700">{paytmMid}</strong>. Transactions will be processed through Paytm PG modal popup and auto-settled to your bank.
                   </p>
                 </div>
 

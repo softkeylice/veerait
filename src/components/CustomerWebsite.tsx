@@ -6542,34 +6542,21 @@ export default function CustomerWebsite({
               {/* Payment Method Selection */}
               <div className="space-y-3 pt-3 border-t border-slate-150">
                 <label className="block text-xs font-bold text-slate-700">Choose Checkout Payment Method</label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => setSelectedPaymentMethod('paytm')}
                     className={`p-3 border rounded-xl flex flex-col items-center justify-center gap-1 transition-all text-center cursor-pointer ${
                       selectedPaymentMethod === 'paytm'
-                        ? 'border-[#00baf2] bg-[#f0f8ff] text-[#002e6e] ring-2 ring-[#00baf2]/30 shadow-xs'
+                        ? 'border-[#00baf2] bg-[#f0f8ff] text-[#002e6e] ring-2 ring-[#00baf2]/30 shadow-xs font-bold'
                         : 'border-slate-200 hover:border-slate-350 text-slate-600 hover:bg-slate-50'
                     }`}
                   >
                     <div className="flex items-center gap-1 font-black text-xs text-[#002e6e]">
                       <span>Paytm</span>
-                      <span className="text-[9px] bg-[#00baf2] text-white px-1 py-0.2 rounded font-mono">PG</span>
+                      <span className="text-[9px] bg-[#00baf2] text-white px-1.5 py-0.2 rounded font-mono font-bold">PG</span>
                     </div>
-                    <span className="text-[10px] font-extrabold text-[#002e6e]">Paytm PG</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPaymentMethod('razorpay')}
-                    className={`p-3 border rounded-xl flex flex-col items-center justify-center gap-1 transition-all text-center cursor-pointer ${
-                      selectedPaymentMethod === 'razorpay'
-                        ? 'border-blue-600 bg-blue-50/20 text-blue-700 ring-2 ring-blue-500/30 shadow-xs'
-                        : 'border-slate-200 hover:border-slate-350 text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    <CreditCard className="w-4 h-4 text-blue-600" />
-                    <span className="text-[10px] font-bold">Razorpay PG</span>
+                    <span className="text-[10px] font-extrabold text-[#002e6e]">Paytm PG (Online)</span>
                   </button>
 
                   <button
@@ -6577,11 +6564,11 @@ export default function CustomerWebsite({
                     onClick={() => setSelectedPaymentMethod('bank_transfer')}
                     className={`p-3 border rounded-xl flex flex-col items-center justify-center gap-1 transition-all text-center cursor-pointer ${
                       selectedPaymentMethod === 'bank_transfer'
-                        ? 'border-blue-600 bg-blue-50/20 text-blue-700 ring-2 ring-blue-500/30 shadow-xs'
+                        ? 'border-blue-600 bg-blue-50/20 text-blue-700 ring-2 ring-blue-500/30 shadow-xs font-bold'
                         : 'border-slate-200 hover:border-slate-350 text-slate-600 hover:bg-slate-50'
                     }`}
                   >
-                    <Building2 className="w-4 h-4" />
+                    <Building2 className="w-4 h-4 text-slate-700" />
                     <span className="text-[10px] font-bold">Bank Wire</span>
                   </button>
 
@@ -6590,11 +6577,11 @@ export default function CustomerWebsite({
                     onClick={() => setSelectedPaymentMethod('upi_qr')}
                     className={`p-3 border rounded-xl flex flex-col items-center justify-center gap-1 transition-all text-center cursor-pointer ${
                       selectedPaymentMethod === 'upi_qr'
-                        ? 'border-blue-600 bg-blue-50/20 text-blue-700 ring-2 ring-blue-500/30 shadow-xs'
+                        ? 'border-blue-600 bg-blue-50/20 text-blue-700 ring-2 ring-blue-500/30 shadow-xs font-bold'
                         : 'border-slate-200 hover:border-slate-350 text-slate-600 hover:bg-slate-50'
                     }`}
                   >
-                    <QrCode className="w-4 h-4" />
+                    <QrCode className="w-4 h-4 text-slate-700" />
                     <span className="text-[10px] font-bold">Scan UPI QR</span>
                   </button>
                 </div>
