@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { B2BReseller } from '../types';
+import VeeraitLogo from './VeeraitLogo';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -531,15 +532,19 @@ export default function AuthModal({
     <div className="fixed inset-0 z-50 bg-[#F8FAFC] flex flex-col min-h-screen w-full overflow-y-auto font-sans" id="auth-modal-backdrop">
       
       {/* Top Header Row */}
-      <header className="w-full bg-[#F8FAFC] py-4 px-6 md:px-12 flex items-center justify-between border-b border-slate-100 flex-shrink-0 select-none">
-        {/* Left corner back action */}
-        <button 
-          onClick={handleClose} 
-          className="flex items-center gap-2 text-slate-600 hover:text-slate-900 font-bold text-sm cursor-pointer transition-colors"
-        >
-          <X className="w-4 h-4" />
-          <span>Back to Store</span>
-        </button>
+      <header className="w-full bg-[#F8FAFC] py-4 px-6 md:px-12 flex items-center justify-between border-b border-slate-200 flex-shrink-0 select-none">
+        {/* Brand Logo & Back Action */}
+        <div className="flex items-center gap-4">
+          <VeeraitLogo size="sm" onClick={handleClose} />
+          <div className="h-5 w-px bg-slate-200 hidden sm:block"></div>
+          <button 
+            onClick={handleClose} 
+            className="hidden sm:flex items-center gap-1.5 text-slate-500 hover:text-slate-800 font-bold text-xs cursor-pointer transition-colors"
+          >
+            <X className="w-3.5 h-3.5" />
+            <span>Close</span>
+          </button>
+        </div>
 
         {/* Right corner signup helper */}
         <div className="text-xs text-slate-500 font-medium flex items-center gap-2.5">

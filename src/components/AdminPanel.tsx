@@ -8,7 +8,7 @@ import { LayoutDashboard, ShoppingCart, Tag, Smartphone, Layers, Key, Plus, Tras
 import { Product, Order, Coupon, PromoBanner, LicenseKey, CategoryType, LicenseHistoryEntry, Category, B2BReseller, WalletTransaction } from '../types';
 import * as XLSX from 'xlsx';
 import ImageUploader from './ImageUploader';
-import veeraitLogoImg from '../assets/images/veerait_logo_1785754248259.jpg';
+import VeeraitLogo from './VeeraitLogo';
 
 interface AdminPanelProps {
   products: Product[];
@@ -2298,10 +2298,7 @@ export default function AdminPanel({
       
       {/* MOBILE HEADER BAR */}
       <div className="md:hidden bg-slate-900 text-white flex items-center justify-between px-4 py-3 shrink-0 z-20">
-        <div className="flex items-center gap-2">
-          <Layers className="w-5 h-5 text-blue-500 animate-pulse" />
-          <span className="font-extrabold text-sm tracking-wider uppercase font-sans">Veera Admin</span>
-        </div>
+        <VeeraitLogo variant="dark" size="sm" subtitleText="ADMIN" />
         <button 
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 focus:outline-none cursor-pointer"
@@ -2317,19 +2314,8 @@ export default function AdminPanel({
       `}>
         <div>
           {/* Logo Brand Area */}
-          <div className="p-6 border-b border-slate-800 hidden md:flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img 
-                src={veeraitLogoImg} 
-                alt="Veerait Logo" 
-                className="w-9 h-9 rounded-xl object-cover border border-slate-700 shadow-sm"
-                referrerPolicy="no-referrer"
-              />
-              <div>
-                <h2 className="text-sm font-black text-white tracking-wider uppercase">VEERAIT</h2>
-                <p className="text-[10px] text-emerald-400 font-bold uppercase font-mono tracking-widest">Admin Hub</p>
-              </div>
-            </div>
+          <div className="p-5 border-b border-slate-800 hidden md:flex items-center justify-between">
+            <VeeraitLogo variant="dark" size="sm" subtitleText="ADMIN HUB" />
             {/* Supabase Indicator status dot */}
             <div className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-sm shadow-green-500/50" title="DB Connected" />
           </div>

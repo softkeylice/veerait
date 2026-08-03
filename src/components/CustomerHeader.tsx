@@ -7,7 +7,7 @@ import React, { useState } from 'react';
 import { ShoppingCart, ShieldCheck, LogIn, LogOut, Menu, X, User, Search, ChevronDown, Zap, Shield, Award, Truck, Home, Phone, HelpCircle, LayoutDashboard, Coins, Wallet, FileText, UserCheck, Plus } from 'lucide-react';
 import { Product } from '../types';
 import { BRAND_CATEGORIES } from './CategoryGrid';
-import veeraitLogoImg from '../assets/images/veerait_logo_1785754248259.jpg';
+import VeeraitLogo from './VeeraitLogo';
 
 interface CustomerHeaderProps {
   currentScreen: 'store' | 'dashboard' | 'admin' | 'tracking' | 'about' | 'contact' | 'privacy' | 'shipping';
@@ -94,37 +94,19 @@ export default function CustomerHeader({
         <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-10">
           <div className="flex items-center justify-between h-20 gap-4">
             
-            {/* Logo matching pcdealsindia.com */}
-            <div 
-              className="flex items-center gap-3 cursor-pointer flex-shrink-0 select-none" 
+            {/* High Visibility Veerait Brand Logo */}
+            <VeeraitLogo
+              size="md"
+              variant="light"
+              subtitleText="STORE"
               onClick={() => { 
                 setCurrentScreen('store'); 
                 setSelectedCategory('all'); 
                 setSearchQuery(''); 
                 setSelectedSubcategory(null); 
                 if (setSelectedProduct) setSelectedProduct(null);
-              }} 
-              id="header-logo"
-            >
-              <div className="p-1 bg-zinc-900 rounded-xl shadow-md border border-zinc-800 flex items-center justify-center hover:scale-105 transition-transform overflow-hidden">
-                <img 
-                  src={veeraitLogoImg} 
-                  alt="Veerait Logo" 
-                  className="w-10 h-10 object-cover rounded-lg"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
-              <div>
-                <div className="flex items-baseline gap-1">
-                  <span className="font-black text-xl tracking-tighter text-zinc-900 uppercase leading-none font-sans">
-                    VEERAIT
-                  </span>
-                </div>
-                <span className="text-[10px] font-mono font-bold tracking-[0.35em] uppercase text-[#8cc33f] block mt-0.5 pl-0.5">
-                  STORE
-                </span>
-              </div>
-            </div>
+              }}
+            />
 
             {/* Premium Integrated Search & Category Selection Dropdown */}
             <div className="flex-1 max-w-2xl hidden md:flex items-center border-2 border-[#8cc33f] rounded-xl bg-white overflow-hidden shadow-sm focus-within:ring-2 focus-within:ring-[#8cc33f]/20 transition-all">

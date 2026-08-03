@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - master
+  workflow_dispatch:
 
 jobs:
   web-deploy:
@@ -26,11 +27,22 @@ jobs:
       - name: 🏗️ Build React Project
         run: npm run build
 
+      - name: ⚙️ Prepare FTP Server Host
+        id: ftp_host
+        run: |
+          SERVER="${{ secrets.FTP_SERVER }}"
+          if [ -z "$SERVER" ]; then
+            SERVER="82.112.239.166"
+          fi
+          CLEAN_SERVER=$(echo "$SERVER" | sed -e 's|^ftp://||' -e 's|^ftps://||' -e 's|/*$||')
+          echo "server=$CLEAN_SERVER" >> $GITHUB_OUTPUT
+
       - name: 🚀 Sync files to Hostinger
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ secrets.FTP_SERVER }}
+          server: ${{ steps.ftp_host.outputs.server }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/
           server-dir: public_html/
+          security: loose
