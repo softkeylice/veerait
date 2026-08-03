@@ -3180,6 +3180,28 @@ export default function CustomerWebsite({
                     </div>
                   </div>
 
+                  {/* Official Email Contact */}
+                  <div className="p-5 bg-purple-50/60 border border-purple-100 rounded-2xl space-y-3 md:col-span-2">
+                    <div className="flex items-center gap-2 text-slate-900 font-extrabold text-sm">
+                      <Mail className="w-4 h-4 text-purple-600 shrink-0" />
+                      <span>Official Email Support</span>
+                    </div>
+                    <div className="pl-6 space-y-2">
+                      <a href="mailto:veeracomputersjalna@gmail.com" className="font-mono text-base font-black text-purple-900 hover:underline block">
+                        veeracomputersjalna@gmail.com
+                      </a>
+                      <div className="flex items-center gap-2 pt-1">
+                        <a
+                          href="mailto:veeracomputersjalna@gmail.com"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-xl transition-all shadow-xs"
+                        >
+                          <Mail className="w-3.5 h-3.5" />
+                          Send Email
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
               </div>
 
@@ -7466,6 +7488,7 @@ export default function CustomerWebsite({
                     <div className="pt-2 border-t border-slate-800 space-y-1.5 text-xs">
                       <p><strong className="text-slate-400 font-normal">Technical Support:</strong> <span className="font-mono text-white font-bold">+91-8485865677</span></p>
                       <p><strong className="text-slate-400 font-normal">Sales Contact:</strong> <span className="font-mono text-white font-bold">+91-9764528777</span></p>
+                      <p><strong className="text-slate-400 font-normal">Official Email:</strong> <a href="mailto:veeracomputersjalna@gmail.com" className="font-mono text-emerald-400 font-bold hover:underline">veeracomputersjalna@gmail.com</a></p>
                     </div>
                   </div>
 
