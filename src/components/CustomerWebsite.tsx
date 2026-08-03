@@ -466,7 +466,7 @@ export default function CustomerWebsite({
   // Determine available wallet balance for active reseller or logged-in customer
   const availableWallet = activeReseller 
     ? activeReseller.walletBalance 
-    : (user?.walletBalance !== undefined ? user.walletBalance : (user ? 1500 : 0));
+    : (user?.walletBalance !== undefined ? user.walletBalance : 0);
 
   const walletDeduction = (useWalletBalance && availableWallet > 0) 
     ? Math.min(availableWallet, total) 
@@ -486,7 +486,7 @@ export default function CustomerWebsite({
     } else if (user && setUser) {
       setUser((prevUser: any) => {
         if (!prevUser) return prevUser;
-        const currentBal = prevUser.walletBalance !== undefined ? prevUser.walletBalance : 1500;
+        const currentBal = prevUser.walletBalance !== undefined ? prevUser.walletBalance : 0;
         return {
           ...prevUser,
           walletBalance: Math.max(0, currentBal - amountToDeduct)
