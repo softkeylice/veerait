@@ -105,12 +105,14 @@ function parseStateFromUrl(productList: Product[] = []) {
       pageParam === 'privacy' || pageParam === 'privacy-policy' ||
       params.has('privacy') || params.has('privacy-policy');
 
-    // Shipping Policy detection
+    // Shipping, Return, Cancellation & Refund Policy detection
     const isShipping = 
-      rawPath === 'shipping' || rawPath === 'shipping-policy' || rawPath === 'shipping.html' || rawPath === 'shipping-policy.html' || rawPath === 'return-policy' || rawPath === 'refund-policy' ||
-      rawHash === 'shipping' || rawHash === 'shipping-policy' ||
-      pageParam === 'shipping' || pageParam === 'shipping-policy' ||
-      params.has('shipping') || params.has('shipping-policy');
+      rawPath === 'shipping' || rawPath === 'shipping-policy' || rawPath === 'shipping.html' || rawPath === 'shipping-policy.html' || 
+      rawPath === 'return-policy' || rawPath === 'refund-policy' || rawPath === 'refund' || rawPath === 'refund.html' || 
+      rawPath === 'cancellation' || rawPath === 'cancellation-policy' || rawPath === 'cancellation.html' || rawPath === 'refund-and-cancellation' ||
+      rawHash === 'shipping' || rawHash === 'shipping-policy' || rawHash === 'refund' || rawHash === 'refund-policy' || rawHash === 'cancellation' || rawHash === 'cancellation-policy' ||
+      pageParam === 'shipping' || pageParam === 'shipping-policy' || pageParam === 'refund' || pageParam === 'refund-policy' || pageParam === 'cancellation' || pageParam === 'cancellation-policy' ||
+      params.has('shipping') || params.has('shipping-policy') || params.has('refund') || params.has('cancellation');
 
     // About Us detection
     const isAbout = 
@@ -308,7 +310,7 @@ export default function App() {
     } else if (currentScreen === 'privacy') {
       document.title = 'Privacy Policy - Veerait';
     } else if (currentScreen === 'shipping') {
-      document.title = 'Shipping Policy - Veerait';
+      document.title = 'Refund, Cancellation & Shipping Policy - Veerait';
     } else if (currentScreen === 'tracking') {
       document.title = 'Track Order - Veerait';
     } else if (currentScreen === 'b2b-signup') {

@@ -532,7 +532,7 @@ export default function CustomerHeader({
             }`}
           >
             <Truck className="w-4 h-4 text-emerald-600" />
-            <span>Shipping, Return & Refund Policy</span>
+            <span>Refund, Cancellation & Shipping Policy</span>
           </button>
 
           <button

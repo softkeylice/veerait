@@ -6152,7 +6152,7 @@ export default function CustomerWebsite({
                       >
                         <span className="flex items-center gap-2.5">
                           <Truck className="w-4 h-4 text-slate-400 group-hover:text-emerald-400 transition-colors" />
-                          Shipping & Return
+                          Refund & Cancellation Policy
                         </span>
                         <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
                       </button>
