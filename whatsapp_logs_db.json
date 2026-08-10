@@ -1,0 +1,125 @@
+[
+  {
+    "eventType": "new_order_notifications",
+    "templateName": "softkey_new_order_notify_v1",
+    "recipientPhone": "919876543210",
+    "variables": [
+      "PAYTM_ORD_1786017963805_D7LB",
+      "Test User",
+      " (₹499.00)"
+    ],
+    "status": "failed",
+    "attempts": 3,
+    "requestPayload": {
+      "messaging_product": "whatsapp",
+      "recipient_type": "individual",
+      "to": "919876543210",
+      "type": "template",
+      "template": {
+        "name": "softkey_new_order_notify_v1",
+        "language": {
+          "code": "en"
+        },
+        "components": [
+          {
+            "type": "body",
+            "parameters": [
+              {
+                "type": "text",
+                "text": "PAYTM_ORD_1786017963805_D7LB"
+              },
+              {
+                "type": "text",
+                "text": "Test User"
+              },
+              {
+                "type": "text",
+                "text": " (₹499.00)"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "id": "e39cc168-acfb-4ec1-a766-13c13733c4ef",
+    "timestamp": "2026-08-06T12:06:08.289Z",
+    "error": "Authentication Error",
+    "responsePayload": {
+      "error": {
+        "message": "Authentication Error",
+        "code": 190,
+        "type": "OAuthException",
+        "fbtrace_id": "Az_NbNQJi08opDa2iXsogvZ"
+      }
+    }
+  },
+  {
+    "eventType": "order_confirmation",
+    "templateName": "order_confirmation",
+    "recipientPhone": "919876543210",
+    "variables": [
+      "Test User",
+      "₹499.00",
+      "PAYTM_ORD_1786017963805_D7LB",
+      "Catalog Purchase",
+      "Order is confirmed. License keys and download instructions are sent.",
+      "https://veerait.com"
+    ],
+    "status": "failed",
+    "attempts": 3,
+    "requestPayload": {
+      "messaging_product": "whatsapp",
+      "recipient_type": "individual",
+      "to": "919876543210",
+      "type": "template",
+      "template": {
+        "name": "order_confirmation",
+        "language": {
+          "code": "en"
+        },
+        "components": [
+          {
+            "type": "body",
+            "parameters": [
+              {
+                "type": "text",
+                "text": "Test User"
+              },
+              {
+                "type": "text",
+                "text": "₹499.00"
+              },
+              {
+                "type": "text",
+                "text": "PAYTM_ORD_1786017963805_D7LB"
+              },
+              {
+                "type": "text",
+                "text": "Catalog Purchase"
+              },
+              {
+                "type": "text",
+                "text": "Order is confirmed. License keys and download instructions are sent."
+              },
+              {
+                "type": "text",
+                "text": "https://veerait.com"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "id": "38442f21-6c76-478e-a60c-66eaecd2eaac",
+    "timestamp": "2026-08-06T12:06:08.284Z",
+    "error": "Authentication Error",
+    "responsePayload": {
+      "error": {
+        "message": "Authentication Error",
+        "code": 190,
+        "type": "OAuthException",
+        "fbtrace_id": "AMGOTYOCKzuGeeB-S2g5asS"
+      }
+    }
+  }
+]

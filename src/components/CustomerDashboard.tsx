@@ -531,22 +531,22 @@ export default function CustomerDashboard({
         <div className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm relative overflow-hidden mb-8">
           <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl" />
           
-          <div className="flex items-center gap-4 z-10">
-            <div className="w-14 h-14 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center font-bold text-white shadow-md text-xl">
+          <div className="flex items-center gap-4.5 z-10">
+            <div className="w-16 h-16 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center font-extrabold text-white shadow-md text-2xl">
               {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
             </div>
             <div>
-              <p className="text-xs text-blue-600 font-mono tracking-wider uppercase font-bold">Authenticated Account</p>
-              <h2 className="text-xl md:text-2xl font-sans font-bold text-slate-900 tracking-tight">{user?.name || 'Customer'}</h2>
-              <p className="text-xs text-slate-500 mt-1">{user?.email}</p>
+              <p className="text-xs text-blue-600 font-mono tracking-wider uppercase font-black">Authenticated Account</p>
+              <h2 className="text-2xl md:text-3xl font-sans font-black text-slate-900 tracking-tight">{user?.name || 'Customer'}</h2>
+              <p className="text-sm font-semibold text-slate-600 mt-0.5">{user?.email}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-150 z-10">
-            <Smartphone className="w-5 h-5 text-emerald-500" />
+          <div className="flex items-center gap-3.5 bg-slate-50 p-3.5 rounded-2xl border border-slate-200 z-10">
+            <Smartphone className="w-6 h-6 text-emerald-600" />
             <div className="text-xs">
-              <span className="block text-slate-450 uppercase text-[9px] font-bold">WhatsApp Channel</span>
-              <span className="font-mono text-slate-800 font-bold">+91 {user?.phone || '9876543210'}</span>
+              <span className="block text-slate-500 uppercase text-[10px] font-black tracking-wider">WhatsApp Channel</span>
+              <span className="font-mono text-slate-900 font-extrabold text-sm">+91 {user?.phone || '9876543210'}</span>
             </div>
           </div>
         </div>
@@ -555,155 +555,155 @@ export default function CustomerDashboard({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* LEFT Sidebar Navigation Tabs */}
-          <aside className="lg:col-span-3 space-y-2">
-            <div className="bg-white border border-slate-200 rounded-3xl p-4 shadow-sm">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-3">Sections</p>
+          <aside className="lg:col-span-3 space-y-3">
+            <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm">
+              <p className="text-xs font-black text-slate-500 uppercase tracking-wider px-3 mb-3.5">Dashboard Navigation</p>
               
-              <nav className="space-y-1">
+              <nav className="space-y-2">
                 <button
                   onClick={() => setActiveTab('overview')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl text-base font-black transition-all ${
                     activeTab === 'overview' 
-                      ? 'bg-blue-600 text-white shadow-sm shadow-blue-100' 
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-200' 
+                      : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <LayoutDashboard className="w-4 h-4" />
+                  <div className="flex items-center gap-3">
+                    <LayoutDashboard className="w-5 h-5 shrink-0" />
                     <span>1. Overview</span>
                   </div>
-                  <ChevronRight className="w-3.5 h-3.5 opacity-60" />
+                  <ChevronRight className="w-5 h-5 opacity-80 shrink-0" />
                 </button>
 
                 <button
                   onClick={() => setActiveTab('profile')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl text-base font-black transition-all ${
                     activeTab === 'profile' 
-                      ? 'bg-blue-600 text-white shadow-sm shadow-blue-100' 
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-200' 
+                      : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <User className="w-4 h-4" />
+                  <div className="flex items-center gap-3">
+                    <User className="w-5 h-5 shrink-0" />
                     <span>2. Profile</span>
                   </div>
-                  <ChevronRight className="w-3.5 h-3.5 opacity-60" />
+                  <ChevronRight className="w-5 h-5 opacity-80 shrink-0" />
                 </button>
 
                 <button
                   onClick={() => setActiveTab('orders')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl text-base font-black transition-all ${
                     activeTab === 'orders' 
-                      ? 'bg-blue-600 text-white shadow-sm shadow-blue-100' 
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-200' 
+                      : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <History className="w-4 h-4" />
+                  <div className="flex items-center gap-3">
+                    <History className="w-5 h-5 shrink-0" />
                     <span>3. Orders</span>
                   </div>
-                  <ChevronRight className="w-3.5 h-3.5 opacity-60" />
+                  <ChevronRight className="w-5 h-5 opacity-80 shrink-0" />
                 </button>
 
                 <button
                   onClick={() => setActiveTab('licenses')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl text-base font-black transition-all ${
                     activeTab === 'licenses' 
-                      ? 'bg-blue-600 text-white shadow-sm shadow-blue-100' 
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-200' 
+                      : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <Key className="w-4 h-4" />
+                  <div className="flex items-center gap-3">
+                    <Key className="w-5 h-5 shrink-0" />
                     <span>4. License Keys</span>
                   </div>
-                  <ChevronRight className="w-3.5 h-3.5 opacity-60" />
+                  <ChevronRight className="w-5 h-5 opacity-80 shrink-0" />
                 </button>
 
                 <button
                   onClick={() => setActiveTab('hardware')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl text-base font-black transition-all ${
                     activeTab === 'hardware' 
-                      ? 'bg-blue-600 text-white shadow-sm shadow-blue-100' 
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-200' 
+                      : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <Package className="w-4 h-4" />
+                  <div className="flex items-center gap-3">
+                    <Package className="w-5 h-5 shrink-0" />
                     <span>5. Hardware Orders</span>
                   </div>
-                  <ChevronRight className="w-3.5 h-3.5 opacity-60" />
+                  <ChevronRight className="w-5 h-5 opacity-80 shrink-0" />
                 </button>
 
                 <button
                   onClick={() => setActiveTab('downloads')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl text-base font-black transition-all ${
                     activeTab === 'downloads' 
-                      ? 'bg-blue-600 text-white shadow-sm shadow-blue-100' 
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-200' 
+                      : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <Download className="w-4 h-4" />
+                  <div className="flex items-center gap-3">
+                    <Download className="w-5 h-5 shrink-0" />
                     <span>6. Downloads</span>
                   </div>
-                  <ChevronRight className="w-3.5 h-3.5 opacity-60" />
+                  <ChevronRight className="w-5 h-5 opacity-80 shrink-0" />
                 </button>
 
                 <button
                   onClick={() => setActiveTab('payments')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-extrabold transition-all ${
                     activeTab === 'payments' 
                       ? 'bg-blue-600 text-white shadow-sm shadow-blue-100' 
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      : 'text-slate-700 hover:bg-slate-100/80 hover:text-slate-900'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <CreditCard className="w-4 h-4" />
+                  <div className="flex items-center gap-3">
+                    <CreditCard className="w-5 h-5 shrink-0" />
                     <span>7. Payment History</span>
                   </div>
-                  <ChevronRight className="w-3.5 h-3.5 opacity-60" />
+                  <ChevronRight className="w-4 h-4 opacity-70 shrink-0" />
                 </button>
 
                 <button
                   onClick={() => setActiveTab('whatsapp')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-extrabold transition-all ${
                     activeTab === 'whatsapp' 
                       ? 'bg-blue-600 text-white shadow-sm shadow-blue-100' 
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      : 'text-slate-700 hover:bg-slate-100/80 hover:text-slate-900'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <Send className="w-4 h-4" />
+                  <div className="flex items-center gap-3">
+                    <Send className="w-5 h-5 shrink-0" />
                     <span>8. Resend Alerts</span>
                   </div>
-                  <ChevronRight className="w-3.5 h-3.5 opacity-60" />
+                  <ChevronRight className="w-4 h-4 opacity-70 shrink-0" />
                 </button>
 
                 <button
                   onClick={() => setActiveTab('b2b')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-extrabold transition-all ${
                     activeTab === 'b2b' 
                       ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-100' 
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-emerald-700 hover:bg-emerald-50/50'
+                      : 'text-slate-700 hover:bg-emerald-50/80 hover:text-emerald-800'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <Award className="w-4 h-4 text-emerald-500" />
+                  <div className="flex items-center gap-3">
+                    <Award className="w-5 h-5 text-emerald-500 shrink-0" />
                     <span>9. B2B Reseller Portal</span>
                   </div>
-                  <span className="text-[9px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider scale-90">Partner</span>
+                  <span className="text-xs bg-emerald-100 text-emerald-800 font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wider shrink-0">Partner</span>
                 </button>
               </nav>
             </div>
 
-            <div className="bg-blue-50 border border-blue-100 rounded-3xl p-4 text-[11px] text-blue-800 space-y-2">
-              <p className="font-extrabold flex items-center gap-1">
-                <CheckCircle2 className="w-4 h-4 text-blue-600" />
+            <div className="bg-blue-50/80 border border-blue-100 rounded-3xl p-4.5 text-xs text-blue-900 space-y-2">
+              <p className="text-sm font-black flex items-center gap-1.5 text-blue-950">
+                <CheckCircle2 className="w-4.5 h-4.5 text-blue-600 shrink-0" />
                 Supabase Protection
               </p>
-              <p className="leading-relaxed text-blue-750">
-                You are currently viewing a secured sandbox. All order histories, digital licenses, and profile attributes are filtered strictly to your authorized email handle.
+              <p className="leading-relaxed text-blue-800 font-medium">
+                You are currently viewing a secured account workspace. All order histories, digital licenses, and profile attributes are filtered strictly to your authorized email handle.
               </p>
             </div>
           </aside>
@@ -757,46 +757,46 @@ export default function CustomerDashboard({
                           
                           {/* Section 1: Personal Information */}
                           <div className="space-y-4">
-                            <h3 className="text-sm sm:text-base font-extrabold text-slate-900 font-sans border-b border-slate-100 pb-2">
+                            <h3 className="text-base sm:text-lg font-black text-slate-900 font-sans border-b border-slate-200 pb-2.5">
                               Personal Information
                             </h3>
                             
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                               {/* Name * */}
                               <div>
-                                <label className="block text-xs font-bold text-slate-700 mb-1.5">Name *</label>
+                                <label className="block text-sm font-extrabold text-slate-800 mb-1.5">Name *</label>
                                 <input
                                   type="text"
                                   required
                                   value={editName}
                                   onChange={(e) => setEditName(e.target.value)}
-                                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs"
+                                  className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-semibold text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 shadow-2xs"
                                 />
                               </div>
 
                               {/* Phone Number * */}
                               <div>
-                                <label className="block text-xs font-bold text-slate-700 mb-1.5">Phone Number *</label>
+                                <label className="block text-sm font-extrabold text-slate-800 mb-1.5">Phone Number *</label>
                                 <input
                                   type="tel"
                                   required
                                   value={editPhone}
                                   onChange={(e) => setEditPhone(e.target.value)}
-                                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs font-mono"
+                                  className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 shadow-2xs font-mono"
                                 />
                               </div>
 
                               {/* Email * */}
                               <div>
-                                <label className="block text-xs font-bold text-slate-700 mb-1.5">Email *</label>
+                                <label className="block text-sm font-extrabold text-slate-800 mb-1.5">Email *</label>
                                 <input
                                   type="email"
                                   disabled
                                   value={editEmail}
-                                  className="w-full px-3.5 py-2.5 bg-slate-100/90 border border-slate-200 rounded-xl text-xs font-medium text-slate-600 cursor-not-allowed shadow-2xs font-mono"
+                                  className="w-full px-4 py-3 bg-slate-100 border border-slate-300 rounded-xl text-sm font-bold text-slate-700 cursor-not-allowed shadow-2xs font-mono"
                                 />
                                 <div className="mt-1.5">
-                                  <span className="px-2.5 py-0.5 bg-amber-100/80 text-amber-800 text-[10px] font-semibold rounded-md inline-block">
+                                  <span className="px-3 py-1 bg-amber-100/90 text-amber-900 text-xs font-bold rounded-md inline-block">
                                     Email is not editable
                                   </span>
                                 </div>
@@ -804,100 +804,100 @@ export default function CustomerDashboard({
 
                               {/* GST No. */}
                               <div>
-                                <label className="block text-xs font-bold text-slate-700 mb-1.5">GST No.</label>
+                                <label className="block text-sm font-extrabold text-slate-800 mb-1.5">GST No.</label>
                                 <input
                                   type="text"
                                   value={editGstNo}
                                   onChange={(e) => setEditGstNo(e.target.value)}
                                   placeholder="GST No"
-                                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs font-mono uppercase"
+                                  className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 shadow-2xs font-mono uppercase"
                                 />
                               </div>
 
                               {/* Alternate Phone Number */}
                               <div className="sm:col-span-1">
-                                <label className="block text-xs font-bold text-slate-700 mb-1.5">Alternate Phone Number</label>
+                                <label className="block text-sm font-extrabold text-slate-800 mb-1.5">Alternate Phone Number</label>
                                 <input
                                   type="tel"
                                   value={editAltMobile}
                                   onChange={(e) => setEditAltMobile(e.target.value)}
                                   placeholder="Alternate Phone Number"
-                                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs font-mono"
+                                  className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 shadow-2xs font-mono"
                                 />
                               </div>
                             </div>
                           </div>
 
                           {/* Section 2: Company Details */}
-                          <div className="space-y-4 pt-2 border-t border-slate-100">
-                            <h3 className="text-sm sm:text-base font-extrabold text-slate-900 font-sans border-b border-slate-100 pb-2">
+                          <div className="space-y-4 pt-3 border-t border-slate-200">
+                            <h3 className="text-base sm:text-lg font-black text-slate-900 font-sans border-b border-slate-200 pb-2.5">
                               Company Details
                             </h3>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                               {/* Company * */}
                               <div>
-                                <label className="block text-xs font-bold text-slate-700 mb-1.5">Company *</label>
+                                <label className="block text-sm font-extrabold text-slate-800 mb-1.5">Company *</label>
                                 <input
                                   type="text"
                                   required
                                   value={editCompany}
                                   onChange={(e) => setEditCompany(e.target.value)}
                                   placeholder="Sanvi Production"
-                                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs"
+                                  className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 shadow-2xs"
                                 />
                               </div>
 
                               {/* Contact Name * */}
                               <div>
-                                <label className="block text-xs font-bold text-slate-700 mb-1.5">Name *</label>
+                                <label className="block text-sm font-extrabold text-slate-800 mb-1.5">Name *</label>
                                 <input
                                   type="text"
                                   required
                                   value={editName}
                                   onChange={(e) => setEditName(e.target.value)}
                                   placeholder="Krishna Salunke"
-                                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs"
+                                  className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 shadow-2xs"
                                 />
                               </div>
 
                               {/* Address * */}
                               <div className="sm:col-span-2">
-                                <label className="block text-xs font-bold text-slate-700 mb-1.5">Address *</label>
+                                <label className="block text-sm font-extrabold text-slate-800 mb-1.5">Address *</label>
                                 <textarea
                                   rows={3}
                                   required
                                   value={editAddress}
                                   onChange={(e) => setEditAddress(e.target.value)}
                                   placeholder="Deolgaon Raja Road, Kanhaiyanagar, Jalna - 431203."
-                                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs leading-relaxed"
+                                  className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 shadow-2xs leading-relaxed"
                                 />
                               </div>
 
                               {/* Zip/Postal Code * */}
-                              <div className="sm:col-span-2 space-y-1">
-                                <label className="block text-xs font-bold text-slate-700 mb-1">Zip/Postal Code *</label>
+                              <div className="sm:col-span-2 space-y-1.5">
+                                <label className="block text-sm font-extrabold text-slate-800 mb-1">Zip/Postal Code *</label>
                                 <input
                                   type="text"
                                   required
                                   value={editPin}
                                   onChange={(e) => handlePincodeChange(e.target.value)}
                                   placeholder="431203"
-                                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs font-mono"
+                                  className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 shadow-2xs font-mono"
                                 />
-                                <p className="text-[11px] text-slate-500 leading-normal pt-0.5">
+                                <p className="text-xs text-slate-600 font-medium leading-normal pt-0.5">
                                   Enter your pincode to auto-fill city and state; you can change them afterwards.
                                 </p>
                                 <div>
                                   {isLookingUpPincode ? (
-                                    <span className="text-[11px] text-blue-600 font-semibold animate-pulse flex items-center gap-1.5">
-                                      <RefreshCw className="w-3 h-3 animate-spin text-blue-600" /> Looking up city and state...
+                                    <span className="text-xs text-blue-600 font-bold animate-pulse flex items-center gap-1.5">
+                                      <RefreshCw className="w-3.5 h-3.5 animate-spin text-blue-600" /> Looking up city and state...
                                     </span>
                                   ) : (
                                     <button
                                       type="button"
                                       onClick={() => lookupPincode(editPin)}
-                                      className="text-[11px] text-blue-600 font-semibold hover:underline cursor-pointer"
+                                      className="text-xs text-blue-600 font-extrabold hover:underline cursor-pointer"
                                     >
                                       Looking up city and state...
                                     </button>
@@ -907,27 +907,27 @@ export default function CustomerDashboard({
 
                               {/* City * */}
                               <div>
-                                <label className="block text-xs font-bold text-slate-700 mb-1.5">City *</label>
+                                <label className="block text-sm font-extrabold text-slate-800 mb-1.5">City *</label>
                                 <input
                                   type="text"
                                   required
                                   value={editCity}
                                   onChange={(e) => setEditCity(e.target.value)}
                                   placeholder="Jalna"
-                                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs"
+                                  className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 shadow-2xs"
                                 />
                               </div>
 
                               {/* State * */}
                               <div>
-                                <label className="block text-xs font-bold text-slate-700 mb-1.5">State *</label>
+                                <label className="block text-sm font-extrabold text-slate-800 mb-1.5">State *</label>
                                 <input
                                   type="text"
                                   required
                                   value={editState}
                                   onChange={(e) => setEditState(e.target.value)}
                                   placeholder="Maharashtra"
-                                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs"
+                                  className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 shadow-2xs"
                                 />
                               </div>
 
@@ -935,17 +935,17 @@ export default function CustomerDashboard({
                           </div>
 
                           {/* Form Actions */}
-                          <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
+                          <div className="flex items-center gap-3 pt-5 border-t border-slate-200">
                             <button
                               type="submit"
-                              className="px-6 py-2.5 bg-[#4C82E6] hover:bg-[#3b71d5] text-white font-bold text-xs rounded-xl shadow-2xs transition-all cursor-pointer"
+                              className="px-7 py-3 bg-[#4C82E6] hover:bg-[#3b71d5] text-white font-extrabold text-sm rounded-xl shadow-md transition-all cursor-pointer"
                             >
                               Save Info
                             </button>
                             <button
                               type="button"
                               onClick={() => setIsEditing(false)}
-                              className="px-5 py-2.5 border border-slate-200 text-slate-700 font-bold text-xs rounded-xl hover:bg-slate-50 transition-all cursor-pointer"
+                              className="px-6 py-3 border border-slate-300 text-slate-800 font-extrabold text-sm rounded-xl hover:bg-slate-100 transition-all cursor-pointer"
                             >
                               Cancel
                             </button>
@@ -956,59 +956,59 @@ export default function CustomerDashboard({
 
                       {/* Right Column: Profile Summary Card (lg:col-span-4) */}
                       <div className="lg:col-span-4">
-                        <div className="bg-slate-50/80 border border-slate-200/90 rounded-2xl p-6 shadow-2xs space-y-4">
-                          <h3 className="text-sm sm:text-base font-extrabold text-slate-900 font-sans border-b border-slate-200/80 pb-3">
+                        <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-6 shadow-2xs space-y-4">
+                          <h3 className="text-base sm:text-lg font-black text-slate-900 font-sans border-b border-slate-200 pb-3">
                             Profile Summary
                           </h3>
 
-                          <div className="space-y-3 text-xs text-slate-700 font-medium">
+                          <div className="space-y-3.5 text-sm text-slate-800 font-medium">
                             <div className="flex justify-between items-center py-1">
-                              <span className="text-slate-500">Customer ID</span>
-                              <span className="font-extrabold font-mono text-slate-900">{user?.id || '23469'}</span>
+                              <span className="text-slate-600 font-semibold">Customer ID</span>
+                              <span className="font-extrabold font-mono text-slate-950 text-base">{user?.id || '23469'}</span>
                             </div>
 
-                            <div className="flex justify-between items-center py-1 border-t border-slate-200/60">
-                              <span className="text-slate-500">GST No.</span>
-                              <span className="font-semibold font-mono text-slate-900">{editGstNo || '-'}</span>
+                            <div className="flex justify-between items-center py-1 border-t border-slate-200/80">
+                              <span className="text-slate-600 font-semibold">GST No.</span>
+                              <span className="font-bold font-mono text-slate-950">{editGstNo || '-'}</span>
                             </div>
 
-                            <div className="flex justify-between items-center py-1 border-t border-slate-200/60">
-                              <span className="text-slate-500">Primary Phone</span>
-                              <span className="font-semibold font-mono text-slate-900">{editPhone || '9689677449'}</span>
+                            <div className="flex justify-between items-center py-1 border-t border-slate-200/80">
+                              <span className="text-slate-600 font-semibold">Primary Phone</span>
+                              <span className="font-bold font-mono text-slate-950">{editPhone || '9689677449'}</span>
                             </div>
 
-                            <div className="flex justify-between items-center py-1 border-t border-slate-200/60">
-                              <span className="text-slate-500">Alternate Phone</span>
-                              <span className="font-semibold font-mono text-slate-900">{editAltMobile || '-'}</span>
+                            <div className="flex justify-between items-center py-1 border-t border-slate-200/80">
+                              <span className="text-slate-600 font-semibold">Alternate Phone</span>
+                              <span className="font-bold font-mono text-slate-950">{editAltMobile || '-'}</span>
                             </div>
 
-                            <div className="flex justify-between items-center py-1 border-t border-slate-200/60">
-                              <span className="text-slate-500">Email</span>
-                              <span className="font-semibold font-mono text-slate-900 text-right truncate max-w-[170px]">{editEmail}</span>
+                            <div className="flex justify-between items-center py-1 border-t border-slate-200/80">
+                              <span className="text-slate-600 font-semibold">Email</span>
+                              <span className="font-bold font-mono text-slate-950 text-right truncate max-w-[190px]">{editEmail}</span>
                             </div>
 
-                            <div className="flex justify-between items-center py-1 border-t border-slate-200/60">
-                              <span className="text-slate-500">Company</span>
-                              <span className="font-extrabold text-slate-900 text-right truncate max-w-[170px]">{editCompany || 'Sanvi Production'}</span>
+                            <div className="flex justify-between items-center py-1 border-t border-slate-200/80">
+                              <span className="text-slate-600 font-semibold">Company</span>
+                              <span className="font-black text-slate-950 text-right truncate max-w-[190px]">{editCompany || 'Sanvi Production'}</span>
                             </div>
 
-                            <div className="flex justify-between items-center py-1 border-t border-slate-200/60">
-                              <span className="text-slate-500">Pincode</span>
-                              <span className="font-extrabold font-mono text-slate-900">{editPin || '431203'}</span>
+                            <div className="flex justify-between items-center py-1 border-t border-slate-200/80">
+                              <span className="text-slate-600 font-semibold">Pincode</span>
+                              <span className="font-extrabold font-mono text-slate-950">{editPin || '431203'}</span>
                             </div>
 
-                            <div className="flex justify-between items-center py-1 border-t border-slate-200/60">
-                              <span className="text-slate-500">City</span>
-                              <span className="font-bold text-slate-900">{editCity || 'Jalna'}</span>
+                            <div className="flex justify-between items-center py-1 border-t border-slate-200/80">
+                              <span className="text-slate-600 font-semibold">City</span>
+                              <span className="font-extrabold text-slate-950">{editCity || 'Jalna'}</span>
                             </div>
 
-                            <div className="flex justify-between items-center py-1 border-t border-slate-200/60">
-                              <span className="text-slate-500">State</span>
-                              <span className="font-bold text-slate-900">{editState || 'Maharashtra'}</span>
+                            <div className="flex justify-between items-center py-1 border-t border-slate-200/80">
+                              <span className="text-slate-600 font-semibold">State</span>
+                              <span className="font-extrabold text-slate-950">{editState || 'Maharashtra'}</span>
                             </div>
                           </div>
 
-                          <p className="text-[11px] text-slate-400 pt-3 border-t border-slate-200/80 leading-normal font-sans">
+                          <p className="text-xs text-slate-500 pt-3 border-t border-slate-200 leading-normal font-sans font-medium">
                             Pincode lookup suggests city and state; you can correct them manually when needed.
                           </p>
                         </div>
@@ -1023,7 +1023,7 @@ export default function CustomerDashboard({
                       <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-sans tracking-tight">
                         Welcome back, {user?.name || 'Krishna Salunke'}
                       </h1>
-                      <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
+                      <p className="text-sm sm:text-base text-slate-600 font-medium mt-1">
                         Manage your account settings and business details
                       </p>
                     </div>
@@ -1036,12 +1036,12 @@ export default function CustomerDashboard({
                         className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs hover:border-blue-300 transition-all cursor-pointer group"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-blue-100/80 text-blue-600 flex items-center justify-center shrink-0 group-hover:bg-blue-200/80 transition-colors">
+                          <div className="w-10 h-10 rounded-xl bg-blue-100/80 text-blue-600 flex items-center justify-center shrink-0 group-hover:bg-blue-200/80 transition-colors">
                             <Briefcase className="w-5 h-5 text-blue-600" />
                           </div>
-                          <span className="text-xs font-semibold text-slate-600">Total Orders</span>
+                          <span className="text-sm font-bold text-slate-700">Total Orders</span>
                         </div>
-                        <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3 font-sans">
+                        <p className="text-3xl sm:text-4xl font-black text-slate-900 mt-3 font-sans">
                           {totalOrders}
                         </p>
                       </div>
@@ -1049,12 +1049,12 @@ export default function CustomerDashboard({
                       {/* Card 2: Customer Id */}
                       <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-emerald-100/80 text-emerald-600 flex items-center justify-center shrink-0">
+                          <div className="w-10 h-10 rounded-xl bg-emerald-100/80 text-emerald-600 flex items-center justify-center shrink-0">
                             <CheckCircle2 className="w-5 h-5 text-emerald-600" />
                           </div>
-                          <span className="text-xs font-semibold text-slate-600">Customer Id</span>
+                          <span className="text-sm font-bold text-slate-700">Customer Id</span>
                         </div>
-                        <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3 font-sans">
+                        <p className="text-3xl sm:text-4xl font-black text-slate-900 mt-3 font-sans">
                           {user?.id || '23469'}
                         </p>
                       </div>
@@ -1062,12 +1062,12 @@ export default function CustomerDashboard({
                       {/* Card 3: Prepaid Balance */}
                       <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-amber-100/80 text-amber-600 flex items-center justify-center shrink-0">
+                          <div className="w-10 h-10 rounded-xl bg-amber-100/80 text-amber-600 flex items-center justify-center shrink-0">
                             <Wallet className="w-5 h-5 text-amber-600" />
                           </div>
-                          <span className="text-xs font-semibold text-slate-600">Prepaid Balance</span>
+                          <span className="text-sm font-bold text-slate-700">Prepaid Balance</span>
                         </div>
-                        <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3 font-sans">
+                        <p className="text-3xl sm:text-4xl font-black text-slate-900 mt-3 font-sans">
                           Rs. 0
                         </p>
                       </div>
@@ -1075,12 +1075,12 @@ export default function CustomerDashboard({
                       {/* Card 4: Member Since */}
                       <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-blue-100/80 text-blue-600 flex items-center justify-center shrink-0">
+                          <div className="w-10 h-10 rounded-xl bg-blue-100/80 text-blue-600 flex items-center justify-center shrink-0">
                             <Calendar className="w-5 h-5 text-blue-600" />
                           </div>
-                          <span className="text-xs font-semibold text-slate-600">Member Since</span>
+                          <span className="text-sm font-bold text-slate-700">Member Since</span>
                         </div>
-                        <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3 font-sans">
+                        <p className="text-3xl sm:text-4xl font-black text-slate-900 mt-3 font-sans">
                           Jul 2026
                         </p>
                       </div>
@@ -1090,7 +1090,7 @@ export default function CustomerDashboard({
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                       {/* Left Column: Account Information */}
                       <div className="lg:col-span-8 space-y-3">
-                        <h2 className="text-lg font-extrabold text-slate-900 font-sans">
+                        <h2 className="text-xl font-black text-slate-900 font-sans">
                           Account Information
                         </h2>
 
@@ -1098,90 +1098,90 @@ export default function CustomerDashboard({
                           {/* Avatar Row & 3 Action Buttons */}
                           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-slate-100 pb-6">
                             <div className="flex items-center gap-4">
-                              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-slate-200/90 text-slate-600 font-extrabold text-2xl sm:text-3xl flex items-center justify-center shrink-0 shadow-2xs">
+                              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-slate-200/90 text-slate-700 font-black text-2xl sm:text-3xl flex items-center justify-center shrink-0 shadow-2xs">
                                 {(user?.name || 'Krishna Salunke').charAt(0).toUpperCase()}
                               </div>
                               <div>
-                                <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 font-sans">
+                                <h3 className="text-2xl sm:text-3xl font-black text-slate-900 font-sans">
                                   {user?.name || 'Krishna Salunke'}
                                 </h3>
-                                <p className="text-xs sm:text-sm text-slate-500 font-mono mt-0.5">
+                                <p className="text-sm sm:text-base text-slate-600 font-mono font-bold mt-1">
                                   {user?.email || 'salunkeks96@gmail.com'}
                                 </p>
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-2 flex-wrap">
+                            <div className="flex items-center gap-2.5 flex-wrap">
                               <button
                                 type="button"
                                 onClick={() => setIsEditing(true)}
-                                className="bg-[#4C82E6] hover:bg-[#3b71d5] text-white font-bold text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
+                                className="bg-[#4C82E6] hover:bg-[#3b71d5] text-white font-extrabold text-xs sm:text-sm px-4 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-sm cursor-pointer"
                               >
-                                <Edit3 className="w-3.5 h-3.5" />
+                                <Edit3 className="w-4 h-4" />
                                 Edit Profile
                               </button>
 
                               <button
                                 type="button"
                                 onClick={() => setShowChangePasswordModal(true)}
-                                className="bg-slate-100/90 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 transition-all border border-slate-200/80 cursor-pointer"
+                                className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs sm:text-sm px-4 py-2.5 rounded-xl flex items-center gap-2 transition-all border border-slate-200 cursor-pointer"
                               >
-                                <Lock className="w-3.5 h-3.5 text-slate-500" />
+                                <Lock className="w-4 h-4 text-slate-600" />
                                 Change Password
                               </button>
 
                               <button
                                 type="button"
                                 onClick={() => setShowUpdateGstModal(true)}
-                                className="bg-slate-100/90 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 transition-all border border-slate-200/80 cursor-pointer"
+                                className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs sm:text-sm px-4 py-2.5 rounded-xl flex items-center gap-2 transition-all border border-slate-200 cursor-pointer"
                               >
-                                <FileText className="w-3.5 h-3.5 text-slate-500" />
+                                <FileText className="w-4 h-4 text-slate-600" />
                                 Update GST
                               </button>
                             </div>
                           </div>
 
                           {/* Fields with icons */}
-                          <div className="space-y-3.5 text-xs sm:text-sm font-medium text-slate-700">
-                            <div className="flex items-center gap-3">
-                              <FileText className="w-4 h-4 text-slate-400 shrink-0" />
-                              <span className="text-slate-800">
-                                <strong className="font-semibold text-slate-600">GST No :</strong> {user?.gstNo || '-'}
+                          <div className="space-y-4 text-sm sm:text-base font-semibold text-slate-800">
+                            <div className="flex items-center gap-3.5">
+                              <FileText className="w-5 h-5 text-slate-500 shrink-0" />
+                              <span className="text-slate-900">
+                                <strong className="font-bold text-slate-600">GST No :</strong> <span className="font-mono font-extrabold text-slate-950">{user?.gstNo || '-'}</span>
                               </span>
                             </div>
 
-                            <div className="flex items-center gap-3">
-                              <Phone className="w-4 h-4 text-slate-400 shrink-0" />
-                              <span className="text-slate-800">
-                                <strong className="font-semibold text-slate-600">Phone :</strong> {user?.phone || '9689677449'}
+                            <div className="flex items-center gap-3.5">
+                              <Phone className="w-5 h-5 text-slate-500 shrink-0" />
+                              <span className="text-slate-900">
+                                <strong className="font-bold text-slate-600">Phone :</strong> <span className="font-mono font-extrabold text-slate-950">{user?.phone || '9689677449'}</span>
                               </span>
                             </div>
 
-                            <div className="flex items-center gap-3">
-                              <Smartphone className="w-4 h-4 text-slate-400 shrink-0" />
-                              <span className="text-slate-800">
-                                <strong className="font-semibold text-slate-600">Alternate Mobile :</strong> {user?.alternateMobile || '-'}
+                            <div className="flex items-center gap-3.5">
+                              <Smartphone className="w-5 h-5 text-slate-500 shrink-0" />
+                              <span className="text-slate-900">
+                                <strong className="font-bold text-slate-600">Alternate Mobile :</strong> <span className="font-mono font-extrabold text-slate-950">{user?.alternateMobile || '-'}</span>
                               </span>
                             </div>
 
-                            <div className="flex items-center gap-3">
-                              <Building className="w-4 h-4 text-slate-400 shrink-0" />
-                              <span className="text-slate-800">
-                                <strong className="font-semibold text-slate-600">Company :</strong> {user?.company || 'Sanvi Production'}
+                            <div className="flex items-center gap-3.5">
+                              <Building className="w-5 h-5 text-slate-500 shrink-0" />
+                              <span className="text-slate-900">
+                                <strong className="font-bold text-slate-600">Company :</strong> <span className="font-black text-slate-950">{user?.company || 'Sanvi Production'}</span>
                               </span>
                             </div>
 
-                            <div className="flex items-start gap-3">
-                              <MapPin className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
-                              <span className="text-slate-800 leading-relaxed">
-                                <strong className="font-semibold text-slate-600">Address :</strong> {user?.address || 'Deolgaon Raja Road, Kanhaiyanagar, Jalna - 431203.'}
+                            <div className="flex items-start gap-3.5">
+                              <MapPin className="w-5 h-5 text-slate-500 shrink-0 mt-0.5" />
+                              <span className="text-slate-900 leading-relaxed">
+                                <strong className="font-bold text-slate-600">Address :</strong> <span className="font-bold text-slate-950">{user?.address || 'Deolgaon Raja Road, Kanhaiyanagar, Jalna - 431203.'}</span>
                               </span>
                             </div>
 
-                            <div className="flex items-center gap-3">
-                              <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
-                              <span className="text-slate-800">
-                                <strong className="font-semibold text-slate-600">City / State / PIN :</strong> {user?.city || 'Jalna'} / {user?.state || 'Maharashtra'} / {user?.pin || '431203'}
+                            <div className="flex items-center gap-3.5">
+                              <MapPin className="w-5 h-5 text-slate-500 shrink-0" />
+                              <span className="text-slate-900">
+                                <strong className="font-bold text-slate-600">City / State / PIN :</strong> <span className="font-bold text-slate-950">{user?.city || 'Jalna'} / {user?.state || 'Maharashtra'} / {user?.pin || '431203'}</span>
                               </span>
                             </div>
                           </div>
@@ -2400,70 +2400,70 @@ export default function CustomerDashboard({
                 
                 {/* Header company logo and meta */}
                 <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <h1 className="text-lg font-black tracking-tight text-blue-600 flex items-center gap-1.5">
-                      <Key className="w-5 h-5 text-blue-600" />
+                  <div className="space-y-1.5">
+                    <h1 className="text-xl sm:text-2xl font-black tracking-tight text-blue-600 flex items-center gap-2">
+                      <Key className="w-6 h-6 text-blue-600" />
                       Veera Computers
                     </h1>
-                    <p className="text-[10px] text-slate-400 font-medium">Digital Activation Keys & Softwares</p>
-                    <p className="text-[9px] text-slate-400 leading-relaxed font-mono">GSTIN: 27BQIPS8843L1ZX<br />P. No. 1-11-42, Krishna Mandir, Bansipura, Mama Chowk, Jalna, Maharashtra - 431203</p>
+                    <p className="text-xs text-slate-500 font-bold">Digital Activation Keys & Softwares</p>
+                    <p className="text-xs text-slate-500 leading-relaxed font-mono font-medium">GSTIN: 27BQIPS8843L1ZX<br />P. No. 1-11-42, Krishna Mandir, Bansipura, Mama Chowk, Jalna, Maharashtra - 431203</p>
                   </div>
 
-                  <div className="text-right space-y-1">
-                    <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-150 rounded-full font-bold text-[9px] uppercase tracking-wider">
+                  <div className="text-right space-y-1.5">
+                    <span className="px-3 py-1 bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-full font-black text-xs uppercase tracking-wider">
                       {showInvoiceModal.paymentStatus}
                     </span>
-                    <p className="text-[10px] font-bold text-slate-800 font-mono mt-1">Receipt: {showInvoiceModal.id}</p>
-                    <p className="text-[9px] text-slate-450">Date: {new Date(showInvoiceModal.createdAt).toLocaleDateString()}</p>
+                    <p className="text-xs sm:text-sm font-extrabold text-slate-900 font-mono mt-1">Receipt: {showInvoiceModal.id}</p>
+                    <p className="text-xs font-semibold text-slate-600">Date: {new Date(showInvoiceModal.createdAt).toLocaleDateString()}</p>
                   </div>
                 </div>
 
                 {/* Vendor & Client Details row */}
-                <div className="grid grid-cols-2 gap-8 border-y border-slate-150 py-5 text-[11px] text-slate-500">
+                <div className="grid grid-cols-2 gap-8 border-y border-slate-200 py-5 text-xs sm:text-sm text-slate-700">
                   <div className="space-y-1">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">BILLING FROM</span>
-                    <strong className="text-slate-800 font-bold font-sans">Veera Computers</strong>
-                    <p>P. No. 1-11-42, Krishna Mandir, Bansipura, Mama Chowk, Jalna, Maharashtra, 431203</p>
-                    <p>support@veeracomputers.com | India</p>
+                    <span className="block text-xs font-black text-slate-500 uppercase tracking-wider">BILLING FROM</span>
+                    <strong className="text-slate-900 font-black font-sans text-sm sm:text-base">Veera Computers</strong>
+                    <p className="font-medium text-slate-700">P. No. 1-11-42, Krishna Mandir, Bansipura, Mama Chowk, Jalna, Maharashtra, 431203</p>
+                    <p className="font-semibold text-slate-700">support@veeracomputers.com | India</p>
                   </div>
                   <div className="space-y-1">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">BILLING TO</span>
-                    <strong className="text-slate-800 font-bold font-sans">{showInvoiceModal.customerName}</strong>
-                    <p className="font-mono">{showInvoiceModal.customerEmail}</p>
-                    <p className="font-mono">+91 {showInvoiceModal.customerPhone}</p>
-                    <p className="mt-1 font-medium text-slate-700">{invoiceState}</p>
+                    <span className="block text-xs font-black text-slate-500 uppercase tracking-wider">BILLING TO</span>
+                    <strong className="text-slate-900 font-black font-sans text-sm sm:text-base block">{showInvoiceModal.customerName}</strong>
+                    <p className="font-mono font-bold text-slate-800">{showInvoiceModal.customerEmail}</p>
+                    <p className="font-mono font-bold text-slate-800">+91 {showInvoiceModal.customerPhone}</p>
+                    <p className="mt-1 font-semibold text-slate-700">{invoiceState}</p>
                     {invoiceGstin && (
-                      <p className="text-[10px] font-bold font-mono text-blue-600 mt-1">GSTIN: {invoiceGstin}</p>
+                      <p className="text-xs font-black font-mono text-blue-600 mt-1">GSTIN: {invoiceGstin}</p>
                     )}
                   </div>
                 </div>
 
                 {/* Invoice items table */}
                 <div className="space-y-3">
-                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">INVOICED LINE ITEMS</span>
+                  <span className="block text-xs font-black text-slate-500 uppercase tracking-wider">INVOICED LINE ITEMS</span>
                   <div className="border border-slate-200 rounded-2xl overflow-hidden">
-                    <table className="w-full text-left text-xs border-collapse">
+                    <table className="w-full text-left text-xs sm:text-sm border-collapse">
                       <thead>
-                        <tr className="bg-slate-50 border-b border-slate-200 font-bold text-slate-500">
-                          <th className="p-3">Product Name</th>
-                          <th className="p-3 text-center">Qty</th>
-                          <th className="p-3 text-right">Rate</th>
-                          <th className="p-3 text-right">Total</th>
+                        <tr className="bg-slate-100 border-b border-slate-200 font-black text-slate-700">
+                          <th className="p-3.5">Product Name</th>
+                          <th className="p-3.5 text-center">Qty</th>
+                          <th className="p-3.5 text-right">Rate</th>
+                          <th className="p-3.5 text-right">Total</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-150 font-medium text-slate-700">
+                      <tbody className="divide-y divide-slate-200 font-semibold text-slate-800">
                         {showInvoiceModal.items.map((item, idx) => (
                           <tr key={idx}>
-                            <td className="p-3">
-                              <p className="font-bold text-slate-900">{item.product.name}</p>
-                              <div className="flex items-center gap-1.5 mt-0.5">
-                                <span className="capitalize text-[9px] font-mono text-slate-450">{item.product.category} Activation License</span>
-                                <span className="text-[8px] bg-slate-100 text-slate-500 font-mono px-1 rounded border border-slate-200">HSN/SAC: {item.product.category === "hardware" ? "8471" : "997331"}</span>
+                            <td className="p-3.5">
+                              <p className="font-black text-slate-900 text-sm sm:text-base">{item.product.name}</p>
+                              <div className="flex items-center gap-1.5 mt-1">
+                                <span className="capitalize text-xs font-mono text-slate-600 font-bold">{item.product.category} Activation License</span>
+                                <span className="text-[10px] bg-slate-100 text-slate-700 font-mono font-bold px-1.5 py-0.5 rounded border border-slate-300">HSN/SAC: {item.product.category === "hardware" ? "8471" : "997331"}</span>
                               </div>
                             </td>
-                            <td className="p-3 text-center font-mono">{item.quantity}</td>
-                            <td className="p-3 text-right font-mono">₹{item.product.price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                            <td className="p-3 text-right font-mono text-slate-900">₹{(item.product.price * item.quantity).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                            <td className="p-3.5 text-center font-mono font-black text-sm">{item.quantity}</td>
+                            <td className="p-3.5 text-right font-mono font-extrabold text-sm">₹{item.product.price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                            <td className="p-3.5 text-right font-mono font-black text-slate-950 text-sm">₹{(item.product.price * item.quantity).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -2473,13 +2473,13 @@ export default function CustomerDashboard({
 
                 {/* Totals Section */}
                 <div className="flex justify-end pt-2">
-                  <div className="w-64 space-y-2 text-xs font-medium text-slate-500">
+                  <div className="w-72 space-y-2.5 text-xs sm:text-sm font-semibold text-slate-700">
                     <div className="flex justify-between">
                       <span>Taxable Subtotal (Base)</span>
-                      <span className="font-mono">₹{basePrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                      <span className="font-mono font-bold">₹{basePrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                     </div>
                     {showInvoiceModal.discount > 0 && (
-                      <div className="flex justify-between text-emerald-600">
+                      <div className="flex justify-between text-emerald-600 font-bold">
                         <span>Promo Discount</span>
                         <span className="font-mono">-₹{showInvoiceModal.discount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                       </div>
@@ -2488,20 +2488,20 @@ export default function CustomerDashboard({
                       <>
                         <div className="flex justify-between text-slate-800">
                           <span>CGST (9%)</span>
-                          <span className="font-mono">₹{cgstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                          <span className="font-mono font-bold">₹{cgstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                         </div>
-                        <div className="flex justify-between text-slate-800 font-medium">
+                        <div className="flex justify-between text-slate-800 font-semibold">
                           <span>SGST (9%)</span>
-                          <span className="font-mono">₹{sgstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                          <span className="font-mono font-bold">₹{sgstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                         </div>
                       </>
                     ) : (
-                      <div className="flex justify-between text-slate-800 font-medium">
+                      <div className="flex justify-between text-slate-800 font-semibold">
                         <span>IGST (18%)</span>
-                        <span className="font-mono">₹{igstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                        <span className="font-mono font-bold">₹{igstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                       </div>
                     )}
-                    <div className="flex justify-between text-slate-950 font-extrabold text-sm pt-2 border-t border-dashed border-slate-200">
+                    <div className="flex justify-between text-slate-950 font-black text-base sm:text-lg pt-2.5 border-t border-dashed border-slate-300">
                       <span>Final Amount Paid</span>
                       <span className="font-mono text-blue-600">₹{showInvoiceModal.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                     </div>
@@ -2509,12 +2509,12 @@ export default function CustomerDashboard({
                 </div>
 
                 {/* Paid Rubber Stamp Overlay Graphic */}
-                <div className="pt-6 flex justify-between items-center border-t border-slate-150">
-                  <div className="text-[10px] text-slate-400 font-mono italic leading-relaxed">
+                <div className="pt-6 flex justify-between items-center border-t border-slate-200">
+                  <div className="text-xs text-slate-500 font-mono font-medium italic leading-relaxed">
                     * This is an electronically generated secure tax invoice. It does not require visual signatures or physical stamps.
                   </div>
 
-                  <div className="border-4 border-emerald-600 text-emerald-600 rounded-xl px-4 py-1.5 text-center font-black uppercase tracking-widest text-sm font-sans transform -rotate-12 select-none">
+                  <div className="border-4 border-emerald-600 text-emerald-600 rounded-xl px-5 py-2 text-center font-black uppercase tracking-widest text-base font-sans transform -rotate-12 select-none shadow-xs">
                     PAID STAMP
                   </div>
                 </div>

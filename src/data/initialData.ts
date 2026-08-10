@@ -971,7 +971,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     id: 'sw-quickheal',
     name: 'Quick Heal Total Security 1 PC 1 Year',
     description: 'Award-winning antivirus and ransomware shield. Secure your online profile instantly.',
-    longDescription: 'Safeguard your critical files, online banking, and webcam activities from cyber hackers with Quick Heal Total Security. Powerful cloud sandbox engine blocks new zero-day threats instantly.',
+    longDescription: 'Safeguard your critical files, online banking, and webcam activities from cyber hackers with Quick Heal Total Security. Powerful cloud threat engine blocks new zero-day threats instantly.',
     category: 'software',
     brandCategory: 'QUICK HEAL',
     price: 799.00,
@@ -986,7 +986,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       'OS Supported': 'Windows OS'
     },
     features: [
-      'Cloud Sandbox Engine Protection',
+      'Cloud Threat Engine Protection',
       'Parental Controls and App Locker',
       'Email activation dispatched instantly'
     ]

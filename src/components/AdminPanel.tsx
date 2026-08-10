@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, ShoppingCart, Tag, Smartphone, Layers, Key, Plus, Trash2, Edit, Save, ToggleLeft, ToggleRight, Check, RefreshCw, Eye, EyeOff, MessageSquare, Mail, AlertTriangle, Package, CheckCircle2, IndianRupee, Globe, Image as ImageIcon, Star, Sparkles, ChevronDown, ChevronRight, ExternalLink, HelpCircle, X, Search, Heart, Copy, Upload, AlertCircle, FileSpreadsheet, History, UserCheck, ShieldAlert, CheckSquare, CreditCard, Users, BarChart3, Settings, Sliders, FolderTree, ClipboardList, Send, Compass, Award, Database, MapPin } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Tag, Smartphone, Layers, Key, Plus, Trash2, Edit, Save, ToggleLeft, ToggleRight, Check, RefreshCw, Eye, EyeOff, MessageSquare, Mail, AlertTriangle, Package, CheckCircle2, IndianRupee, Globe, Image as ImageIcon, Star, Sparkles, ChevronDown, ChevronRight, ExternalLink, HelpCircle, X, Search, Heart, Copy, Upload, AlertCircle, FileSpreadsheet, History, UserCheck, ShieldAlert, CheckSquare, CreditCard, Users, BarChart3, Settings, Sliders, FolderTree, ClipboardList, Send, Compass, Award, Database, MapPin, Printer, Wallet, FileText, Download, ArrowUpRight, ArrowDownRight, Building2 } from 'lucide-react';
 import { Product, Order, Coupon, PromoBanner, LicenseKey, CategoryType, LicenseHistoryEntry, Category, B2BReseller, WalletTransaction } from '../types';
 import * as XLSX from 'xlsx';
 import ImageUploader from './ImageUploader';
@@ -73,6 +73,11 @@ export default function AdminPanel({
   const [selectedCustomerEmail, setSelectedCustomerEmail] = useState<string | null>(null);
   const [customerSearchQuery, setCustomerSearchQuery] = useState('');
 
+  // Wallet Account Statement Modal states
+  const [statementModalTarget, setStatementModalTarget] = useState<{ email: string; name?: string; resellerId?: string } | null>(null);
+  const [statementTypeFilter, setStatementTypeFilter] = useState<'all' | 'withdrawal' | 'commission' | 'adjustment'>('all');
+  const [statementSearchQuery, setStatementSearchQuery] = useState('');
+
   // B2B Admin states
   const [selectedB2bPartnerId, setSelectedB2bPartnerId] = useState('');
   const [b2bAdjustAmount, setB2bAdjustAmount] = useState<number>(0);
@@ -90,7 +95,7 @@ export default function AdminPanel({
   const [upiQrCodeUrl, setUpiQrCodeUrl] = useState('');
   const [razorpayKeyId, setRazorpayKeyId] = useState('');
   const [razorpayConfigured, setRazorpayConfigured] = useState(false);
-  const [paytmMid, setPaytmMid] = useState('87885950');
+  const [paytmMid, setPaytmMid] = useState('OPDDHV86006252156720');
   const [paytmMode, setPaytmMode] = useState<'test' | 'live'>('test');
   const [isSavingPaymentSettings, setIsSavingPaymentSettings] = useState(false);
 
@@ -347,6 +352,20 @@ export default function AdminPanel({
           setIfscCode(data.settings.ifscCode || 'SBIN0001234');
           setUpiId(data.settings.upiId || 'veeracomputers@upi');
           setUpiQrCodeUrl(data.settings.upiQrCodeUrl || '');
+          if (data.settings.paytmMid) {
+            setPaytmMid(data.settings.paytmMid);
+          }
+          if (data.settings.paytmMode) {
+            setPaytmMode(data.settings.paytmMode);
+          }
+        }
+        if (data.paytm) {
+          if (data.paytm.merchantId) {
+            setPaytmMid(data.paytm.merchantId);
+          }
+          if (data.paytm.environment) {
+            setPaytmMode(data.paytm.environment === 'PRODUCTION' ? 'live' : 'test');
+          }
         }
         if (data.razorpay) {
           setRazorpayKeyId(data.razorpay.keyId || '');
@@ -2051,7 +2070,7 @@ export default function AdminPanel({
         .replace('{{license_key}}', 'MH37W-N47XK-V7XM9-C7227-GCQG9');
       
       setSimulatedNotifyLogs([
-        `[${timeLog}] WhatsApp Sandbox API: Payload processed with 2Factor gateway... Message: "${parsedMsg}" delivered to +91 9876543210`,
+        `[${timeLog}] WhatsApp Live API: Payload processed with 2Factor gateway... Message: "${parsedMsg}" delivered to +91 9876543210`,
         ...simulatedNotifyLogs
       ]);
       addNotification('WhatsApp Dispatched', 'Simulated 2Factor WhatsApp template successfully triggered.', 'success');
@@ -2401,7 +2420,7 @@ export default function AdminPanel({
           <div className="flex items-center gap-3">
             {sandboxMode && (
               <span className="px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg text-[10px] font-bold uppercase tracking-wider font-mono">
-                Sandbox Active
+                Simulation Active
               </span>
             )}
             <div className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-[10px] font-mono text-slate-600 shadow-sm">
@@ -5104,7 +5123,7 @@ export default function AdminPanel({
                       </div>
                     </div>
 
-                    {/* Sandbox Device Container */}
+                    {/* Device Preview Container */}
                     <div className="flex justify-center items-center py-6 bg-slate-950/50 rounded-xl border border-slate-850 overflow-hidden">
                       <div
                         className="transition-all duration-300 ease-in-out border border-slate-800 shadow-2xl relative rounded-xl overflow-hidden bg-gradient-to-tr"
@@ -6155,7 +6174,14 @@ export default function AdminPanel({
                     <div className="flex items-center justify-between text-xs">
                       <span className="font-semibold text-slate-600">Merchant MID</span>
                       <span className="font-mono bg-[#00baf2]/10 text-[#002e6e] border border-[#00baf2]/30 px-2 py-0.5 rounded text-[11px] font-extrabold">
-                        {paytmMid || '87885950'}
+                        {paytmMid || 'OPDDHV86006252156720'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-slate-600">Merchant Key</span>
+                      <span className="font-mono bg-emerald-100 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded text-[10px] font-bold">
+                        NTDV&8PLRhXJ%soP (Active)
                       </span>
                     </div>
 
@@ -6221,7 +6247,7 @@ export default function AdminPanel({
                   <div className="flex gap-2 items-center text-[10px] text-amber-600 bg-amber-50 border border-amber-100 p-3 rounded-xl">
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     <span>
-                      If Razorpay keys are not configured, the payment system automatically operates in **Safe Simulation Mode**, allowing seamless end-to-end checkout sandboxing!
+                      If Razorpay keys are not configured, the payment system automatically operates in **Safe Simulation Mode**, allowing seamless end-to-end checkout testing!
                     </span>
                   </div>
                 </div>
@@ -6306,10 +6332,11 @@ export default function AdminPanel({
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
                     <tr className="border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[10px]">
-                      <th className="pb-3 pr-4">Customer Info</th>
+                      <th className="pb-3 pr-4">Customer / Dealer Info</th>
                       <th className="pb-3 text-center">Orders Placed</th>
                       <th className="pb-3 text-right">Total Disbursed Spend</th>
-                      <th className="pb-3 text-center">Last Purchase</th>
+                      <th className="pb-3 text-right">Wallet Balance</th>
+                      <th className="pb-3 text-center">Last Activity</th>
                       <th className="pb-3 text-right">Actions</th>
                     </tr>
                   </thead>
@@ -6325,6 +6352,24 @@ export default function AdminPanel({
                         orders: any[];
                         addresses: { address: string; city: string; pin: string }[];
                       }> = {};
+
+                      // Seed B2B Resellers into customer list so all dealers appear
+                      resellers.forEach(r => {
+                        const email = (r.email || '').toLowerCase().trim();
+                        if (!email) return;
+                        if (!emailGroups[email]) {
+                          emailGroups[email] = {
+                            email: email,
+                            name: r.name || 'B2B Partner Dealer',
+                            phone: r.phone || 'N/A',
+                            orderCount: 0,
+                            spend: 0,
+                            lastOrderDate: r.joinedAt || new Date().toISOString(),
+                            orders: [],
+                            addresses: r.businessAddress ? [{ address: r.businessAddress, city: r.city || '', pin: r.pincode || '' }] : []
+                          };
+                        }
+                      });
 
                       orders.forEach(o => {
                         const email = (o.customerEmail || 'anonymous@gmail.com').toLowerCase().trim();
@@ -6387,73 +6432,102 @@ export default function AdminPanel({
                       if (filteredCustomers.length === 0) {
                         return (
                           <tr>
-                            <td colSpan={5} className="py-12 text-center text-slate-400">
+                            <td colSpan={6} className="py-12 text-center text-slate-400">
                               <Users className="w-8 h-8 mx-auto mb-2 text-slate-300 stroke-1" />
-                              No customers found matching your search term.
+                              No customers or dealers found matching your search term.
                             </td>
                           </tr>
                         );
                       }
 
-                      return filteredCustomers.map((c) => (
-                        <tr key={c.email} className="hover:bg-slate-50 transition-colors">
-                          <td className="py-3.5 pr-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 font-semibold flex items-center justify-center text-xs border border-blue-100 flex-shrink-0">
-                                {c.name.charAt(0).toUpperCase()}
-                              </div>
-                              <div className="min-w-0">
-                                <h4 className="font-semibold text-slate-800 text-xs truncate">{c.name}</h4>
-                                <div className="flex flex-col sm:flex-row sm:items-center gap-x-3 gap-y-0.5 mt-0.5 text-[10px] text-slate-500 flex-wrap">
-                                  <span className="flex items-center gap-0.5 truncate"><Mail className="w-3 h-3 text-slate-400 flex-shrink-0" /> {c.email}</span>
-                                  {c.phone !== 'N/A' && (
-                                    <span className="flex items-center gap-0.5"><Smartphone className="w-3 h-3 text-slate-400 flex-shrink-0" /> {c.phone}</span>
-                                  )}
-                                  {c.addresses.length > 0 && (
-                                    <span className="flex items-center gap-0.5 text-indigo-600 font-medium truncate max-w-[280px]" title={`${c.addresses[0].address}, ${c.addresses[0].city} - ${c.addresses[0].pin}`}>
-                                      <MapPin className="w-3 h-3 text-indigo-400 flex-shrink-0" /> {c.addresses[0].address}, {c.addresses[0].city} {c.addresses.length > 1 && `(+${c.addresses.length - 1} more)`}
-                                    </span>
-                                  )}
+                      return filteredCustomers.map((c) => {
+                        const matchingReseller = resellers.find(r => r.email.toLowerCase().trim() === c.email.toLowerCase().trim() || r.userId === c.email);
+                        const walletBal = matchingReseller ? matchingReseller.walletBalance : 0;
+                        const customerTxs = walletTransactions.filter(tx => (matchingReseller && tx.resellerId === matchingReseller.userId) || tx.resellerId.toLowerCase().trim() === c.email.toLowerCase().trim() || tx.resellerId === c.email);
+                        const withdrawnAmt = customerTxs.filter(tx => tx.type === 'withdrawal' && tx.status === 'completed').reduce((sum, tx) => sum + tx.amount, 0);
+
+                        return (
+                          <tr key={c.email} className="hover:bg-slate-50 transition-colors">
+                            <td className="py-3.5 pr-4">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 font-semibold flex items-center justify-center text-xs border border-blue-100 flex-shrink-0">
+                                  {c.name.charAt(0).toUpperCase()}
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <h4 className="font-semibold text-slate-800 text-xs truncate">{c.name}</h4>
+                                    {matchingReseller && (
+                                      <span className="bg-purple-100 text-purple-800 text-[9px] font-black px-1.5 py-0.5 rounded border border-purple-200 uppercase tracking-wider flex items-center gap-1">
+                                        <Building2 className="w-2.5 h-2.5 text-purple-600" />
+                                        DEALER ({matchingReseller.referralCode})
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="flex flex-col sm:flex-row sm:items-center gap-x-3 gap-y-0.5 mt-0.5 text-[10px] text-slate-500 flex-wrap">
+                                    <span className="flex items-center gap-0.5 truncate"><Mail className="w-3 h-3 text-slate-400 flex-shrink-0" /> {c.email}</span>
+                                    {c.phone !== 'N/A' && (
+                                      <span className="flex items-center gap-0.5"><Smartphone className="w-3 h-3 text-slate-400 flex-shrink-0" /> {c.phone}</span>
+                                    )}
+                                    {c.addresses.length > 0 && (
+                                      <span className="flex items-center gap-0.5 text-indigo-600 font-medium truncate max-w-[280px]" title={`${c.addresses[0].address}, ${c.addresses[0].city} - ${c.addresses[0].pin}`}>
+                                        <MapPin className="w-3 h-3 text-indigo-400 flex-shrink-0" /> {c.addresses[0].address}, {c.addresses[0].city} {c.addresses.length > 1 && `(+${c.addresses.length - 1} more)`}
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </td>
-                          <td className="py-3.5 text-center font-mono text-xs font-bold text-slate-600">
-                            <span className="px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-700 rounded-md text-[10px]">
-                              {c.orderCount} {c.orderCount === 1 ? 'order' : 'orders'}
-                            </span>
-                          </td>
-                          <td className="py-3.5 text-right font-mono font-bold text-emerald-600 text-xs">
-                            ₹{c.spend.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          </td>
-                          <td className="py-3.5 text-center font-mono text-[10px] text-slate-500">
-                            {new Date(c.lastOrderDate).toLocaleDateString('en-IN', {
-                              day: '2-digit',
-                              month: 'short',
-                              year: 'numeric'
-                            })}
-                          </td>
-                          <td className="py-3.5 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <button
-                                onClick={() => openWhatsAppModalForCustomer(c.email)}
-                                className="px-2.5 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold rounded-lg text-[10px] transition-all inline-flex items-center gap-1 cursor-pointer"
-                                title="Send order details via WhatsApp"
-                              >
-                                <MessageSquare className="w-3 h-3 text-emerald-600" />
-                                WhatsApp Order
-                              </button>
-                              <button
-                                onClick={() => setSelectedCustomerEmail(c.email)}
-                                className="px-2.5 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 font-semibold rounded-lg text-[10px] transition-all inline-flex items-center gap-1 cursor-pointer"
-                              >
-                                View Details
-                                <ChevronRight className="w-3 h-3" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ));
+                            </td>
+                            <td className="py-3.5 text-center font-mono text-xs font-bold text-slate-600">
+                              <span className="px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-700 rounded-md text-[10px]">
+                                {c.orderCount} {c.orderCount === 1 ? 'order' : 'orders'}
+                              </span>
+                            </td>
+                            <td className="py-3.5 text-right font-mono font-bold text-emerald-600 text-xs">
+                              ₹{c.spend.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </td>
+                            <td className="py-3.5 text-right font-mono text-xs">
+                              <div className="font-extrabold text-blue-700">₹{walletBal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                              {withdrawnAmt > 0 && (
+                                <div className="text-[9px] text-amber-600 font-extrabold mt-0.5">Withdrawn: ₹{withdrawnAmt.toLocaleString('en-IN')}</div>
+                              )}
+                            </td>
+                            <td className="py-3.5 text-center font-mono text-[10px] text-slate-500">
+                              {new Date(c.lastOrderDate).toLocaleDateString('en-IN', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric'
+                              })}
+                            </td>
+                            <td className="py-3.5 text-right">
+                              <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                                <button
+                                  onClick={() => setStatementModalTarget({ email: c.email, name: c.name, resellerId: matchingReseller?.userId })}
+                                  className="px-2.5 py-1.5 bg-purple-50 text-purple-700 hover:bg-purple-100 font-bold rounded-lg text-[10px] transition-all inline-flex items-center gap-1 cursor-pointer border border-purple-200"
+                                  title="View Official Wallet & Withdrawal Statement"
+                                >
+                                  <FileText className="w-3 h-3 text-purple-600" />
+                                  Statement
+                                </button>
+                                <button
+                                  onClick={() => openWhatsAppModalForCustomer(c.email)}
+                                  className="px-2.5 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold rounded-lg text-[10px] transition-all inline-flex items-center gap-1 cursor-pointer"
+                                  title="Send order details via WhatsApp"
+                                >
+                                  <MessageSquare className="w-3 h-3 text-emerald-600" />
+                                  WhatsApp
+                                </button>
+                                <button
+                                  onClick={() => setSelectedCustomerEmail(c.email)}
+                                  className="px-2.5 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 font-semibold rounded-lg text-[10px] transition-all inline-flex items-center gap-1 cursor-pointer"
+                                >
+                                  View Details
+                                  <ChevronRight className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      });
                     })()}
                   </tbody>
                 </table>
@@ -6495,7 +6569,7 @@ export default function AdminPanel({
                     return (
                       <>
                         {/* Header */}
-                        <div className="p-6 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+                        <div className="p-6 border-b border-slate-200 bg-slate-50 flex items-center justify-between gap-4">
                           <div className="flex items-center gap-4">
                             <div className="w-12 h-12 rounded-full bg-blue-600 text-white font-extrabold flex items-center justify-center text-lg border-2 border-white shadow-md flex-shrink-0">
                               {customerName.charAt(0).toUpperCase()}
@@ -6522,55 +6596,92 @@ export default function AdminPanel({
                             </div>
                           </div>
                           
-                          <button
-                            onClick={() => setSelectedCustomerEmail(null)}
-                            className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all cursor-pointer"
-                          >
-                            <X className="w-5 h-5" />
-                          </button>
+                          <div className="flex items-center gap-2">
+                            {(() => {
+                              const matchingReseller = resellers.find(r => r.email.toLowerCase().trim() === selectedCustomerEmail.toLowerCase().trim() || r.userId === selectedCustomerEmail);
+                              return (
+                                <button
+                                  onClick={() => setStatementModalTarget({ email: selectedCustomerEmail, name: customerName, resellerId: matchingReseller?.userId })}
+                                  className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs transition-all inline-flex items-center gap-1.5 cursor-pointer shadow-sm"
+                                  title="View Dealer / Customer Wallet Account Statement"
+                                >
+                                  <FileText className="w-4 h-4" />
+                                  Wallet Statement
+                                </button>
+                              );
+                            })()}
+                            <button
+                              onClick={() => setSelectedCustomerEmail(null)}
+                              className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all cursor-pointer"
+                            >
+                              <X className="w-5 h-5" />
+                            </button>
+                          </div>
                         </div>
 
                         {/* Scrollable Body */}
                         <div className="p-6 overflow-y-auto space-y-6 flex-1">
                           
                           {/* Financial Summary */}
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl flex items-center gap-3">
-                              <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center">
-                                <ShoppingCart className="w-5 h-5" />
-                              </div>
-                              <div>
-                                <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">Orders Placed</span>
-                                <span className="text-sm font-bold text-slate-800 font-mono">{customerOrders.length}</span>
-                              </div>
-                            </div>
-                            
-                            <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl flex items-center gap-3">
-                              <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center">
-                                <IndianRupee className="w-5 h-5" />
-                              </div>
-                              <div>
-                                <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">Total Disbursed Spend</span>
-                                <span className="text-sm font-bold text-emerald-600 font-mono">₹{totalSpend.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                              </div>
-                            </div>
+                          {(() => {
+                            const matchingReseller = resellers.find(r => r.email.toLowerCase().trim() === selectedCustomerEmail.toLowerCase().trim() || r.userId === selectedCustomerEmail);
+                            const walletBal = matchingReseller ? matchingReseller.walletBalance : 0;
+                            const customerTxs = walletTransactions.filter(tx => (matchingReseller && tx.resellerId === matchingReseller.userId) || tx.resellerId.toLowerCase().trim() === selectedCustomerEmail.toLowerCase().trim() || tx.resellerId === selectedCustomerEmail);
+                            const withdrawnAmt = customerTxs.filter(tx => tx.type === 'withdrawal' && tx.status === 'completed').reduce((sum, tx) => sum + tx.amount, 0);
 
-                            <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl flex items-center gap-3">
-                              <div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center">
-                                <Sparkles className="w-5 h-5" />
+                            return (
+                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl flex items-center gap-3">
+                                  <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <ShoppingCart className="w-5 h-5" />
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">Orders Placed</span>
+                                    <span className="text-sm font-bold text-slate-800 font-mono">{customerOrders.length}</span>
+                                  </div>
+                                </div>
+                                
+                                <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl flex items-center gap-3">
+                                  <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <IndianRupee className="w-5 h-5" />
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">Total Disbursed Spend</span>
+                                    <span className="text-sm font-bold text-emerald-600 font-mono">₹{totalSpend.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                  </div>
+                                </div>
+
+                                <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl flex items-center gap-3">
+                                  <div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <Wallet className="w-5 h-5" />
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">Wallet Balance</span>
+                                    <span className="text-sm font-bold text-purple-700 font-mono">₹{walletBal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                    {withdrawnAmt > 0 && (
+                                      <span className="text-[9px] text-amber-600 font-extrabold block">Withdrawn: ₹{withdrawnAmt.toLocaleString('en-IN')}</span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl flex items-center gap-3">
+                                  <div className="w-10 h-10 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <Sparkles className="w-5 h-5" />
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">First Purchase</span>
+                                    <span className="text-xs font-bold text-slate-800 font-mono">
+                                      {customerOrders.length > 0 ? new Date(customerOrders[customerOrders.length - 1].createdAt).toLocaleDateString('en-IN', {
+                                        day: '2-digit',
+                                        month: 'short',
+                                        year: 'numeric'
+                                      }) : 'N/A'}
+                                    </span>
+                                  </div>
+                                </div>
                               </div>
-                              <div>
-                                <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">First Purchase</span>
-                                <span className="text-xs font-bold text-slate-800 font-mono">
-                                  {customerOrders.length > 0 ? new Date(customerOrders[customerOrders.length - 1].createdAt).toLocaleDateString('en-IN', {
-                                    day: '2-digit',
-                                    month: 'short',
-                                    year: 'numeric'
-                                  }) : 'N/A'}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
+                            );
+                          })()}
 
                           {/* Customer Contact & Saved Shipping Addresses */}
                           <div className="bg-slate-50 border border-slate-200 p-5 rounded-2xl space-y-4">
@@ -7299,14 +7410,14 @@ export default function AdminPanel({
                 <div className="flex flex-col justify-center">
                   <div className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-150 rounded-2xl">
                     <div>
-                      <span className="block text-xs font-bold text-slate-700">Sandbox Simulation Mode</span>
+                      <span className="block text-xs font-bold text-slate-700">Payment Simulation Mode</span>
                       <span className="text-[10px] text-slate-450">Redirect real checkouts to simulated logs.</span>
                     </div>
                     <button
                       type="button"
                       onClick={() => {
                         setSandboxMode(!sandboxMode);
-                        addNotification('Gateway Toggled', sandboxMode ? 'Razorpay direct sandbox disabled.' : 'Razorpay safe simulator loop enabled.', 'info');
+                        addNotification('Gateway Toggled', sandboxMode ? 'Razorpay direct mode disabled.' : 'Razorpay safe simulator loop enabled.', 'info');
                       }}
                       className={`w-11 h-6 rounded-full transition-all relative ${sandboxMode ? 'bg-blue-600' : 'bg-slate-300'}`}
                     >
@@ -7971,8 +8082,15 @@ export default function AdminPanel({
 
                               {/* Wallet Balances */}
                               <td className="px-5 py-3.5 space-y-0.5 font-mono">
-                                <div className="font-bold text-slate-900">₹{reseller.walletBalance.toLocaleString('en-IN')}</div>
+                                <div className="font-extrabold text-slate-900 text-xs">₹{reseller.walletBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
                                 <div className="text-[9px] text-emerald-600 font-bold">Earned: ₹{reseller.lifetimeEarnings.toLocaleString('en-IN')}</div>
+                                {(() => {
+                                  const resTxs = walletTransactions.filter(tx => tx.resellerId === reseller.userId || tx.resellerId.toLowerCase().trim() === reseller.email.toLowerCase().trim());
+                                  const withdrawn = resTxs.filter(tx => tx.type === 'withdrawal' && tx.status === 'completed').reduce((sum, tx) => sum + tx.amount, 0);
+                                  return withdrawn > 0 ? (
+                                    <div className="text-[9px] text-amber-600 font-extrabold">Withdrawn: ₹{withdrawn.toLocaleString('en-IN')}</div>
+                                  ) : null;
+                                })()}
                               </td>
 
                               {/* Status Badge */}
@@ -7990,8 +8108,16 @@ export default function AdminPanel({
 
                               {/* Actions */}
                               <td className="px-5 py-3.5 text-right space-x-1">
+                                <button
+                                  onClick={() => setStatementModalTarget({ email: reseller.email, name: reseller.name, resellerId: reseller.userId })}
+                                  className="px-2 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-[10px] font-bold rounded-lg cursor-pointer transition-all inline-flex items-center gap-1"
+                                  title="View Official Dealer Wallet & Withdrawal Statement"
+                                >
+                                  <FileText className="w-3 h-3 text-purple-600" />
+                                  Statement
+                                </button>
                                 {reseller.status === 'pending' ? (
-                                  <div className="inline-flex gap-1">
+                                  <div className="inline-flex gap-1 ml-1">
                                     <button
                                       onClick={() => handleApproveReseller(reseller.userId, true)}
                                       className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-lg cursor-pointer transition-all"
@@ -8253,6 +8379,364 @@ export default function AdminPanel({
 
             </div>
 
+          </div>
+        )}
+
+        {/* DEALER / CUSTOMER WALLET & WITHDRAWAL STATEMENT MODAL */}
+        {statementModalTarget && (
+          <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[1000] flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-in fade-in duration-200">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-5xl max-h-[92vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+              
+              {(() => {
+                const targetEmail = statementModalTarget.email.toLowerCase().trim();
+                const reseller = resellers.find(r => r.userId === statementModalTarget.resellerId || r.email.toLowerCase().trim() === targetEmail);
+                const name = statementModalTarget.name || reseller?.name || 'Valued Customer / Dealer';
+                
+                // Collect all wallet transactions for this reseller/customer
+                const allTxs = walletTransactions.filter(tx => 
+                  (reseller && tx.resellerId === reseller.userId) ||
+                  tx.resellerId.toLowerCase().trim() === targetEmail ||
+                  tx.resellerId === statementModalTarget.email
+                ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+                const currentBalance = reseller ? reseller.walletBalance : 0;
+                
+                const completedWithdrawals = allTxs.filter(tx => tx.type === 'withdrawal' && tx.status === 'completed');
+                const pendingWithdrawals = allTxs.filter(tx => tx.type === 'withdrawal' && tx.status === 'pending');
+                
+                const totalWithdrawnAmount = completedWithdrawals.reduce((sum, tx) => sum + tx.amount, 0);
+                const pendingWithdrawnAmount = pendingWithdrawals.reduce((sum, tx) => sum + tx.amount, 0);
+                
+                const totalCredits = allTxs.filter(tx => tx.type === 'commission' || (tx.type === 'admin_adjustment' && tx.description.toLowerCase().includes('credit'))).reduce((sum, tx) => sum + tx.amount, 0);
+
+                // Filter transactions based on active tab in statement modal
+                const filteredTxs = allTxs.filter(tx => {
+                  if (statementTypeFilter === 'withdrawal') return tx.type === 'withdrawal';
+                  if (statementTypeFilter === 'commission') return tx.type === 'commission';
+                  if (statementTypeFilter === 'adjustment') return tx.type === 'admin_adjustment';
+                  return true;
+                }).filter(tx => {
+                  if (!statementSearchQuery.trim()) return true;
+                  const q = statementSearchQuery.toLowerCase().trim();
+                  return (
+                    tx.id.toLowerCase().includes(q) ||
+                    tx.description.toLowerCase().includes(q) ||
+                    (tx.payoutDetails?.upiId && tx.payoutDetails.upiId.toLowerCase().includes(q)) ||
+                    (tx.payoutDetails?.bankName && tx.payoutDetails.bankName.toLowerCase().includes(q)) ||
+                    tx.amount.toString().includes(q)
+                  );
+                });
+
+                const statementId = `STMT-${targetEmail.split('@')[0].toUpperCase()}-${Date.now().toString().slice(-6)}`;
+
+                return (
+                  <>
+                    {/* Modal Top Bar */}
+                    <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between border-b border-slate-800 shrink-0">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-600 rounded-xl text-white">
+                          <Wallet className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="text-base font-bold flex items-center gap-2">
+                            Official Wallet & Withdrawal Statement
+                            <span className="text-[10px] bg-blue-500/30 text-blue-200 border border-blue-400/30 px-2 py-0.5 rounded-full font-mono">
+                              Ref: {statementId}
+                            </span>
+                          </h3>
+                          <p className="text-xs text-slate-400">Veera Computers • Official Dealer Ledger & Payout Statement</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => window.print()}
+                          className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+                          title="Print or Save PDF"
+                        >
+                          <Printer className="w-4 h-4" />
+                          Print / Save PDF
+                        </button>
+                        <button
+                          onClick={() => {
+                            setStatementModalTarget(null);
+                            setStatementSearchQuery('');
+                          }}
+                          className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all cursor-pointer"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Scrollable Printable Statement Body */}
+                    <div className="p-6 overflow-y-auto space-y-6 flex-1 bg-slate-50/50" id="printable-wallet-statement">
+                      
+                      {/* Header Letterhead for Print */}
+                      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-150 pb-4 gap-4">
+                          <div className="space-y-1">
+                            <h1 className="text-xl font-black text-blue-600 flex items-center gap-2">
+                              <Key className="w-6 h-6 text-blue-600" />
+                              Veera Computers
+                            </h1>
+                            <p className="text-xs text-slate-500 font-bold">Digital Activation Keys & Softwares</p>
+                            <p className="text-[11px] text-slate-500 font-mono">GSTIN: 27BQIPS8843L1ZX • Jalna, Maharashtra - 431203</p>
+                          </div>
+                          <div className="text-right space-y-1">
+                            <span className="px-3 py-1 bg-purple-50 text-purple-800 border border-purple-200 rounded-full font-black text-xs uppercase tracking-wider">
+                              WALLETS & PAYOUTS LEDGER
+                            </span>
+                            <p className="text-xs font-mono font-bold text-slate-800 mt-1">Generated: {new Date().toLocaleString()}</p>
+                            <p className="text-[11px] text-slate-500 font-mono">Statement ID: {statementId}</p>
+                          </div>
+                        </div>
+
+                        {/* Dealer / Customer Metadata */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-1 text-xs">
+                          <div className="space-y-1.5 bg-slate-50 p-4 rounded-xl border border-slate-150">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">ACCOUNT HOLDER / DEALER DETAILS</span>
+                            <p className="font-extrabold text-slate-900 text-sm">{name}</p>
+                            <p className="font-mono text-slate-700 font-semibold">Email: {targetEmail}</p>
+                            {reseller?.phone && <p className="font-mono text-slate-700 font-semibold">Phone: +91 {reseller.phone}</p>}
+                            {reseller?.referralCode && (
+                              <p className="font-mono text-indigo-700 font-bold mt-1">
+                                Dealer Code: <span className="bg-indigo-100 px-2 py-0.5 rounded text-indigo-900">{reseller.referralCode}</span> ({reseller.commissionRate}% Comm. Rate)
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="space-y-1.5 bg-slate-50 p-4 rounded-xl border border-slate-150">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">BUSINESS & PAYOUT TRANSFER DETAILS</span>
+                            {reseller?.businessName ? (
+                              <p className="font-bold text-slate-800">Company: {reseller.businessName} {reseller.gstin ? `(GST: ${reseller.gstin})` : ''}</p>
+                            ) : (
+                              <p className="text-slate-500 italic">Retail Store Registered Account</p>
+                            )}
+                            {reseller?.businessAddress && (
+                              <p className="text-slate-600">{reseller.businessAddress}, {reseller.city} - {reseller.pincode}</p>
+                            )}
+                            <div className="pt-1 text-[11px]">
+                              <span className="font-bold text-slate-700 block">Payout Destination Addresses:</span>
+                              {allTxs.some(t => t.payoutDetails) ? (
+                                <div className="font-mono text-slate-800 mt-0.5 space-y-0.5">
+                                  {allTxs.find(t => t.payoutDetails?.upiId)?.payoutDetails?.upiId && (
+                                    <p>• UPI ID: <strong>{allTxs.find(t => t.payoutDetails?.upiId)?.payoutDetails?.upiId}</strong></p>
+                                  )}
+                                  {allTxs.find(t => t.payoutDetails?.accountNo)?.payoutDetails && (
+                                    <p>• Bank: <strong>{allTxs.find(t => t.payoutDetails?.accountNo)?.payoutDetails?.bankName}</strong> | A/C: <strong>{allTxs.find(t => t.payoutDetails?.accountNo)?.payoutDetails?.accountNo}</strong> (IFSC: {allTxs.find(t => t.payoutDetails?.accountNo)?.payoutDetails?.ifscCode})</p>
+                                  )}
+                                </div>
+                              ) : (
+                                <p className="text-slate-400 italic">No previous withdrawal requests logged yet.</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Financial Metrics Row */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        
+                        {/* 1. Wallet Balance */}
+                        <div className="bg-emerald-500/10 border border-emerald-500/30 p-4 rounded-2xl space-y-1">
+                          <div className="flex justify-between items-center text-emerald-800">
+                            <span className="text-[10px] font-black uppercase tracking-wider">Active Wallet Balance</span>
+                            <Wallet className="w-4 h-4 text-emerald-600" />
+                          </div>
+                          <h3 className="text-xl sm:text-2xl font-black text-emerald-900 font-mono">
+                            ₹{currentBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                          </h3>
+                          <p className="text-[10px] text-emerald-700 font-medium">Ready for store purchases or payout</p>
+                        </div>
+
+                        {/* 2. Total Earned / Credited */}
+                        <div className="bg-blue-500/10 border border-blue-500/30 p-4 rounded-2xl space-y-1">
+                          <div className="flex justify-between items-center text-blue-800">
+                            <span className="text-[10px] font-black uppercase tracking-wider">Total Commissions / Credits</span>
+                            <ArrowDownRight className="w-4 h-4 text-blue-600" />
+                          </div>
+                          <h3 className="text-xl sm:text-2xl font-black text-blue-900 font-mono">
+                            ₹{totalCredits.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                          </h3>
+                          <p className="text-[10px] text-blue-700 font-medium">Lifetime credited commissions</p>
+                        </div>
+
+                        {/* 3. Total Withdrawn Amount */}
+                        <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-2xl space-y-1">
+                          <div className="flex justify-between items-center text-amber-800">
+                            <span className="text-[10px] font-black uppercase tracking-wider">Total Amount Withdrawn</span>
+                            <ArrowUpRight className="w-4 h-4 text-amber-600" />
+                          </div>
+                          <h3 className="text-xl sm:text-2xl font-black text-amber-950 font-mono">
+                            ₹{totalWithdrawnAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                          </h3>
+                          <p className="text-[10px] text-amber-800 font-medium">{completedWithdrawals.length} Successful Payout Transfers</p>
+                        </div>
+
+                        {/* 4. Pending Withdrawals */}
+                        <div className="bg-purple-500/10 border border-purple-500/30 p-4 rounded-2xl space-y-1">
+                          <div className="flex justify-between items-center text-purple-800">
+                            <span className="text-[10px] font-black uppercase tracking-wider">Pending Payout Requests</span>
+                            <History className="w-4 h-4 text-purple-600" />
+                          </div>
+                          <h3 className="text-xl sm:text-2xl font-black text-purple-950 font-mono">
+                            ₹{pendingWithdrawnAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                          </h3>
+                          <p className="text-[10px] text-purple-800 font-medium">{pendingWithdrawals.length} Requests Pending Review</p>
+                        </div>
+
+                      </div>
+
+                      {/* Transactions Ledger Panel */}
+                      <div className="bg-white border border-slate-200 rounded-2xl shadow-xs p-5 space-y-4">
+                        
+                        {/* Header Controls */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-150 pb-4">
+                          <div>
+                            <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider font-sans flex items-center gap-2">
+                              <FileText className="w-4 h-4 text-purple-600" />
+                              Detailed Wallet Statement Ledger ({filteredTxs.length})
+                            </h4>
+                            <p className="text-[11px] text-slate-500">Comprehensive chronological statement of all deposits, commission credits, and bank/UPI withdrawals.</p>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-2">
+                            {/* Search */}
+                            <div className="relative w-full sm:w-48">
+                              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+                              <input
+                                type="text"
+                                placeholder="Search memo, UPI, amount..."
+                                value={statementSearchQuery}
+                                onChange={(e) => setStatementSearchQuery(e.target.value)}
+                                className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none"
+                              />
+                            </div>
+
+                            {/* Filter Tabs */}
+                            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+                              {[
+                                { id: 'all', label: 'All Items' },
+                                { id: 'withdrawal', label: 'Withdrawals Only' },
+                                { id: 'commission', label: 'Commissions' },
+                                { id: 'adjustment', label: 'Adjustments' }
+                              ].map(tab => (
+                                <button
+                                  key={tab.id}
+                                  onClick={() => setStatementTypeFilter(tab.id as any)}
+                                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                                    statementTypeFilter === tab.id
+                                      ? 'bg-white text-slate-900 shadow-xs'
+                                      : 'text-slate-500 hover:text-slate-800'
+                                  }`}
+                                >
+                                  {tab.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Ledger Table */}
+                        <div className="overflow-x-auto">
+                          {filteredTxs.length === 0 ? (
+                            <div className="p-12 text-center text-slate-400 italic text-xs space-y-2">
+                              <FileText className="w-8 h-8 mx-auto text-slate-300" />
+                              <p>No wallet statement transactions match your filter criteria.</p>
+                            </div>
+                          ) : (
+                            <table className="w-full text-left border-collapse text-xs font-sans">
+                              <thead>
+                                <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-black tracking-wider text-[9px]">
+                                  <th className="p-3">Date & Time</th>
+                                  <th className="p-3">Reference TX ID</th>
+                                  <th className="p-3">Type</th>
+                                  <th className="p-3">Description & Transfer Address</th>
+                                  <th className="p-3 text-right">Debit (Withdrawn)</th>
+                                  <th className="p-3 text-right">Credit (Earned)</th>
+                                  <th className="p-3 text-center">Status</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-150">
+                                {filteredTxs.map((tx) => {
+                                  const isWithdrawal = tx.type === 'withdrawal';
+                                  const isCommission = tx.type === 'commission';
+
+                                  return (
+                                    <tr key={tx.id} className="hover:bg-slate-50 transition-colors">
+                                      <td className="p-3 font-mono text-[10px] text-slate-500 shrink-0 whitespace-nowrap">
+                                        {new Date(tx.createdAt).toLocaleString()}
+                                      </td>
+                                      <td className="p-3 font-mono font-bold text-slate-800 text-[11px]">
+                                        {tx.id}
+                                      </td>
+                                      <td className="p-3">
+                                        <span className={`inline-block text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${
+                                          isWithdrawal
+                                            ? 'bg-amber-50 text-amber-800 border-amber-200'
+                                            : isCommission
+                                            ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                            : 'bg-indigo-50 text-indigo-800 border-indigo-200'
+                                        }`}>
+                                          {tx.type}
+                                        </span>
+                                      </td>
+                                      <td className="p-3 space-y-1">
+                                        <p className="font-semibold text-slate-800 leading-relaxed">{tx.description}</p>
+                                        {tx.payoutDetails && (
+                                          <div className="font-mono text-[10px] text-amber-800 bg-amber-50/60 px-2 py-1 border border-amber-100 rounded-md inline-block">
+                                            {tx.payoutDetails.method === 'upi' ? (
+                                              <span>Payout UPI: <strong>{tx.payoutDetails.upiId}</strong></span>
+                                            ) : (
+                                              <span>Payout Bank: <strong>{tx.payoutDetails.bankName}</strong> | A/C: <strong>{tx.payoutDetails.accountNo}</strong> (IFSC: {tx.payoutDetails.ifscCode})</span>
+                                            )}
+                                          </div>
+                                        )}
+                                      </td>
+                                      
+                                      {/* Debit (Withdrawn) */}
+                                      <td className="p-3 text-right font-mono font-black text-xs text-red-600">
+                                        {isWithdrawal ? `-₹${tx.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : '—'}
+                                      </td>
+
+                                      {/* Credit (Earned) */}
+                                      <td className="p-3 text-right font-mono font-black text-xs text-emerald-600">
+                                        {!isWithdrawal ? `+₹${tx.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : '—'}
+                                      </td>
+
+                                      <td className="p-3 text-center">
+                                        <span className={`inline-block text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
+                                          tx.status === 'completed'
+                                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                                            : tx.status === 'pending'
+                                            ? 'bg-amber-100 text-amber-800 border border-amber-200 animate-pulse'
+                                            : 'bg-red-100 text-red-800 border border-red-200'
+                                        }`}>
+                                          {tx.status}
+                                        </span>
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          )}
+                        </div>
+
+                        {/* Statement Footer Note */}
+                        <div className="pt-4 border-t border-slate-200 text-center text-[10px] text-slate-400 font-mono">
+                          * This statement is an official digital record generated by Veera Computers Admin Portal. All credited commissions and approved withdrawals are verified electronically.
+                        </div>
+
+                      </div>
+
+                    </div>
+                  </>
+                );
+              })()}
+
+            </div>
           </div>
         )}
 

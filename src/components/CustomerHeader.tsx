@@ -10,8 +10,8 @@ import { BRAND_CATEGORIES } from './CategoryGrid';
 import VeeraitLogo from './VeeraitLogo';
 
 interface CustomerHeaderProps {
-  currentScreen: 'store' | 'dashboard' | 'admin' | 'tracking' | 'about' | 'contact' | 'privacy' | 'shipping';
-  setCurrentScreen: (screen: 'store' | 'dashboard' | 'admin' | 'tracking' | 'about' | 'contact' | 'privacy' | 'shipping') => void;
+  currentScreen: 'store' | 'dashboard' | 'admin' | 'tracking' | 'about' | 'contact' | 'privacy' | 'shipping' | 'terms';
+  setCurrentScreen: (screen: 'store' | 'dashboard' | 'admin' | 'tracking' | 'about' | 'contact' | 'privacy' | 'shipping' | 'terms') => void;
   cart: { product: Product; quantity: number }[];
   toggleCart: () => void;
   user: { email: string; name: string; phone?: string; role?: string } | null;
@@ -533,6 +533,16 @@ export default function CustomerHeader({
           >
             <Truck className="w-4 h-4 text-emerald-600" />
             <span>Shipping, Return & Refund Policy</span>
+          </button>
+
+          <button
+            onClick={() => { setCurrentScreen('terms'); if (setSelectedProduct) setSelectedProduct(null); setSelectedSubcategory(null); setMobileMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 ${
+              currentScreen === 'terms' ? 'bg-emerald-50 text-emerald-600 font-extrabold' : 'text-slate-700 hover:bg-slate-50'
+            }`}
+          >
+            <FileText className="w-4 h-4 text-emerald-600" />
+            <span>Terms & Conditions & Disclaimer</span>
           </button>
 
           {/* Quick Subcategory buttons inside mobile view */}

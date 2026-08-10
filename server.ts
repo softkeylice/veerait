@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-dotenv.config();
+dotenv.config({ override: true });
 
 import express from "express";
 import path from "path";
@@ -886,12 +886,19 @@ interface PaymentSettings {
   ifscCode: string;
   upiId: string;
   upiQrCodeUrl: string;
+  paytmMid?: string;
+  paytmMode?: 'test' | 'live';
 }
 
 function readPaymentSettings(): PaymentSettings {
   try {
     if (fs.existsSync(PAYMENT_SETTINGS_FILE)) {
-      return JSON.parse(fs.readFileSync(PAYMENT_SETTINGS_FILE, "utf-8"));
+      const data = JSON.parse(fs.readFileSync(PAYMENT_SETTINGS_FILE, "utf-8"));
+      return {
+        ...data,
+        paytmMid: data.paytmMid || process.env.PAYTM_MERCHANT_ID || "OPDDHV86006252156720",
+        paytmMode: data.paytmMode || (process.env.PAYTM_ENV === "PRODUCTION" ? "live" : "test")
+      };
     }
   } catch (err) {
     console.error("Error reading payment settings:", err);
@@ -902,7 +909,9 @@ function readPaymentSettings(): PaymentSettings {
     bankAccountNumber: "918273645019",
     ifscCode: "SBIN0001234",
     upiId: "shrisaptashrungi@upi",
-    upiQrCodeUrl: ""
+    upiQrCodeUrl: "",
+    paytmMid: process.env.PAYTM_MERCHANT_ID || "OPDDHV86006252156720",
+    paytmMode: process.env.PAYTM_ENV === "PRODUCTION" ? "live" : "test"
   };
 }
 
@@ -3486,14 +3495,22 @@ app.use(async (req, res, next) => {
       writePaymentsDb(payments);
       await savePaymentsToSupabase(payments);
 
+      const paytmMid = process.env.PAYTM_MERCHANT_ID || "OPDDHV86006252156720";
+      const paytmKey = process.env.PAYTM_MERCHANT_KEY || "NTDV&8PLRhXJ%soP";
+      const paytmEnv = process.env.PAYTM_ENV || "TEST";
+      const paytmWebsite = process.env.PAYTM_WEBSITE || "WEBSTAGING";
+
       return res.json({
         success: true,
-        simulation: true,
+        simulation: paytmEnv === "TEST",
         orderId: paytmOrderId,
         amount: total || amount,
         currency: currency || "INR",
-        merchantId: process.env.PAYTM_MERCHANT_ID || "PAYTM_MCH_VEERA_IT_DEMO",
-        callbackUrl: "/api/payment/paytm/webhook"
+        merchantId: paytmMid,
+        environment: paytmEnv,
+        website: paytmWebsite,
+        callbackUrl: "/api/payment/paytm/webhook",
+        message: `Paytm PG order created in ${paytmEnv} mode with Merchant ID ${paytmMid}`
       });
     } catch (error: any) {
       console.error("Critical error initiating Paytm PG order:", error);
@@ -3543,12 +3560,15 @@ app.use(async (req, res, next) => {
         }
       }
 
+      const paytmMid = process.env.PAYTM_MERCHANT_ID || "OPDDHV86006252156720";
       return res.json({
         success: true,
         verified: true,
-        simulation: true,
+        simulation: process.env.PAYTM_ENV !== "PRODUCTION",
+        merchantId: paytmMid,
         txnId: verifiedTxnId,
-        order: compiled
+        order: compiled,
+        message: `Paytm PG payment verified successfully for Merchant ID ${paytmMid}`
       });
     } catch (error: any) {
       console.error("Error verifying Paytm PG transaction:", error);
@@ -4127,19 +4147,27 @@ app.use(async (req, res, next) => {
     const settings = readPaymentSettings();
     const keyId = process.env.RAZORPAY_KEY_ID || "";
     const hasSecret = !!process.env.RAZORPAY_SECRET;
+    const paytmMid = process.env.PAYTM_MERCHANT_ID || settings.paytmMid || "OPDDHV86006252156720";
+    const paytmKey = process.env.PAYTM_MERCHANT_KEY || "NTDV&8PLRhXJ%soP";
 
     return res.json({
       settings,
       razorpay: {
         keyId: keyId ? `${keyId.substring(0, 8)}...` : "",
         configured: !!(keyId && hasSecret)
+      },
+      paytm: {
+        merchantId: paytmMid,
+        environment: process.env.PAYTM_ENV || (settings.paytmMode === "live" ? "PRODUCTION" : "TEST"),
+        website: process.env.PAYTM_WEBSITE || "WEBSTAGING",
+        configured: !!(paytmMid && paytmKey)
       }
     });
   });
 
   // 9.4 SAVE STORE PAYMENT CONFIGURATION
   app.post("/api/payment/settings", authenticateJwt, requireAdmin, csrfProtection, (req, res) => {
-    const { bankName, bankAccountName, bankAccountNumber, ifscCode, upiId, upiQrCodeUrl } = req.body;
+    const { bankName, bankAccountName, bankAccountNumber, ifscCode, upiId, upiQrCodeUrl, paytmMid, paytmMode } = req.body;
 
     if (!bankName || !bankAccountName || !bankAccountNumber || !ifscCode || !upiId) {
       return res.status(400).json({ error: "Missing required details. Please check all fields." });
@@ -4151,7 +4179,9 @@ app.use(async (req, res, next) => {
       bankAccountNumber,
       ifscCode,
       upiId,
-      upiQrCodeUrl: upiQrCodeUrl || ""
+      upiQrCodeUrl: upiQrCodeUrl || "",
+      paytmMid: paytmMid || process.env.PAYTM_MERCHANT_ID || "OPDDHV86006252156720",
+      paytmMode: paytmMode || "test"
     };
 
     writePaymentSettings(updatedSettings);

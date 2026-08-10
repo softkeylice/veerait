@@ -61,7 +61,7 @@ function parseStateFromUrl(productList: Product[] = []) {
     const rawHash = window.location.hash.toLowerCase().replace(/^#+/, '');
     const params = new URLSearchParams(window.location.search);
     
-    let screen: 'store' | 'dashboard' | 'admin' | 'tracking' | 'b2b-signup' | 'about' | 'contact' | 'privacy' | 'shipping' = 'store';
+    let screen: 'store' | 'dashboard' | 'admin' | 'tracking' | 'b2b-signup' | 'about' | 'contact' | 'privacy' | 'shipping' | 'terms' = 'store';
     let category: 'all' | 'software' | 'hardware' = 'all';
     let subcategory: string | null = null;
     let selectedProduct: Product | null = null;
@@ -90,6 +90,13 @@ function parseStateFromUrl(productList: Product[] = []) {
       params.has('login') || params.has('auth');
 
     const isAdmin = isAdminPath;
+
+    // Terms & Conditions and Disclaimer detection
+    const isTerms = 
+      rawPath === 'terms' || rawPath === 'terms-and-conditions' || rawPath === 'terms.html' || rawPath === 'tc' || rawPath === 'disclaimer' || rawPath === 'disclaimer.html' ||
+      rawHash === 'terms' || rawHash === 'terms-and-conditions' || rawHash === 'disclaimer' || rawHash === 'tc' ||
+      pageParam === 'terms' || pageParam === 'terms-and-conditions' || pageParam === 'disclaimer' || pageParam === 'tc' ||
+      params.has('terms') || params.has('disclaimer') || params.has('tc');
 
     // Privacy Policy detection
     const isPrivacy = 
@@ -136,7 +143,8 @@ function parseStateFromUrl(productList: Product[] = []) {
     // Dashboard detection
     const isDashboard = rawPath === 'dashboard' || rawHash === 'dashboard' || pageParam === 'dashboard' || params.has('dashboard');
 
-    if (isPrivacy) screen = 'privacy';
+    if (isTerms) screen = 'terms';
+    else if (isPrivacy) screen = 'privacy';
     else if (isShipping) screen = 'shipping';
     else if (isAbout) screen = 'about';
     else if (isContact) screen = 'contact';
@@ -181,7 +189,7 @@ function parseStateFromUrl(productList: Product[] = []) {
 export default function App() {
   const initialParsed = parseStateFromUrl(INITIAL_PRODUCTS);
 
-  const [currentScreen, setCurrentScreen] = useState<'store' | 'dashboard' | 'admin' | 'tracking' | 'b2b-signup' | 'about' | 'contact' | 'privacy' | 'shipping'>(() => {
+  const [currentScreen, setCurrentScreen] = useState<'store' | 'dashboard' | 'admin' | 'tracking' | 'b2b-signup' | 'about' | 'contact' | 'privacy' | 'shipping' | 'terms'>(() => {
     return initialParsed.screen;
   });
   const [user, setUserState] = useState<{ email: string; name: string; phone?: string; id?: string; address?: string; role?: string; gstNo?: string; company?: string; alternateMobile?: string; city?: string; state?: string; pin?: string } | null>(() => {
@@ -295,6 +303,8 @@ export default function App() {
       document.title = 'About Us - Veerait';
     } else if (currentScreen === 'contact') {
       document.title = 'Contact Us - Veerait';
+    } else if (currentScreen === 'terms') {
+      document.title = 'Terms & Conditions & Disclaimer - Veerait';
     } else if (currentScreen === 'privacy') {
       document.title = 'Privacy Policy - Veerait';
     } else if (currentScreen === 'shipping') {

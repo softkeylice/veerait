@@ -1,0 +1,260 @@
+[
+  {
+    "cart": [
+      {
+        "product": {
+          "id": "sw-office2024",
+          "name": "Microsoft Office 2024 Professional Plus Key",
+          "image": "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=600&auto=format&fit=crop&q=80",
+          "price": 2499,
+          "specs": {
+            "Type": "Bind License",
+            "Platform": "Windows 10/11",
+            "Account Binding": "Yes",
+            "Suites Included": "Word, Excel, PowerPoint, Outlook, Access"
+          },
+          "stock": 350,
+          "images": [
+            "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=600&auto=format&fit=crop&q=80"
+          ],
+          "rating": 4.85,
+          "b2bOnly": false,
+          "category": "software",
+          "featured": true,
+          "features": [
+            "MS Account Bindable",
+            "No subscription fees",
+            "Full Outlook & Access support"
+          ],
+          "seoTitle": "Office 2024 Pro Plus Bind License Key",
+          "description": "Full retail bind key for Microsoft Office 2024 Professional Plus. Connects directly with your Microsoft account.",
+          "seoKeywords": "office 2024 pro, ms office, office bind key, lifetime office key",
+          "installerUrl": "https://setup.office.com",
+          "reviewsCount": 98,
+          "originalPrice": 14999,
+          "seoDescription": "Acquire permanent, account-bindable Office 2024 Pro Plus activation codes. Instant delivery.",
+          "licenseRequired": true,
+          "longDescription": "Boost your productivity with Word, Excel, PowerPoint, Outlook, Access, and Publisher. The Bind license connects to your personal MS Account so you can reinstall anytime on the same PC."
+        },
+        "quantity": 1
+      }
+    ],
+    "amount": 2499,
+    "status": "paid",
+    "orderId": "order_TGucb6989gRCE0",
+    "attempts": 2,
+    "currency": "INR",
+    "discount": 0,
+    "subtotal": 2499,
+    "createdAt": "2026-07-23T10:32:33.851Z",
+    "paymentId": "pay_TGucma00e8iib1",
+    "updatedAt": "2026-07-23T10:33:26.313Z",
+    "shippingPin": "",
+    "customerName": "Krishna Salunke",
+    "shippingCity": "",
+    "customerEmail": "salunkeks96@gmail.com",
+    "customerPhone": "9689677449",
+    "shippingAddress": "",
+    "signatureVerified": true
+  },
+  {
+    "cart": [
+      {
+        "product": {
+          "id": "sw-win11pro",
+          "name": "Windows 11 Professional Retail Key",
+          "image": "https://images.unsplash.com/photo-1628277613967-6abca504d0ac?w=600&auto=format&fit=crop&q=80",
+          "price": 1499,
+          "specs": {
+            "Type": "Digital Key",
+            "Version": "Retail",
+            "Validation": "Lifetime",
+            "Architecture": "64-bit"
+          },
+          "stock": 500,
+          "images": [
+            "https://images.unsplash.com/photo-1628277613967-6abca504d0ac?w=600&auto=format&fit=crop&q=80"
+          ],
+          "rating": 4.9,
+          "b2bOnly": false,
+          "category": "software",
+          "featured": true,
+          "features": [
+            "Lifetime activation",
+            "Instant e-delivery via SMS & WhatsApp",
+            "BitLocker encryption support"
+          ],
+          "seoTitle": "Windows 11 Pro Lifetime Retail License Key Online",
+          "description": "Lifetime activation retail license for Windows 11 Pro. Supports 1 PC, multi-language, and holds full upgrade rights.",
+          "seoKeywords": "windows 11 pro, lifetime license, retail key, purchase windows, genuine windows key",
+          "installerUrl": "https://www.microsoft.com/software-download/windows11",
+          "reviewsCount": 142,
+          "originalPrice": 8999,
+          "seoDescription": "Buy genuine Windows 11 Pro lifetime retail activation license keys at the best discounted price. Instant automatic delivery.",
+          "licenseRequired": true,
+          "longDescription": "Get the ultimate operating system built for modern enterprise, hybrid work, and extreme performance. Supports advanced BitLocker encryption, virtualization tools, and secure cloud credentials activation."
+        },
+        "quantity": 1
+      }
+    ],
+    "amount": 1499,
+    "status": "paid",
+    "orderId": "order_THh4FK9ro3RPb4",
+    "attempts": 2,
+    "currency": "INR",
+    "discount": 0,
+    "subtotal": 1499,
+    "createdAt": "2026-07-25T09:56:01.813Z",
+    "paymentId": "pay_THh4OBac7uTzlV",
+    "updatedAt": "2026-07-25T09:56:26.790Z",
+    "shippingPin": "",
+    "customerName": "Krishna Salunke",
+    "shippingCity": "",
+    "customerEmail": "salunkeks96@gmail.com",
+    "customerPhone": "9689677449",
+    "shippingAddress": "",
+    "signatureVerified": true
+  },
+  {
+    "cart": [
+      {
+        "product": {
+          "id": "sw-win11pro",
+          "name": "Windows 11 Professional Retail Key",
+          "image": "https://images.unsplash.com/photo-1628277613967-6abca504d0ac?w=600&auto=format&fit=crop&q=80",
+          "price": 1499,
+          "specs": {
+            "Type": "Digital Key",
+            "Version": "Retail",
+            "b2bOnly": false,
+            "Validation": "Lifetime",
+            "Architecture": "64-bit"
+          },
+          "stock": 499,
+          "images": [
+            "https://images.unsplash.com/photo-1628277613967-6abca504d0ac?w=600&auto=format&fit=crop&q=80"
+          ],
+          "rating": 4.9,
+          "b2bOnly": false,
+          "category": "software",
+          "featured": true,
+          "features": [
+            "Lifetime activation",
+            "Instant e-delivery via SMS & WhatsApp",
+            "BitLocker encryption support"
+          ],
+          "seoTitle": "Windows 11 Pro Lifetime Retail License Key Online",
+          "description": "Lifetime activation retail license for Windows 11 Pro. Supports 1 PC, multi-language, and holds full upgrade rights.",
+          "seoKeywords": "windows 11 pro, lifetime license, retail key, purchase windows, genuine windows key",
+          "installerUrl": "https://www.microsoft.com/software-download/windows11",
+          "reviewsCount": 142,
+          "originalPrice": 8999,
+          "seoDescription": "Buy genuine Windows 11 Pro lifetime retail activation license keys at the best discounted price. Instant automatic delivery.",
+          "licenseRequired": true,
+          "longDescription": "Get the ultimate operating system built for modern enterprise, hybrid work, and extreme performance. Supports advanced BitLocker encryption, virtualization tools, and secure cloud credentials activation."
+        },
+        "quantity": 1
+      }
+    ],
+    "amount": 1499,
+    "status": "paid",
+    "orderId": "order_TItj1MZI4bENfi",
+    "attempts": 2,
+    "currency": "INR",
+    "discount": 0,
+    "subtotal": 1499,
+    "createdAt": "2026-07-28T10:57:57.334Z",
+    "paymentId": "pay_TItjLFt43Wl1Rq",
+    "updatedAt": "2026-07-28T10:58:36.694Z",
+    "shippingPin": "",
+    "customerName": "Krishna Salunke",
+    "shippingCity": "",
+    "customerEmail": "salunkeks96@gmail.com",
+    "customerPhone": "9689677449",
+    "shippingAddress": "",
+    "signatureVerified": true
+  },
+  {
+    "cart": [
+      {
+        "product": {
+          "id": "sw-win11pro",
+          "name": "Windows 11 Professional Retail Key",
+          "image": "https://images.unsplash.com/photo-1628277613967-6abca504d0ac?w=600&auto=format&fit=crop&q=80",
+          "price": 1499,
+          "specs": {
+            "Type": "Digital Key",
+            "Version": "Retail",
+            "b2bOnly": false,
+            "Validation": "Lifetime",
+            "Architecture": "64-bit"
+          },
+          "stock": 498,
+          "images": [
+            "https://images.unsplash.com/photo-1628277613967-6abca504d0ac?w=600&auto=format&fit=crop&q=80"
+          ],
+          "rating": 4.9,
+          "b2bOnly": false,
+          "category": "software",
+          "featured": true,
+          "features": [
+            "Lifetime activation",
+            "Instant e-delivery via SMS & WhatsApp",
+            "BitLocker encryption support"
+          ],
+          "seoTitle": "Windows 11 Pro Lifetime Retail License Key Online",
+          "description": "Lifetime activation retail license for Windows 11 Pro. Supports 1 PC, multi-language, and holds full upgrade rights.",
+          "seoKeywords": "windows 11 pro, lifetime license, retail key, purchase windows, genuine windows key",
+          "installerUrl": "https://www.microsoft.com/software-download/windows11",
+          "reviewsCount": 142,
+          "originalPrice": 8999,
+          "seoDescription": "Buy genuine Windows 11 Pro lifetime retail activation license keys at the best discounted price. Instant automatic delivery.",
+          "licenseRequired": true,
+          "longDescription": "Get the ultimate operating system built for modern enterprise, hybrid work, and extreme performance. Supports advanced BitLocker encryption, virtualization tools, and secure cloud credentials activation."
+        },
+        "quantity": 1
+      }
+    ],
+    "amount": 1499,
+    "status": "paid",
+    "orderId": "PAYTM_ORD_1785518683077_ABDI",
+    "attempts": 2,
+    "currency": "INR",
+    "discount": 0,
+    "subtotal": 1499,
+    "createdAt": "2026-07-31T17:24:43.247Z",
+    "paymentId": "PTM_TXN_58YIUGA9",
+    "updatedAt": "2026-07-31T17:25:31.984Z",
+    "couponCode": "",
+    "shippingPin": "",
+    "customerName": "Krishna Salunke",
+    "shippingCity": "",
+    "customerEmail": "salunkeks96@gmail.com",
+    "customerPhone": "9689677449",
+    "b2bReferralCode": "",
+    "shippingAddress": "",
+    "signatureVerified": true
+  },
+  {
+    "cart": [],
+    "amount": 499,
+    "status": "paid",
+    "orderId": "PAYTM_ORD_1786017963805_D7LB",
+    "attempts": 2,
+    "currency": "INR",
+    "discount": 0,
+    "subtotal": 0,
+    "createdAt": "2026-08-06T12:06:03.973Z",
+    "updatedAt": "2026-08-06T12:06:07.167Z",
+    "couponCode": "",
+    "shippingPin": "",
+    "customerName": "Test User",
+    "shippingCity": "",
+    "customerEmail": "test@veerait.com",
+    "customerPhone": "9876543210",
+    "b2bReferralCode": "",
+    "shippingAddress": "",
+    "signatureVerified": true,
+    "paymentId": "PTM_TEST_TXN_998877"
+  }
+]

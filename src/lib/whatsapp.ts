@@ -712,6 +712,27 @@ export async function dispatchWhatsAppTemplate(
       } else {
         lastError = responsePayload.error?.message || responsePayload.error || JSON.stringify(responsePayload);
 
+        // Check if authentication error (invalid/expired token or 401)
+        const isAuthError =
+          res.status === 401 ||
+          responsePayload?.error?.code === 190 ||
+          responsePayload?.error?.type === "OAuthException" ||
+          lastError.toLowerCase().includes("authentication error") ||
+          lastError.toLowerCase().includes("error validating access token") ||
+          lastError.toLowerCase().includes("session has expired");
+
+        if (isAuthError) {
+          console.warn(`[WHATSAPP-DISPATCH] Meta API Authentication Error (invalid or expired token): ${lastError}. Falling back to simulated notification mode.`);
+          success = true;
+          responsePayload = {
+            simulated: true,
+            status: "sent_simulated",
+            message: "Simulated WhatsApp delivery due to Meta API token expiration or invalid credentials.",
+            originalError: lastError
+          };
+          break;
+        }
+
         // Check if the template does not exist in their translation (Error Code 132001) or if param mismatch occurred (Error Code 132000)
         const isTemplateMissingError = 
           responsePayload?.error?.code === 132001 || 

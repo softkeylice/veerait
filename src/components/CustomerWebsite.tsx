@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { Search, ShoppingBag, Eye, Tag, AlertTriangle, CreditCard, ChevronRight, ChevronLeft, CheckCircle2, Truck, RefreshCw, Star, Info, ShieldAlert, X, Gift, Zap, Award, Building2, QrCode, Upload, Layers, Lock, ShieldCheck, FileText, Wallet, Briefcase, Home, Key, MessageSquare, User, Share2, Headphones, Phone, Globe, HelpCircle, Send, MapPin, PackageCheck, Clock, Mail } from 'lucide-react';
+import { Search, ShoppingBag, Eye, Tag, AlertTriangle, AlertCircle, CreditCard, ChevronRight, ChevronLeft, CheckCircle2, Truck, RefreshCw, Star, Info, ShieldAlert, X, Gift, Zap, Award, Building2, QrCode, Upload, Layers, Lock, ShieldCheck, FileText, Wallet, Briefcase, Home, Key, MessageSquare, User, Share2, Headphones, Phone, Globe, HelpCircle, Send, MapPin, PackageCheck, Clock, Mail } from 'lucide-react';
 import { Product, Coupon, PromoBanner, Order, LicenseKey, B2BReseller, WalletTransaction } from '../types';
 import CategoryGrid from './CategoryGrid';
 // @ts-ignore
@@ -22,8 +22,8 @@ interface CustomerWebsiteProps {
   setUser?: (user: any) => void;
   addNotification: (title: string, message: string, type: 'success' | 'info' | 'warning' | 'error') => void;
   onOrderPlaced: (order: Order) => void;
-  setCurrentScreen: (screen: 'store' | 'dashboard' | 'admin' | 'tracking' | 'about' | 'contact' | 'privacy' | 'shipping') => void;
-  currentScreen?: 'store' | 'dashboard' | 'admin' | 'tracking' | 'about' | 'contact' | 'privacy' | 'shipping';
+  setCurrentScreen: (screen: 'store' | 'dashboard' | 'admin' | 'tracking' | 'about' | 'contact' | 'privacy' | 'shipping' | 'terms') => void;
+  currentScreen?: 'store' | 'dashboard' | 'admin' | 'tracking' | 'about' | 'contact' | 'privacy' | 'shipping' | 'terms';
   searchQuery: string;
   setSearchQuery: (q: string) => void;
   selectedCategory: 'all' | 'software' | 'hardware';
@@ -3008,6 +3008,386 @@ export default function CustomerWebsite({
                     <span>VeeraIT Guarantee</span>
                   </div>
                   <p>Genuine Software ESD Licenses • Verified Supplier Direct • Instant License Verification</p>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      ) : currentScreen === 'terms' ? (
+        <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-10 flex-1 font-sans animate-in fade-in duration-350" id="terms-and-disclaimer-page">
+          
+          {/* Breadcrumbs & Navigation Bar */}
+          <div className="flex items-center justify-between gap-4 mb-8 pb-4 border-b border-slate-200">
+            <div className="flex items-center gap-2 text-xs text-slate-500 font-medium font-sans">
+              <button 
+                onClick={() => {
+                  setCurrentScreen('store');
+                  setSelectedCategory('all');
+                  setSearchQuery('');
+                  setSelectedProduct(null);
+                  setSelectedSubcategory(null);
+                }} 
+                className="hover:text-emerald-600 transition-colors font-semibold cursor-pointer"
+              >
+                Home
+              </button>
+              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-slate-900 font-extrabold uppercase tracking-wider text-[11px]">TERMS & CONDITIONS AND LEGAL DISCLAIMER</span>
+            </div>
+
+            <button
+              onClick={() => {
+                setCurrentScreen('store');
+                setSelectedProduct(null);
+                setSelectedSubcategory(null);
+              }}
+              className="flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 hover:text-emerald-600 font-extrabold rounded-xl text-xs transition-all shadow-sm cursor-pointer"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Back to Store</span>
+            </button>
+          </div>
+
+          {/* Hero Header Banner */}
+          <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950 text-white rounded-3xl p-8 sm:p-12 mb-10 shadow-xl border border-slate-800 text-left">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="relative z-10 max-w-4xl space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/20 border border-blue-400/30 rounded-full text-xs font-bold text-blue-300">
+                <FileText className="w-4 h-4 text-blue-400" />
+                <span>Last Updated: August 2026 • Veera Computers (Est. 2003)</span>
+              </div>
+              <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white font-sans">
+                Terms & Conditions & Legal Disclaimer
+              </h1>
+              <p className="text-base sm:text-lg text-slate-200 font-medium leading-relaxed font-sans">
+                Comprehensive rules governing digital software license purchases, ESD key activations, automated CID tools, B2B dealer operations, trademark disclosures, and legal disclaimers.
+              </p>
+            </div>
+          </div>
+
+          {/* Key Policy Badges Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10 text-left">
+            <div className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm font-extrabold text-slate-900">100% Genuine Retail / OEM</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">Guaranteed original ESD activation keys sourced from legitimate vendor streams.</p>
+            </div>
+
+            <div className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm font-extrabold text-slate-900">1-Year Replacement Guarantee</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">Free key replacement or tech resolution if activation encounters key verification errors.</p>
+            </div>
+
+            <div className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
+                <Key className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm font-extrabold text-slate-900">Automated CID Generator</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">Free telephone activation tool for Microsoft Installation ID (IID) to Confirmation ID (CID).</p>
+            </div>
+
+            <div className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+                <Award className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm font-extrabold text-slate-900">Independent Retailer</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">Third-party software reseller. Product logos & names belong to respective trademark owners.</p>
+            </div>
+          </div>
+
+          {/* Main Content Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12 text-left">
+            
+            {/* 11 Detailed Policy Sections (8 cols) */}
+            <div className="lg:col-span-8 space-y-8">
+              
+              {/* 1. Introduction & Acceptance of Terms */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-blue-100 text-blue-800 text-xs flex items-center justify-center font-black">1</span>
+                  <span>Agreement & Acceptance of Terms</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>
+                    By browsing www.veerait.com, placing an order, registering for an account, or applying for a B2B Reseller/Dealer account, you (&quot;Customer&quot;, &quot;User&quot;, or &quot;Reseller&quot;) unconditionally enter into a legally binding contract with <strong>Veera Computers</strong> (&quot;Company&quot;, &quot;We&quot;, &quot;Us&quot;, or &quot;Our&quot;).
+                  </p>
+                  <p>
+                    These Terms & Conditions, together with our <strong>Privacy Policy</strong> and <strong>Shipping, Return & Refund Policy</strong>, govern your access to digital software license keys, ESD activations, automated CID tools, and B2B wallet services offered on this platform. If you do not agree to all terms stated herein, you must immediately cease using this website.
+                  </p>
+                </div>
+              </div>
+
+              {/* 2. Digital License & Electronic Delivery */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">2</span>
+                  <span>Digital Software Licenses & ESD Delivery</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>
+                    Veera Computers specializes in legitimate Electronic Software Delivery (ESD) digital product activation keys for Microsoft Windows, Microsoft Office, Windows Server, and leading Antivirus suites (Quick Heal, Kaspersky, Norton, McAfee, Bitdefender).
+                  </p>
+                  <ul className="list-disc pl-5 space-y-2 text-slate-600">
+                    <li><strong>Instant Electronic Dispatch:</strong> License keys are dispatched via automated algorithms directly to your registered email address, WhatsApp number (+91), and stored securely inside your account dashboard within 1 to 30 seconds of payment approval.</li>
+                    <li><strong>No Tangible Media:</strong> Standard software license purchases do not include physical installation media (CDs, DVDs, or USB flash drives) unless physical boxed hardware packs are explicitly selected. Official ISO download links from official vendor servers (e.g. microsoft.com) are provided for media creation.</li>
+                    <li><strong>Inspection Duty:</strong> Customers must verify receipt of their activation code immediately upon delivery and notify tech support of any email/SMS non-delivery within 24 hours.</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* 3. Activation Rules & 1-Year Guarantee */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-purple-100 text-purple-800 text-xs flex items-center justify-center font-black">3</span>
+                  <span>Activation Rules & 1-Year Replacement Guarantee</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>
+                    All digital activation keys purchased from Veera Computers are guaranteed 100% original, active, and fully genuine.
+                  </p>
+                  <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl space-y-2 text-emerald-900 text-xs sm:text-sm">
+                    <strong className="block font-extrabold text-emerald-800 text-base">1-Year Activation Guarantee Scope:</strong>
+                    <p className="leading-relaxed">
+                      If an unactivated license key displays an invalid error code upon initial activation, Veera Computers provides a 100% free key replacement or guided remote technical resolution valid for 1 year from the purchase invoice date.
+                    </p>
+                  </div>
+                  <ul className="list-disc pl-5 space-y-2 text-slate-600">
+                    <li><strong>Single PC / Binding Limits:</strong> Retail / OEM keys must be activated in compliance with the exact product title (e.g., 1 PC 1 Year, 3 PC 3 Year, PC Account Binding). Attempting to activate a single-PC OEM key across multiple reformatted computers will cause vendor license blocking, which is not covered under key replacement.</li>
+                    <li><strong>Hardware Compatibility:</strong> The customer is responsible for ensuring their hardware meets system requirements (e.g. Windows 11 TPM 2.0, RAM, x64 architecture) prior to key redemption.</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* 4. Automated CID Generator Tool */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-amber-100 text-amber-800 text-xs flex items-center justify-center font-black">4</span>
+                  <span>Automated CID (Confirmation ID) Tool Usage</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>
+                    For Microsoft software products requiring offline or telephone activation, Veera Computers provides a free self-service <strong>Automated CID Generator Tool</strong>.
+                  </p>
+                  <ul className="list-disc pl-5 space-y-2 text-slate-600">
+                    <li><strong>Automated Processing:</strong> Users enter their 63-digit Installation ID (IID) generated by the Windows/Office Activation Wizard. Our automated server submits the payload to generate the valid 48-digit Confirmation ID (CID).</li>
+                    <li><strong>Free Value-Add Service:</strong> The CID tool is provided as a free utility to streamline phone activation. Veera Computers makes no separate charge for CID lookups.</li>
+                    <li><strong>Fair Abuse Limits:</strong> Automated scraping, botting, or flooding the CID generator endpoint is monitored and strictly prohibited.</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* 5. User Conduct & Anti-Piracy Policy */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-red-100 text-red-800 text-xs flex items-center justify-center font-black">5</span>
+                  <span>User Conduct & Anti-Piracy Policy</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>
+                    Veera Computers maintains a strict zero-tolerance stance against software piracy, illegal key duplication, and fraudulent chargeback activities.
+                  </p>
+                  <ul className="list-disc pl-5 space-y-2 text-slate-600">
+                    <li><strong>Forbidden Activities:</strong> Users are strictly prohibited from reselling a single retail license key to multiple unauthorized end-users, attempting SQL injection or XSS attacks on our store, or making false payment disputes after receiving active digital keys.</li>
+                    <li><strong>Enforcement & Termination:</strong> Violations will result in immediate termination of the user&apos;s account, revocation of pending wallet funds, invalidation of generated license keys, and reporting to legal authorities under the Indian Information Technology Act, 2000.</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* 6. B2B Reseller & Dealer Wallet Terms */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-800 text-xs flex items-center justify-center font-black">6</span>
+                  <span>B2B Dealer & Reseller Wallet Terms</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>
+                    Registered IT dealers, computer repair shop owners, and software resellers participating in our B2B Program are subject to specific wallet and pricing rules:
+                  </p>
+                  <ul className="list-disc pl-5 space-y-2 text-slate-600">
+                    <li><strong>Pre-Paid Wallet Credits & Margin Discounts:</strong> B2B accounts receive tiered volume discounts. Wallet funds added via Paytm PG or Admin QR deposits can be redeemed against future software license purchases.</li>
+                    <li><strong>Wallet Cashouts & Payout Audits:</strong> Commission payouts and approved wallet refunds are processed directly into the reseller&apos;s verified Indian bank account or UPI ID after administrative auditing.</li>
+                    <li><strong>GST Compliance:</strong> Resellers entering valid GSTIN numbers receive GST tax invoices compliant with Indian Central and State GST regulations.</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* 7. COMPREHENSIVE LEGAL DISCLAIMER & TRADEMARK NOTICE */}
+              <div className="bg-slate-900 text-slate-100 rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-800 space-y-5">
+                <h2 className="text-xl sm:text-2xl font-black text-amber-400 font-sans flex items-center gap-2.5 border-b border-slate-800 pb-4">
+                  <AlertCircle className="w-6 h-6 text-amber-400 shrink-0" />
+                  <span>Comprehensive Legal Disclaimer & Trademark Notice</span>
+                </h2>
+                <div className="space-y-4 text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
+                  <p className="font-semibold text-slate-200">
+                    PLEASE READ THIS LEGAL DISCLAIMER CAREFULLY BEFORE PURCHASING OR USING ANY PRODUCTS OR SERVICES ON THIS WEBSITE:
+                  </p>
+                  
+                  <div className="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2 text-slate-300">
+                    <strong className="block text-amber-300 font-bold text-sm">A. Third-Party Trademarks & Intellectual Property Notice</strong>
+                    <p className="leading-relaxed text-xs">
+                      All product names, brand names, logos, trademarks, registered trademarks, and software titles mentioned on www.veerait.com — including but not limited to <strong>Microsoft, Windows, Windows 10, Windows 11, Office 365, Office Pro Plus, Windows Server, Visual Studio, Quick Heal, Kaspersky, Norton, McAfee, Bitdefender, Avast, Tally</strong> — are the exclusive property and copyrights of their respective trademark holders.
+                    </p>
+                  </div>
+
+                  <div className="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2 text-slate-300">
+                    <strong className="block text-emerald-300 font-bold text-sm">B. Independent Retailer & Identification Purpose</strong>
+                    <p className="leading-relaxed text-xs">
+                      Veera Computers is an independent digital software retailer and IT solutions provider (Est. 2003, Jalna, Maharashtra). The use of manufacturer logos, brand graphics, and product names on this site is strictly for identification, description, and compatibility reference purposes to inform consumers regarding the software key being purchased. Such usage does not imply direct trademark ownership, sponsorship, or exclusive official partnership beyond authorized retail channels.
+                    </p>
+                  </div>
+
+                  <div className="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2 text-slate-300">
+                    <strong className="block text-blue-300 font-bold text-sm">C. Vendor Cloud Server & Policy Shifts</strong>
+                    <p className="leading-relaxed text-xs">
+                      While Veera Computers guarantees 100% genuine and active activation keys at the time of sale, we do not own or maintain third-party software cloud infrastructure (such as Microsoft activation servers or Antivirus cloud update servers). Remote cloud server outages, software vendor feature deprecations, or sudden policy changes executed unilaterally by third-party developers are beyond our operational control.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 8. Limitation of Liability */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-slate-100 text-slate-800 text-xs flex items-center justify-center font-black">8</span>
+                  <span>Limitation of Liability & Financial Cap</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>
+                    To the maximum extent permitted under applicable law, Veera Computers, its proprietors, directors, employees, and software suppliers shall not be liable for any indirect, incidental, punitive, special, or consequential damages (including loss of business profits, computer downtime, data corruption, or business interruption) arising out of the use or inability to use software keys purchased on this site.
+                  </p>
+                  <p className="font-bold text-slate-800 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    Financial Liability Cap: In all events, the maximum aggregate financial liability of Veera Computers for any claim or dispute shall strictly be capped at the actual invoice amount paid by the customer for the specific product key in question.
+                  </p>
+                </div>
+              </div>
+
+              {/* 9. Refund Cross-Reference */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">9</span>
+                  <span>Cancellation & Refund Policy Summary</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>
+                    Due to the instant digital nature of software license codes, generated keys become non-returnable once exposed to the customer. However, if a key is proven unactivatable or defective and cannot be resolved by technical support, a full refund or replacement key will be issued within 48 hours.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setCurrentScreen('shipping');
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-xl text-xs transition-all cursor-pointer shadow-sm"
+                  >
+                    <span>Read Complete Shipping, Return & Refund Policy Page</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* 10. Governing Law & Jurisdiction */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-blue-100 text-blue-800 text-xs flex items-center justify-center font-black">10</span>
+                  <span>Governing Law & Exclusive Jurisdiction</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>
+                    These Terms & Conditions and all transactions conducted on www.veerait.com shall be governed by, interpreted, and construed in accordance with the laws of the Republic of India.
+                  </p>
+                  <p className="font-extrabold text-slate-900">
+                    Jurisdiction Venue: Any legal dispute, proceedings, arbitration, or litigation arising out of or related to these Terms shall be subject to the exclusive jurisdiction of the competent courts located in <strong>Jalna, Maharashtra, India (431203)</strong>.
+                  </p>
+                </div>
+              </div>
+
+              {/* 11. Grievance & Nodal Contact */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">11</span>
+                  <span>Grievance Officer & Legal Contact</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>
+                    In accordance with the Indian Information Technology Act 2000 and Consumer Protection Rules, for any legal inquiries, copyright notices, or order grievances, please contact our designated grievance desk:
+                  </p>
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2 text-xs font-mono text-slate-800">
+                    <p className="font-extrabold text-sm text-emerald-700 font-sans">Veera Computers — Legal & Grievance Desk</p>
+                    <p><strong>Address:</strong> G.R. Floor, 1-11-42, Mama Chowk, Jalna, Maharashtra, India. PIN: 431203</p>
+                    <p><strong>GSTIN:</strong> 27FZOPS8739E1ZH</p>
+                    <p><strong>Technical Support Line:</strong> +91-8485865677</p>
+                    <p><strong>Sales & Escalation Line:</strong> +91-9764528777</p>
+                    <p><strong>Email Address:</strong> support@veerait.com / sales@veerait.com</p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Right Sidebar (4 cols) */}
+            <div className="lg:col-span-4 space-y-6">
+              
+              {/* Trust & Guarantee Card */}
+              <div className="bg-gradient-to-br from-slate-900 to-slate-950 text-white rounded-3xl p-6 shadow-xl border border-slate-800 space-y-4">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+                  <Award className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-black text-white">Veera Computers Integrity Standard</h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Serving over 50,000 satisfied retail customers, IT dealers, and corporate accounts across India since 2003 with 100% genuine ESD software license keys.
+                </p>
+                <div className="pt-3 border-t border-slate-800 space-y-2 text-xs text-slate-300">
+                  <div className="flex items-center gap-2 text-emerald-400 font-bold">
+                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                    <span>100% Original Retail & OEM Keys</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-emerald-400 font-bold">
+                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                    <span>Instant WhatsApp & Email Dispatch</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-emerald-400 font-bold">
+                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                    <span>1-Year Replacement Warranty</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Need Technical Assistance Box */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm space-y-4">
+                <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                  <HelpCircle className="w-5 h-5 text-emerald-600" />
+                  <span>Activation Questions?</span>
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Have questions about your software license key activation or Installation ID (IID)? Our technical team is available 7 days a week.
+                </p>
+                <div className="space-y-2 pt-2">
+                  <a
+                    href="https://wa.me/918485865677"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    <span>WhatsApp Tech Helpline (+91)</span>
+                  </a>
+                  <button
+                    onClick={() => {
+                      setCurrentScreen('contact');
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-2xl text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <span>Contact Customer Desk</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
 
@@ -6857,9 +7237,9 @@ export default function CustomerWebsite({
                   <ChevronRight className="w-4 h-4" />
                 </button>
 
-                <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400 font-semibold">
+                <div className="flex items-center justify-center gap-2 text-[10px] text-slate-500 font-semibold font-mono">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Official Paytm PG Sandbox Simulation Active</span>
+                  <span>Paytm Test Merchant MID: OPDDHV86006252156720 (WEBSTAGING)</span>
                 </div>
 
               </div>
@@ -7363,15 +7743,43 @@ export default function CustomerWebsite({
 
               {/* T&C Content */}
               {footerModalType === 'terms' && (
-                <div className="space-y-3">
-                  <p>
-                    By placing an order on our store, you agree to our standard software activation and licensing terms:
+                <div className="space-y-4 text-left font-sans">
+                  <p className="text-sm font-semibold text-slate-200 leading-relaxed">
+                    By placing an order on Veera Computers, you agree to our standard digital software activation, licensing, and B2B rules:
                   </p>
-                  <ul className="list-disc pl-4 space-y-1.5 text-slate-400">
-                    <li>Digital keys are guaranteed 100% original Microsoft / Antivirus retail or OEM keys.</li>
-                    <li>Activation replacement guarantee is valid for 1 year from date of order.</li>
-                    <li>In case of phone activation requirement, users can utilize our free automated CID generation tool.</li>
+                  <ul className="space-y-2.5 text-xs text-slate-300">
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                      <span><strong>100% Genuine ESD Keys:</strong> Guaranteed original Microsoft & Antivirus retail / OEM activation codes.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                      <span><strong>1-Year Replacement Guarantee:</strong> Full key replacement or technical support if activation encounters issues.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Key className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                      <span><strong>Automated CID Tool:</strong> Free self-service telephone activation lookup for Microsoft Installation IDs (IID).</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Award className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                      <span><strong>Independent Retailer Disclaimer:</strong> Logos & brand titles belong to their respective trademark owners (Microsoft, Quick Heal, Kaspersky, etc.).</span>
+                    </li>
                   </ul>
+
+                  <div className="pt-3 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <span className="text-[11px] text-slate-400">Jurisdiction: Courts at Jalna, Maharashtra (431203).</span>
+                    <button
+                      onClick={() => {
+                        setFooterModalType(null);
+                        setCurrentScreen('terms');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      className="w-full sm:w-auto px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer"
+                    >
+                      <span>Read Full 11-Point Terms & Disclaimer Page</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               )}
 
