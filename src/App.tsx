@@ -1789,7 +1789,7 @@ export default function App() {
             <span className="font-sans font-semibold text-slate-900">Veera Computers</span>
           </div>
           <p className="text-xs max-w-md mx-auto leading-relaxed text-slate-500">
-            A secure e-commerce environment featuring simulated Razorpay gateways, Supabase Auth instances, Node SMTP dispatch logs, and visual waybill timeline dashboards.
+            A secure e-commerce environment featuring simulated PayTM PG gateways, Supabase Auth instances, Node SMTP dispatch logs, and visual waybill timeline dashboards.
           </p>
           <div className="text-[10px] text-slate-400 font-mono flex items-center justify-center gap-1.5 pt-2 border-t border-slate-100 max-w-sm mx-auto">
             <span>Server Latency: 1.8ms</span>
