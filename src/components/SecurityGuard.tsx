@@ -150,6 +150,16 @@ export default function SecurityGuard({ user, onAutoLogout, addNotification }: S
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 
                 <div className="p-3.5 bg-slate-800/60 border border-slate-700/60 rounded-2xl space-y-1">
+                  <div className="flex items-center gap-2 text-sky-400 font-bold">
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>Paytm PG Verified Merchant</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 leading-relaxed">
+                    PCI-DSS Level 1 compliant data handling with HMAC-SHA256 cryptographic order token checksums.
+                  </p>
+                </div>
+
+                <div className="p-3.5 bg-slate-800/60 border border-slate-700/60 rounded-2xl space-y-1">
                   <div className="flex items-center gap-2 text-emerald-400 font-bold">
                     <Lock className="w-4 h-4" />
                     <span>256-Bit SSL/TLS 1.3</span>
@@ -179,10 +189,10 @@ export default function SecurityGuard({ user, onAutoLogout, addNotification }: S
                   </p>
                 </div>
 
-                <div className="p-3.5 bg-slate-800/60 border border-slate-700/60 rounded-2xl space-y-1">
+                <div className="p-3.5 bg-slate-800/60 border border-slate-700/60 rounded-2xl space-y-1 sm:col-span-2">
                   <div className="flex items-center gap-2 text-amber-400 font-bold">
                     <Cpu className="w-4 h-4" />
-                    <span>Rate Limiting & DDoS Guard</span>
+                    <span>Rate Limiting & Anti-Fraud DDoS Guard</span>
                   </div>
                   <p className="text-[11px] text-slate-400 leading-relaxed">
                     API rate limiters restrict bot attacks, brute-force logins, and automated key scraping attempts.
