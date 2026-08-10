@@ -49,6 +49,7 @@ export default function CustomerHeader({
   setSelectedProduct
 }: CustomerHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
 
   const cartItemsCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -353,63 +354,156 @@ export default function CustomerHeader({
       )}
 
       {/* 3. HORIZONTAL CATEGORY MENU (Dark Black Navigation matching pcdealsindia.com) */}
-      <div className="bg-[#0c1320] border-b border-slate-950 text-white text-xs py-2 shadow-md" id="category-menu">
+      <div className="bg-[#0c1320] border-b border-slate-950 text-white text-xs py-2 shadow-md relative z-30" id="category-menu">
         <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-10 flex flex-col gap-2">
           
           {/* Row 1: Main Products & Core Microsoft Suites */}
-          <div className="flex items-center justify-between overflow-x-auto whitespace-nowrap scrollbar-none gap-4">
-            <div className="flex items-center gap-1 w-full">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 w-full min-w-0">
               
-              {/* HOME Tab (Active Orange) */}
-              <button
-                onClick={() => { 
-                  setCurrentScreen('store'); 
-                  setSelectedCategory('all'); 
-                  setSearchQuery(''); 
-                  setSelectedSubcategory(null); 
-                  if (setSelectedProduct) setSelectedProduct(null);
-                }}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded font-black text-xs transition-all uppercase cursor-pointer ${
-                  currentScreen === 'store' && !selectedSubcategory && selectedCategory === 'all' && searchQuery === ''
-                    ? 'bg-[#d88d22] text-white shadow'
-                    : 'hover:text-white text-slate-300 hover:bg-white/5'
-                }`}
-              >
-                <Home className="w-3.5 h-3.5" />
-                <span>HOME</span>
-              </button>
+              {/* Static Controls (Not clipped by horizontal scroll) */}
+              <div className="flex items-center gap-1.5 shrink-0 relative">
+                
+                {/* HOME Tab (Active Orange) */}
+                <button
+                  onClick={() => { 
+                    setCurrentScreen('store'); 
+                    setSelectedCategory('all'); 
+                    setSearchQuery(''); 
+                    setSelectedSubcategory(null); 
+                    if (setSelectedProduct) setSelectedProduct(null);
+                    setIsCategoryDropdownOpen(false);
+                  }}
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded font-black text-xs transition-all uppercase cursor-pointer shrink-0 ${
+                    currentScreen === 'store' && !selectedSubcategory && selectedCategory === 'all' && searchQuery === ''
+                      ? 'bg-[#d88d22] text-white shadow'
+                      : 'hover:text-white text-slate-300 hover:bg-white/5'
+                  }`}
+                >
+                  <Home className="w-4 h-4 text-amber-400" />
+                  <span>HOME</span>
+                </button>
 
-              {/* Dynamic Categories Tabs with Micro Icons - Row 1 items */}
-              {BRAND_CATEGORIES.filter(cat => [
-                'super-saver-combo', 'windows', 'office', 'ms-projects', 
-                'windows-server', 'ms-visio', 'ms-visual-studio', 
-                'net-protector', 'quick-heal', 'anti-fraud', 'k7-keys'
-              ].includes(cat.slug)).map((category) => {
-                const isActive = selectedSubcategory === category.name;
-                return (
+                {/* ALL CATEGORIES Flyout Dropdown Toggle Button */}
+                <div className="relative shrink-0">
                   <button
-                    key={category.slug}
-                    onClick={() => { 
-                      setCurrentScreen('store'); 
-                      setSelectedSubcategory(isActive ? null : category.name);
-                      setSelectedCategory('all');
-                      setSearchQuery('');
-                      if (setSelectedProduct) setSelectedProduct(null);
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded text-xs font-bold transition-all uppercase cursor-pointer ${
-                      isActive
-                        ? 'bg-white/10 text-white shadow-sm font-black'
-                        : 'text-slate-300 hover:text-white hover:bg-white/5'
+                    onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded text-xs font-black transition-all uppercase cursor-pointer border ${
+                      isCategoryDropdownOpen || selectedSubcategory
+                        ? 'bg-emerald-600 border-emerald-500 text-white shadow-md'
+                        : 'bg-slate-800/80 hover:bg-slate-800 border-slate-700/80 text-emerald-400 hover:text-emerald-300'
                     }`}
                   >
-                    <span className="w-4 h-4 scale-75 opacity-90 inline-flex items-center justify-center shrink-0">
-                      {category.logo}
-                    </span>
-                    <span>{category.name}</span>
+                    <Menu className="w-4 h-4 text-emerald-300" />
+                    <span>ALL CATEGORIES</span>
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
-                );
-              })}
+
+                  {/* Rich Category Grid Dropdown */}
+                  {isCategoryDropdownOpen && (
+                    <>
+                      <div 
+                        className="fixed inset-0 z-40" 
+                        onClick={() => setIsCategoryDropdownOpen(false)} 
+                      />
+                      <div className="absolute left-0 top-full mt-2 w-80 sm:w-[480px] max-h-[75vh] overflow-y-auto bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150 grid grid-cols-1 sm:grid-cols-2 gap-1.5 scrollbar-thin scrollbar-thumb-slate-700">
+                        <div className="col-span-1 sm:col-span-2 px-2 py-1.5 border-b border-slate-800 flex items-center justify-between sticky top-0 bg-slate-900 z-10">
+                          <span className="text-[10px] font-black tracking-wider text-slate-400 uppercase">Select Brand Category</span>
+                          <span className="text-[10px] text-emerald-400 font-mono font-bold">{BRAND_CATEGORIES.length} Brands Available</span>
+                        </div>
+                        
+                        {/* Show All Option */}
+                        <button
+                          onClick={() => {
+                            setCurrentScreen('store');
+                            setSelectedSubcategory(null);
+                            setSelectedCategory('all');
+                            setIsCategoryDropdownOpen(false);
+                          }}
+                          className={`col-span-1 sm:col-span-2 flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold transition-all text-left ${
+                            !selectedSubcategory 
+                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' 
+                              : 'text-slate-200 hover:bg-slate-800/80'
+                          }`}
+                        >
+                          <div className="w-6 h-6 rounded-lg bg-emerald-500/20 flex items-center justify-center shrink-0">
+                            <Home className="w-3.5 h-3.5 text-emerald-400" />
+                          </div>
+                          <div>
+                            <span className="block leading-tight font-extrabold">All Software & Antivirus</span>
+                            <span className="text-[10px] text-slate-400 font-normal">Show full catalogue</span>
+                          </div>
+                        </button>
+
+                        {/* Brand Category Items with Icons */}
+                        {BRAND_CATEGORIES.map((cat) => {
+                          const isActive = selectedSubcategory === cat.name;
+                          return (
+                            <button
+                              key={cat.slug}
+                              onClick={() => {
+                                setCurrentScreen('store');
+                                setSelectedSubcategory(isActive ? null : cat.name);
+                                setSelectedCategory('all');
+                                setSearchQuery('');
+                                if (setSelectedProduct) setSelectedProduct(null);
+                                setIsCategoryDropdownOpen(false);
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                              }}
+                              className={`flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs font-bold transition-all text-left ${
+                                isActive 
+                                  ? 'bg-emerald-600 text-white shadow' 
+                                  : 'text-slate-200 hover:bg-slate-800 hover:text-white'
+                              }`}
+                            >
+                              <span className="w-5 h-5 flex items-center justify-center shrink-0 rounded bg-slate-800/80 p-0.5 border border-slate-700/50 [&>svg]:w-4 [&>svg]:h-4 [&>svg]:max-w-full [&>svg]:max-h-full">
+                                {cat.logo}
+                              </span>
+                              <span className="truncate">{cat.name}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
+                </div>
+
+              </div>
+
+              {/* Scrollable Horizontal Tabs Row */}
+              <div className="flex items-center gap-1 overflow-x-auto whitespace-nowrap scrollbar-none py-0.5 min-w-0 flex-1">
+                {BRAND_CATEGORIES.filter(cat => [
+                  'super-saver-combo', 'windows', 'office', 'ms-projects', 
+                  'windows-server', 'ms-visio', 'ms-visual-studio', 
+                  'net-protector', 'quick-heal', 'anti-fraud', 'k7-keys'
+                ].includes(cat.slug)).map((category) => {
+                  const isActive = selectedSubcategory === category.name;
+                  return (
+                    <button
+                      key={category.slug}
+                      onClick={() => { 
+                        setCurrentScreen('store'); 
+                        setSelectedSubcategory(isActive ? null : category.name);
+                        setSelectedCategory('all');
+                        setSearchQuery('');
+                        if (setSelectedProduct) setSelectedProduct(null);
+                        setIsCategoryDropdownOpen(false);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded text-xs font-bold transition-all uppercase cursor-pointer shrink-0 ${
+                        isActive
+                          ? 'bg-white/15 text-white shadow-sm font-black border border-white/20'
+                          : 'text-slate-300 hover:text-white hover:bg-white/5'
+                      }`}
+                    >
+                      <span className="w-4 h-4 flex items-center justify-center shrink-0 [&>svg]:w-3.5 [&>svg]:h-3.5 [&>svg]:max-w-full [&>svg]:max-h-full">
+                        {category.logo}
+                      </span>
+                      <span>{category.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
 
             </div>
 
@@ -429,7 +523,7 @@ export default function CustomerHeader({
           </div>
 
           {/* Row 2: Secondary Antivirus & Utility Brands */}
-          <div className="flex items-center overflow-x-auto whitespace-nowrap scrollbar-none gap-4 border-t border-slate-800/40 pt-1.5 md:pl-28">
+          <div className="flex items-center overflow-x-auto whitespace-nowrap scrollbar-none gap-2 border-t border-slate-800/40 pt-1.5 md:pl-28">
             <div className="flex items-center gap-1">
               {BRAND_CATEGORIES.filter(cat => [
                 'guardian', 'kaspersky', 'eset', 'mcafee', 'ease-my-way'
@@ -444,15 +538,16 @@ export default function CustomerHeader({
                       setSelectedCategory('all');
                       setSearchQuery('');
                       if (setSelectedProduct) setSelectedProduct(null);
+                      setIsCategoryDropdownOpen(false);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-[11px] font-bold transition-all uppercase cursor-pointer ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-[11px] font-bold transition-all uppercase cursor-pointer shrink-0 ${
                       isActive
-                        ? 'bg-white/10 text-white shadow-sm font-black'
+                        ? 'bg-white/15 text-white shadow-sm font-black border border-white/20'
                         : 'text-slate-400 hover:text-white hover:bg-white/5'
                     }`}
                   >
-                    <span className="w-4 h-4 scale-75 opacity-90 inline-flex items-center justify-center shrink-0">
+                    <span className="w-4 h-4 flex items-center justify-center shrink-0 [&>svg]:w-3.5 [&>svg]:h-3.5 [&>svg]:max-w-full [&>svg]:max-h-full">
                       {category.logo}
                     </span>
                     <span>{category.name}</span>
@@ -546,18 +641,23 @@ export default function CustomerHeader({
           </button>
 
           {/* Quick Subcategory buttons inside mobile view */}
-          {BRAND_CATEGORIES.slice(0, 8).map((cat) => (
-            <button
-              key={cat.slug}
-              onClick={() => { setSelectedSubcategory(cat.name); setCurrentScreen('store'); if (setSelectedProduct) setSelectedProduct(null); setMobileMenuOpen(false); }}
-              className={`w-full text-left px-3 py-2 rounded-lg text-xs flex items-center gap-2 ${
-                selectedSubcategory === cat.name ? 'bg-[#8cc33f]/10 text-[#7cb232] font-semibold' : 'text-slate-500 hover:bg-slate-50'
-              }`}
-            >
-              <span className="w-4 h-4 scale-75">{cat.logo}</span>
-              <span>{cat.name}</span>
-            </button>
-          ))}
+          <div className="pt-2 border-t border-slate-100">
+            <span className="text-[10px] font-black uppercase text-slate-400 px-3 tracking-wider block mb-1">Brand Categories</span>
+            <div className="grid grid-cols-2 gap-1">
+              {BRAND_CATEGORIES.map((cat) => (
+                <button
+                  key={cat.slug}
+                  onClick={() => { setSelectedSubcategory(cat.name); setCurrentScreen('store'); if (setSelectedProduct) setSelectedProduct(null); setMobileMenuOpen(false); }}
+                  className={`text-left px-2.5 py-2 rounded-lg text-xs flex items-center gap-2 font-medium ${
+                    selectedSubcategory === cat.name ? 'bg-emerald-50 text-emerald-600 font-bold border border-emerald-200' : 'text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  <span className="w-4 h-4 flex items-center justify-center shrink-0 [&>svg]:w-3.5 [&>svg]:h-3.5 [&>svg]:max-w-full [&>svg]:max-h-full">{cat.logo}</span>
+                  <span className="truncate">{cat.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
 
 
           {(!user || user.role !== 'admin') && (
