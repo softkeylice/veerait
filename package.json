@@ -29,6 +29,7 @@
     "nanoid": "^6.0.1",
     "nodemailer": "^9.0.1",
     "postcss": "^8.5.26",
+    "protobufjs": "^8.7.2",
     "razorpay": "^2.9.8",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
