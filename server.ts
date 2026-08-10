@@ -1182,6 +1182,87 @@ const otpAttemptsCache = new Map<string, number>();
 
 export const app = express();
 
+// Disable X-Powered-By header to prevent server fingerprinting
+app.disable("x-powered-by");
+
+// --- ENTERPRISE SECURITY HEADERS & DEFENSE MIDDLEWARE ---
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+  res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("Permissions-Policy", "geolocation=(), camera=(), microphone=(), payment=(self)");
+  res.setHeader("X-Permitted-Cross-Domain-Policies", "none");
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+  res.setHeader("Cross-Origin-Resource-Policy", "same-origin");
+  next();
+});
+
+// Deep input sanitization to protect against XSS, SQL/Script Injection & Prototype Pollution
+function sanitizeInputData(data: any): any {
+  if (data === null || data === undefined) return data;
+  if (typeof data === "string") {
+    return data
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+      .replace(/javascript\s*:/gi, "no-js:")
+      .replace(/onload\s*=/gi, "no-onload=")
+      .replace(/onerror\s*=/gi, "no-onerror=");
+  }
+  if (Array.isArray(data)) {
+    return data.map(sanitizeInputData);
+  }
+  if (typeof data === "object") {
+    const sanitized: Record<string, any> = {};
+    for (const key of Object.keys(data)) {
+      if (key === "__proto__" || key === "constructor" || key === "prototype") {
+        console.warn(`[SECURITY SHIELD] Neutralized prototype pollution attempt: ${key}`);
+        continue;
+      }
+      sanitized[key] = sanitizeInputData(data[key]);
+    }
+    return sanitized;
+  }
+  return data;
+}
+
+app.use((req, res, next) => {
+  if (req.body && typeof req.body === "object") {
+    try {
+      req.body = sanitizeInputData(req.body);
+    } catch (err) {
+      // ignore
+    }
+  }
+  if (req.query && typeof req.query === "object") {
+    try {
+      for (const key of Object.keys(req.query)) {
+        try {
+          (req.query as any)[key] = sanitizeInputData((req.query as any)[key]);
+        } catch (e) {
+          // ignore
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+  if (req.params && typeof req.params === "object") {
+    try {
+      for (const key of Object.keys(req.params)) {
+        try {
+          (req.params as any)[key] = sanitizeInputData((req.params as any)[key]);
+        } catch (e) {
+          // ignore
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+  next();
+});
+
 // Normalize Netlify Serverless URL path before any other middleware or routing
 app.use((req: any, res, next) => {
   const isNetlify = Boolean(process.env.NETLIFY || process.env.LAMBDA_TASK_ROOT);

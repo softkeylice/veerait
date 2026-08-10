@@ -16,6 +16,7 @@ import OrderTracking from './components/OrderTracking';
 import AuthModal from './components/AuthModal';
 import AdminAuthModal from './components/AdminAuthModal';
 import B2bSignup from './components/B2bSignup';
+import SecurityGuard from './components/SecurityGuard';
 import { Bell, X, ShieldCheck, Heart, ShieldAlert } from 'lucide-react';
 
 function ToastItem({ notif, onClose }: { notif: AppNotification; onClose: () => void; key?: string }) {
@@ -1813,6 +1814,13 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Active Security Guard & Data Defense Badge */}
+      <SecurityGuard
+        user={user}
+        onAutoLogout={() => setUser(null)}
+        addNotification={addNotification}
+      />
 
       {/* Floating Alerts & Toast Notification Stack */}
       <div className="fixed bottom-6 right-6 z-50 space-y-3.5 max-w-sm w-full" id="notification-stack">
