@@ -43,7 +43,9 @@ jobs:
           server: ${{ steps.ftp_host.outputs.server }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT || 21 }}
           local-dir: ./dist/
-          server-dir: public_html/
+          server-dir: ${{ secrets.FTP_SERVER_DIR || 'public_html/' }}
           state-name: 'ftp-deploy-sync-state.json'
           security: loose
+          log-level: verbose
