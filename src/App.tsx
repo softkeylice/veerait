@@ -62,8 +62,8 @@ function parseStateFromUrl(productList: Product[] = []) {
     const rawHash = window.location.hash.toLowerCase().replace(/^#+/, '');
     const params = new URLSearchParams(window.location.search);
     
-    let screen: 'store' | 'dashboard' | 'admin' | 'tracking' | 'b2b-signup' | 'about' | 'contact' | 'privacy' | 'shipping' | 'terms' = 'store';
-    let category: 'all' | 'software' | 'hardware' = 'all';
+    let screen: 'store' | 'dashboard' | 'admin' | 'tracking' | 'b2b-signup' | 'about' | 'contact' | 'privacy' | 'shipping' | 'terms' | 'refund' = 'store';
+    let category: 'all' | 'software' = 'all';
     let subcategory: string | null = null;
     let selectedProduct: Product | null = null;
 
@@ -92,28 +92,39 @@ function parseStateFromUrl(productList: Product[] = []) {
 
     const isAdmin = isAdminPath;
 
-    // Terms & Conditions and Disclaimer detection
+    // Terms & Conditions and Disclaimer detection (PhonePe T&C URL matching)
     const isTerms = 
-      rawPath === 'terms' || rawPath === 'terms-and-conditions' || rawPath === 'terms.html' || rawPath === 'tc' || rawPath === 'disclaimer' || rawPath === 'disclaimer.html' ||
-      rawHash === 'terms' || rawHash === 'terms-and-conditions' || rawHash === 'disclaimer' || rawHash === 'tc' ||
-      pageParam === 'terms' || pageParam === 'terms-and-conditions' || pageParam === 'disclaimer' || pageParam === 'tc' ||
-      params.has('terms') || params.has('disclaimer') || params.has('tc');
+      rawPath === 'terms' || rawPath === 'terms-and-conditions' || rawPath === 'terms-conditions' || rawPath === 'terms.html' || 
+      rawPath === 'tc' || rawPath === 't&c' || rawPath === 't%26c' || rawPath === 't-and-c' || rawPath === 't-c' ||
+      rawPath === 'disclaimer' || rawPath === 'disclaimer.html' ||
+      rawHash === 'terms' || rawHash === 'terms-and-conditions' || rawHash === 'terms-conditions' || rawHash === 'disclaimer' || 
+      rawHash === 'tc' || rawHash === 't&c' || rawHash === 't%26c' || rawHash === 't-and-c' || rawHash === 't-c' ||
+      pageParam === 'terms' || pageParam === 'terms-and-conditions' || pageParam === 'terms-conditions' || pageParam === 'disclaimer' || 
+      pageParam === 'tc' || pageParam === 't&c' || pageParam === 't%26c' || pageParam === 't-and-c' ||
+      params.has('terms') || params.has('disclaimer') || params.has('tc') || params.has('t&c') || params.has('t%26c');
 
-    // Privacy Policy detection
+    // Refund & Cancellation Policy detection (PhonePe refund_policy URL matching)
+    const isRefund =
+      rawPath === 'refund' || rawPath === 'refunds' || rawPath === 'refund-policy' || rawPath === 'refund_policy' || rawPath === 'refund.html' || rawPath === 'refund_policy.html' ||
+      rawPath === 'cancellation' || rawPath === 'cancellation-policy' || rawPath === 'cancellation_policy' || rawPath === 'cancellation.html' || rawPath === 'refund-and-cancellation' ||
+      rawHash === 'refund' || rawHash === 'refunds' || rawHash === 'refund-policy' || rawHash === 'refund_policy' || rawHash === 'cancellation' || rawHash === 'cancellation-policy' || rawHash === 'cancellation_policy' ||
+      pageParam === 'refund' || pageParam === 'refunds' || pageParam === 'refund-policy' || pageParam === 'refund_policy' || pageParam === 'cancellation' || pageParam === 'cancellation-policy' || pageParam === 'cancellation_policy' ||
+      params.has('refund') || params.has('refund_policy') || params.has('refund-policy') || params.has('cancellation') || params.has('cancellation_policy');
+
+    // Privacy Policy detection (PhonePe privacy_policy URL matching)
     const isPrivacy = 
-      rawPath === 'privacy' || rawPath === 'privacy-policy' || rawPath === 'privacy.html' || rawPath === 'privacy-policy.html' ||
-      rawHash === 'privacy' || rawHash === 'privacy-policy' ||
-      pageParam === 'privacy' || pageParam === 'privacy-policy' ||
-      params.has('privacy') || params.has('privacy-policy');
+      rawPath === 'privacy' || rawPath === 'privacy-policy' || rawPath === 'privacy_policy' || rawPath === 'privacy.html' || rawPath === 'privacy-policy.html' || rawPath === 'privacy_policy.html' ||
+      rawHash === 'privacy' || rawHash === 'privacy-policy' || rawHash === 'privacy_policy' ||
+      pageParam === 'privacy' || pageParam === 'privacy-policy' || pageParam === 'privacy_policy' ||
+      params.has('privacy') || params.has('privacy-policy') || params.has('privacy_policy');
 
-    // Shipping, Return, Cancellation & Refund Policy detection
+    // Shipping Policy detection (PhonePe shipping_policy URL matching)
     const isShipping = 
-      rawPath === 'shipping' || rawPath === 'shipping-policy' || rawPath === 'shipping.html' || rawPath === 'shipping-policy.html' || 
-      rawPath === 'return-policy' || rawPath === 'refund-policy' || rawPath === 'refund' || rawPath === 'refund.html' || 
-      rawPath === 'cancellation' || rawPath === 'cancellation-policy' || rawPath === 'cancellation.html' || rawPath === 'refund-and-cancellation' ||
-      rawHash === 'shipping' || rawHash === 'shipping-policy' || rawHash === 'refund' || rawHash === 'refund-policy' || rawHash === 'cancellation' || rawHash === 'cancellation-policy' ||
-      pageParam === 'shipping' || pageParam === 'shipping-policy' || pageParam === 'refund' || pageParam === 'refund-policy' || pageParam === 'cancellation' || pageParam === 'cancellation-policy' ||
-      params.has('shipping') || params.has('shipping-policy') || params.has('refund') || params.has('cancellation');
+      rawPath === 'shipping' || rawPath === 'shipping-policy' || rawPath === 'shipping_policy' || rawPath === 'shipping.html' || rawPath === 'shipping-policy.html' || rawPath === 'shipping_policy.html' || 
+      rawPath === 'delivery' || rawPath === 'delivery-policy' || rawPath === 'delivery_policy' ||
+      rawHash === 'shipping' || rawHash === 'shipping-policy' || rawHash === 'shipping_policy' || rawHash === 'delivery' ||
+      pageParam === 'shipping' || pageParam === 'shipping-policy' || pageParam === 'shipping_policy' || pageParam === 'delivery' ||
+      params.has('shipping') || params.has('shipping-policy') || params.has('shipping_policy') || params.has('delivery');
 
     // About Us detection
     const isAbout = 
@@ -147,6 +158,7 @@ function parseStateFromUrl(productList: Product[] = []) {
     const isDashboard = rawPath === 'dashboard' || rawHash === 'dashboard' || pageParam === 'dashboard' || params.has('dashboard');
 
     if (isTerms) screen = 'terms';
+    else if (isRefund) screen = 'refund';
     else if (isPrivacy) screen = 'privacy';
     else if (isShipping) screen = 'shipping';
     else if (isAbout) screen = 'about';
@@ -158,12 +170,10 @@ function parseStateFromUrl(productList: Product[] = []) {
 
     // Category parsing
     const catParam = (params.get('category') || params.get('cat') || '').toLowerCase();
-    if (catParam === 'software' || catParam === 'hardware') {
-      category = catParam as 'software' | 'hardware';
+    if (catParam === 'software') {
+      category = 'software';
     } else if (rawHash.includes('software')) {
       category = 'software';
-    } else if (rawHash.includes('hardware')) {
-      category = 'hardware';
     }
 
     // Subcategory parsing
@@ -192,7 +202,7 @@ function parseStateFromUrl(productList: Product[] = []) {
 export default function App() {
   const initialParsed = parseStateFromUrl(INITIAL_PRODUCTS);
 
-  const [currentScreen, setCurrentScreen] = useState<'store' | 'dashboard' | 'admin' | 'tracking' | 'b2b-signup' | 'about' | 'contact' | 'privacy' | 'shipping' | 'terms'>(() => {
+  const [currentScreen, setCurrentScreen] = useState<'store' | 'dashboard' | 'admin' | 'tracking' | 'b2b-signup' | 'about' | 'contact' | 'privacy' | 'shipping' | 'terms' | 'refund'>(() => {
     return initialParsed.screen;
   });
   const [user, setUserState] = useState<{ email: string; name: string; phone?: string; id?: string; address?: string; role?: string; gstNo?: string; company?: string; alternateMobile?: string; city?: string; state?: string; pin?: string } | null>(() => {
@@ -308,10 +318,12 @@ export default function App() {
       document.title = 'Contact Us - Veerait';
     } else if (currentScreen === 'terms') {
       document.title = 'Terms & Conditions & Disclaimer - Veerait';
+    } else if (currentScreen === 'refund') {
+      document.title = 'Refund & Cancellation Policy - Veerait';
     } else if (currentScreen === 'privacy') {
       document.title = 'Privacy Policy - Veerait';
     } else if (currentScreen === 'shipping') {
-      document.title = 'Refund, Cancellation & Shipping Policy - Veerait';
+      document.title = 'Shipping & Delivery Policy - Veerait';
     } else if (currentScreen === 'tracking') {
       document.title = 'Track Order - Veerait';
     } else if (currentScreen === 'b2b-signup') {
@@ -386,7 +398,12 @@ export default function App() {
       searchParams.set('page', pageVal);
       newHash = authModalIsAdmin ? `#8497veer/admin-login` : `#${pageVal}`;
     } else if (currentScreen !== 'store') {
-      const pageVal = currentScreen === 'admin' ? '8497veer/admin' : currentScreen;
+      let pageVal = currentScreen === 'admin' ? '8497veer/admin' : currentScreen;
+      if (currentScreen === 'terms') pageVal = 'T&C';
+      else if (currentScreen === 'return') pageVal = 'return_policy';
+      else if (currentScreen === 'refund') pageVal = 'refund_policy';
+      else if (currentScreen === 'privacy') pageVal = 'privacy_policy';
+      else if (currentScreen === 'shipping') pageVal = 'shipping_policy';
       searchParams.set('page', pageVal);
       newHash = `#${pageVal}`;
     } else {

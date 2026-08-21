@@ -1,6 +1,6 @@
 {
   "name": "Veerait",
-  "description": "A production-ready e-commerce platform for purchasing software license keys and computer hardware, featuring simulated payments, order tracking, and an administrative dashboard.",
+  "description": "A digital licensing and e-commerce platform for genuine Microsoft Windows, Office, Adobe, and Antivirus ESD software license keys with instant UPI payments and WhatsApp order notifications.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

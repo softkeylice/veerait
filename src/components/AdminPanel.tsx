@@ -2097,7 +2097,7 @@ export default function AdminPanel({
 
   // General Store Settings
   const [storeName, setStoreName] = useState('Veera Computers');
-  const [storeEmail, setStoreEmail] = useState('support@veeracomputers.com');
+  const [storeEmail, setStoreEmail] = useState('veeracomputersjalna@gmail.com');
   const [storePhone, setStorePhone] = useState('+91 80 4123 5678');
   const [storeCurrency, setStoreCurrency] = useState('INR (₹)');
   const [lowStockThreshold, setLowStockThreshold] = useState(5);

@@ -2424,7 +2424,7 @@ export default function CustomerDashboard({
                     <span className="block text-xs font-black text-slate-500 uppercase tracking-wider">BILLING FROM</span>
                     <strong className="text-slate-900 font-black font-sans text-sm sm:text-base">Veera Computers</strong>
                     <p className="font-medium text-slate-700">P. No. 1-11-42, Krishna Mandir, Bansipura, Mama Chowk, Jalna, Maharashtra, 431203</p>
-                    <p className="font-semibold text-slate-700">support@veeracomputers.com | India</p>
+                    <p className="font-semibold text-slate-700">veeracomputersjalna@gmail.com | India</p>
                   </div>
                   <div className="space-y-1">
                     <span className="block text-xs font-black text-slate-500 uppercase tracking-wider">BILLING TO</span>

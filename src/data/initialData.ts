@@ -9,7 +9,7 @@ export const INITIAL_CATEGORIES: Category[] = [
   { id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', name: 'Operating Systems', description: 'Genuine OS keys for Windows 10, 11, and server editions.', type: 'software', itemCount: 3, totalStock: 45, slug: 'operating-systems' },
   { id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', name: 'Office Productivity', description: 'Lifetime licenses for Microsoft Office Suite, project, and vision tools.', type: 'software', itemCount: 2, totalStock: 30, slug: 'office-productivity' },
   { id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', name: 'Security & Antivirus', description: 'Malware protection, VPNs, firewall suites, and internet security subscriptions.', type: 'software', itemCount: 2, totalStock: 20, slug: 'security-antivirus' },
-  { id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', name: 'Hardware & Secure Devices', description: 'Physical security keys, cryptographic USB HSMs, and licensing hardware.', type: 'hardware', itemCount: 2, totalStock: 12, slug: 'hardware-devices' },
+  { id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15', name: 'Super Saver Combos', description: 'Exclusive value packs combining Windows OS and Microsoft Office suites.', type: 'software', itemCount: 6, totalStock: 60, slug: 'super-saver-combos' },
 ];
 
 export const INITIAL_PRODUCTS: Product[] = [
@@ -104,105 +104,6 @@ export const INITIAL_PRODUCTS: Product[] = [
       'Global activation validity'
     ],
     installerUrl: 'https://creativecloud.adobe.com/'
-  },
-  {
-    id: 'hw-rtx4090',
-    name: 'NVIDIA GeForce RTX 4090 Founders Edition 24GB',
-    description: 'The ultimate GeForce GPU. Tremendous power, ray tracing, and AI-powered DLSS 3.',
-    longDescription: 'The NVIDIA GeForce RTX 4090 is the ultimate GeForce GPU. It brings an enormous leap in performance, efficiency, and AI-powered graphics. Experience ultra-high performance gaming, incredibly detailed virtual worlds, unprecedented productivity, and new ways to create. Powered by the NVIDIA Ada Lovelace architecture, it comes with 24 GB of G6X memory to deliver the ultimate experience.',
-    category: 'hardware',
-    price: 159999.00,
-    originalPrice: 179999.00,
-    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?auto=format&fit=crop&q=80&w=600',
-    images: [
-      'https://images.unsplash.com/photo-1591488320449-011701bb6704?auto=format&fit=crop&q=80&w=600',
-      'https://images.unsplash.com/photo-1600861195091-690c92f1d2cc?auto=format&fit=crop&q=80&w=600',
-      'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&q=80&w=600'
-    ],
-    rating: 4.9,
-    reviewsCount: 204,
-    stock: 4,
-    specs: {
-      'VRAM': '24 GB GDDR6X',
-      'Memory Bus': '384-bit',
-      'CUDA Cores': '16384',
-      'Boost Clock': '2.52 GHz',
-      'Power Draw': '450W TDP',
-      'Recommended PSU': '850W minimum'
-    },
-    features: [
-      'NVIDIA Ada Lovelace Architecture',
-      'Dedicated Ray Tracing Cores (3rd Gen)',
-      'Tensor Cores (4th Gen) with DLSS 3',
-      'NVIDIA Reflex low latency system',
-      '3 Years Manufacturer Warranty'
-    ],
-    weight: '2.1 kg',
-    dimensions: '30.4 x 13.7 x 6.1 cm',
-    featured: true,
-    seoTitle: 'NVIDIA GeForce RTX 4090 Founders Edition 24GB GPU | SoftKey Store',
-    seoDescription: 'Order the extreme power of NVIDIA GeForce RTX 4090 Founders Edition graphics card at SoftKey Store. Features 24GB VRAM, ray tracing, DLSS 3, and full manufacturer warranty.',
-    seoKeywords: 'nvidia rtx 4090, geforce rtx, Founders Edition, gaming GPU, graphics card buy'
-  },
-  {
-    id: 'hw-i914900k',
-    name: 'Intel Core i9-14900K Desktop Processor',
-    description: '24 Cores (8 P-cores + 16 E-cores) LGA 1700 processor up to 6.0 GHz.',
-    longDescription: 'Power your dream desktop with the Intel Core i9-14900K 14th Gen processor. Featuring a hybrid architecture with 24 cores and 32 threads, this unlocked CPU reaches incredible boost clocks up to 6.0 GHz out of the box. Ideal for extreme gaming, heavy multitasking, workstation rendering, and software compilation. Compatible with Intel 600 & 700 series motherboards.',
-    category: 'hardware',
-    price: 49999.00,
-    originalPrice: 58999.00,
-    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=600',
-    rating: 4.7,
-    reviewsCount: 418,
-    stock: 9,
-    specs: {
-      'Total Cores': '24 Cores (8 Performance, 16 Efficient)',
-      'Total Threads': '32 Threads',
-      'Max Turbo Frequency': '6.0 GHz',
-      'Socket': 'LGA 1700',
-      'Unlocked': 'Yes (Overclockable)',
-      'Cache': '36MB Intel Smart Cache'
-    },
-    features: [
-      'Intel Thermal Velocity Boost',
-      'Intel Turbo Boost Max Technology 3.0',
-      'DDR5 and DDR4 memory support',
-      'PCIe 5.0 and 4.0 lanes support',
-      'Intel UHD Graphics 770 integrated'
-    ],
-    weight: '0.08 kg',
-    dimensions: '4.5 x 3.75 x 0.5 cm'
-  },
-  {
-    id: 'hw-990pro2tb',
-    name: 'Samsung 990 PRO PCIe 4.0 NVMe M.2 SSD 2TB',
-    description: 'V-NAND TLC SSD with extreme speeds up to 7450 MB/s read, ideal for PS5 & PCs.',
-    longDescription: 'Reach maximum performance with PCIe 4.0. The Samsung 990 PRO SSD delivers random read/write speeds that are 40% and 55% faster than 980 PRO respectively. Experience blazing fast sequential speeds up to 7450 MB/s read and 6900 MB/s write. Outperform in heavy workloads, 3D graphics, 4K gaming, and data analysis with smart thermal controller efficiency.',
-    category: 'hardware',
-    price: 14999.00,
-    originalPrice: 19999.00,
-    image: 'https://images.unsplash.com/photo-1563206767-5b18f218e8de?auto=format&fit=crop&q=80&w=600',
-    rating: 4.9,
-    reviewsCount: 745,
-    stock: 18,
-    specs: {
-      'Interface': 'PCIe Gen 4.0 x4, NVMe 2.0',
-      'Form Factor': 'M.2 (2280)',
-      'Capacity': '2,000 GB (2 TB)',
-      'Seq. Read Speed': 'Up to 7,450 MB/s',
-      'Seq. Write Speed': 'Up to 6,900 MB/s',
-      'Cache Memory': '2GB LPDDR4'
-    },
-    features: [
-      'Top-tier PCIe 4.0 SSD speed',
-      'Superior thermal power management',
-      'Samsung Magician monitoring app support',
-      'PS5 compatible out of the box',
-      '5 Years Limited Warranty'
-    ],
-    weight: '0.01 kg',
-    dimensions: '8.0 x 2.2 x 0.23 cm'
   },
   {
     id: 'sw-combo-win10-office2019',
@@ -1375,16 +1276,16 @@ export const INITIAL_COUPONS: Coupon[] = [
     usageCount: 145
   },
   {
-    code: 'HARDWARE50',
-    discountType: 'fixed',
-    value: 4000,
-    minSpend: 40000.00,
-    expiryDate: '2026-09-30',
+    code: 'SAVER10',
+    discountType: 'percentage',
+    value: 10,
+    minSpend: 800.00,
+    expiryDate: '2026-12-31',
     startDate: '2026-01-01',
     endDate: '2026-12-31',
-    usageLimit: 200,
+    usageLimit: 500,
     active: true,
-    usageCount: 68
+    usageCount: 88
   },
   {
     code: 'FREESHIP',
@@ -1412,10 +1313,10 @@ export const INITIAL_BANNERS: PromoBanner[] = [
   },
   {
     id: 'banner-2',
-    title: 'Extreme Gaming Gear',
-    subtitle: 'Empower your workstation with NVIDIA RTX 40-series and Intel 14th Gen processors.',
-    image: 'https://images.unsplash.com/photo-1600861195091-690c92f1d2cc?auto=format&fit=crop&q=80&w=1200',
-    linkText: 'Explore PC Hardware',
+    title: 'Antivirus & Security Protection',
+    subtitle: 'Safeguard your PC with genuine Quick Heal, K7, Net Protector, and ESET licenses.',
+    image: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=1200',
+    linkText: 'Explore Antivirus Software',
     active: true,
     themeColor: 'from-neutral-900 to-emerald-950 text-emerald-100'
   }

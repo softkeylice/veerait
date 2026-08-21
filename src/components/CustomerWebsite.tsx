@@ -22,8 +22,8 @@ interface CustomerWebsiteProps {
   setUser?: (user: any) => void;
   addNotification: (title: string, message: string, type: 'success' | 'info' | 'warning' | 'error') => void;
   onOrderPlaced: (order: Order) => void;
-  setCurrentScreen: (screen: 'store' | 'dashboard' | 'admin' | 'tracking' | 'about' | 'contact' | 'privacy' | 'shipping' | 'terms') => void;
-  currentScreen?: 'store' | 'dashboard' | 'admin' | 'tracking' | 'about' | 'contact' | 'privacy' | 'shipping' | 'terms';
+  setCurrentScreen: (screen: 'store' | 'dashboard' | 'admin' | 'tracking' | 'about' | 'contact' | 'privacy' | 'shipping' | 'terms' | 'return' | 'refund') => void;
+  currentScreen?: 'store' | 'dashboard' | 'admin' | 'tracking' | 'about' | 'contact' | 'privacy' | 'shipping' | 'terms' | 'return' | 'refund';
   searchQuery: string;
   setSearchQuery: (q: string) => void;
   selectedCategory: 'all' | 'software' | 'hardware';
@@ -2603,6 +2603,258 @@ export default function CustomerWebsite({
           </div>
 
         </div>
+      ) : currentScreen === 'refund' ? (
+        <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-10 flex-1 font-sans animate-in fade-in duration-350" id="refund-policy-page">
+          
+          {/* Breadcrumbs & Navigation Bar */}
+          <div className="flex items-center justify-between gap-4 mb-8 pb-4 border-b border-slate-200">
+            <div className="flex items-center gap-2 text-xs text-slate-500 font-medium font-sans">
+              <button 
+                onClick={() => {
+                  setCurrentScreen('store');
+                  setSelectedCategory('all');
+                  setSearchQuery('');
+                  setSelectedProduct(null);
+                  setSelectedSubcategory(null);
+                }} 
+                className="hover:text-emerald-600 transition-colors font-semibold cursor-pointer"
+              >
+                Home
+              </button>
+              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-slate-900 font-extrabold uppercase tracking-wider text-[11px]">REFUND & CANCELLATION POLICY</span>
+            </div>
+
+            <button
+              onClick={() => {
+                setCurrentScreen('store');
+                setSelectedProduct(null);
+                setSelectedSubcategory(null);
+              }}
+              className="flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 hover:text-emerald-600 font-extrabold rounded-xl text-xs transition-all shadow-sm cursor-pointer"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Back to Store</span>
+            </button>
+          </div>
+
+          {/* Hero Header Banner */}
+          <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 text-white rounded-3xl p-8 sm:p-12 mb-10 shadow-xl border border-slate-800 text-left">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="relative z-10 max-w-4xl space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 border border-emerald-400/30 rounded-full text-xs font-bold text-emerald-300">
+                <CreditCard className="w-4 h-4 text-emerald-400" />
+                <span>VeeraIT (Veera Computers) • Official Refund & Cancellation Policy</span>
+              </div>
+              <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white font-sans">
+                Refund & Cancellation Policy
+              </h1>
+              <p className="text-base sm:text-lg text-slate-200 font-medium leading-relaxed font-sans">
+                Transparent rules and clear timelines regarding order cancellations, refund eligibility, and payment reversals for all transactions on <strong>www.veerait.com</strong>.
+              </p>
+            </div>
+          </div>
+
+          {/* Highlights Badge Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10 text-left">
+            <div className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                <Clock className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm font-extrabold text-slate-900">24–48 Hr Refund Settlement</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">Approved refunds processed within 24 to 48 banking hours to original payment mode.</p>
+            </div>
+
+            <div className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                <CreditCard className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm font-extrabold text-slate-900">Original Payment Mode</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">100% amount credited directly back to UPI, Paytm PG, Debit/Credit Card, or NetBanking.</p>
+            </div>
+
+            <div className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
+                <X className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm font-extrabold text-slate-900">Order Cancellation</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">Physical orders can be cancelled anytime before dispatch with instant full refund.</p>
+            </div>
+
+            <div className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm font-extrabold text-slate-900">Zero Hidden Deductions</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">Full transaction amount refunded without unjustified penalties or processing fees.</p>
+            </div>
+          </div>
+
+          {/* Detailed Policy Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12 text-left">
+            
+            {/* Main Policy Content (8 cols) */}
+            <div className="lg:col-span-8 space-y-8">
+              
+              {/* 1. Cancellation Policy */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">1</span>
+                  <span>Order Cancellation Policy</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>
+                    <strong>Digital Software Licenses (ESD):</strong> Due to automated instant key dispatch (1–30 seconds), orders for digital software licenses cannot be cancelled once the activation key has been assigned, sent, or viewed in the customer account. If you made a duplicate payment by accident, please contact support before activating either key.
+                  </p>
+                  <p>
+                    <strong>Physical Hardware & Boxed Products:</strong> You may cancel physical hardware orders anytime prior to dispatch from our warehouse. Once dispatched and assigned a courier tracking number, orders cannot be cancelled in-transit and must follow the standard 7-day return procedure upon arrival.
+                  </p>
+                </div>
+              </div>
+
+              {/* 2. Refund Eligibility */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">2</span>
+                  <span>Refund Eligibility Criteria</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>A 100% full refund is issued under the following circumstances:</p>
+                  <ul className="space-y-2 text-xs sm:text-sm text-slate-600 list-disc pl-5 leading-relaxed">
+                    <li><strong>Unfulfilled / Out of Stock Orders:</strong> If an ordered product or ESD license cannot be fulfilled due to inventory exhaustion or technical supplier outage.</li>
+                    <li><strong>Defective License Key (No Replacement Available):</strong> If a digital software key fails activation and a functional replacement key cannot be provided within 48 hours.</li>
+                    <li><strong>Pre-Dispatch Cancellation:</strong> Physical product orders successfully cancelled before courier dispatch.</li>
+                    <li><strong>Approved Hardware Returns:</strong> Physical goods returned within 7 days in verified unsealed/original condition or proven defective on arrival (DOA).</li>
+                    <li><strong>Duplicate Billing:</strong> Multiple charges for a single order caused by network timeouts or gateway retries.</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* 3. Refund Timelines & Payment Modes */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">3</span>
+                  <span>Refund Timelines & Payment Reversals</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>
+                    All refunds are approved by our finance team and processed directly through the payment gateway (Paytm Payment Gateway / UPI / NetBanking / Cards) back to the originating bank account or card:
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-1">
+                      <span className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                        <Zap className="w-4 h-4 text-emerald-600" />
+                        UPI / QR Payments
+                      </span>
+                      <p className="text-[11px] text-slate-500">Credited to source UPI VPA / Bank within <strong>24–48 hours</strong>.</p>
+                    </div>
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-1">
+                      <span className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                        <CreditCard className="w-4 h-4 text-blue-600" />
+                        Debit / Credit Cards
+                      </span>
+                      <p className="text-[11px] text-slate-500">Reflected in statement in <strong>3–7 business days</strong> depending on card issuer.</p>
+                    </div>
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-1">
+                      <span className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                        <Building2 className="w-4 h-4 text-purple-600" />
+                        Net Banking
+                      </span>
+                      <p className="text-[11px] text-slate-500">Settled directly back to the originating bank account in <strong>2–4 working days</strong>.</p>
+                    </div>
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-1">
+                      <span className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                        <Wallet className="w-4 h-4 text-amber-600" />
+                        Paytm Wallet / PG
+                      </span>
+                      <p className="text-[11px] text-slate-500">Credited back instantly or within <strong>24 hours</strong> of approval.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. Contact for Refund Support */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+                <h2 className="text-xl font-extrabold text-slate-900 font-sans flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-black">4</span>
+                  <span>Contact Refund & Billing Desk</span>
+                </h2>
+                <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p>If you have any questions regarding an existing refund or wish to initiate a cancellation claim:</p>
+                  <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl space-y-2 text-xs font-sans">
+                    <p><strong>Business Name:</strong> Veera Computers</p>
+                    <p><strong>Location:</strong> Mama Chowk, Jalna, Maharashtra 431203 India</p>
+                    <p><strong>Billing Helpline:</strong> +91-8485865677</p>
+                    <p><strong>Email:</strong> veeracomputersjalna@gmail.com</p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Right Column: Verified Entity Card */}
+            <div className="lg:col-span-4 space-y-6">
+              <div className="bg-slate-900 text-slate-200 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-5 sticky top-6 text-left">
+                <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                    <Building2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-extrabold text-white font-sans">Veera Computers</h3>
+                    <p className="text-[11px] text-emerald-400 font-semibold">Official Business Entity</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4 text-xs font-sans">
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider block mb-1">Website URL</span>
+                    <a href="https://www.veerait.com/" target="_blank" rel="noopener noreferrer" className="text-emerald-400 font-extrabold hover:underline block font-mono text-xs">
+                      https://www.veerait.com/
+                    </a>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider block mb-1">Operating Location</span>
+                    <p className="text-slate-200 font-semibold leading-relaxed">
+                      G.R. Floor, 1-11-42, Mama Chowk, Jalna, Maharashtra. 431203 India.
+                    </p>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider block mb-1">GST Registration</span>
+                    <p className="font-mono text-emerald-400 font-extrabold text-xs bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                      27FZOPS8739E1ZH
+                    </p>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-800 space-y-2">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase block">Refund & Billing Support</span>
+                    <p className="text-xs font-extrabold text-white font-mono">+91-8485865677</p>
+                    <a
+                      href="https://wa.me/918485865677?text=Hello%20Veera%20Computers,%20I%20have%20an%20inquiry%20regarding%20a%20Refund%20or%20Cancellation"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 p-3 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold rounded-xl transition-all shadow-md text-xs cursor-pointer w-full mt-2"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      <span>Contact Refund Support</span>
+                    </a>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl text-[11px] text-slate-400 space-y-1 mt-4">
+                  <div className="flex items-center gap-1.5 font-bold text-slate-200">
+                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                    <span>VeeraIT Guarantee</span>
+                  </div>
+                  <p>100% Secure Refund Processing • Paytm PG & UPI Direct Reversals • Zero Penalties</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
       ) : currentScreen === 'shipping' ? (
         <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-10 flex-1 font-sans animate-in fade-in duration-350" id="shipping-policy-page">
           
@@ -2667,10 +2919,10 @@ export default function CustomerWebsite({
 
             <div className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-2">
               <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-                <PackageCheck className="w-5 h-5" />
+                <CheckCircle2 className="w-5 h-5" />
               </div>
-              <h3 className="text-sm font-extrabold text-slate-900">3–10 Days Physical Cargo</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">Trusted courier partner dispatch for physical boxes & COA packages.</p>
+              <h3 className="text-sm font-extrabold text-slate-900">100% Genuine ESD Keys</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">Direct retail digital licenses with official activation confirmation.</p>
             </div>
 
             <div className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-2">
@@ -2704,10 +2956,10 @@ export default function CustomerWebsite({
                 </h2>
                 <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
                   <p>
-                    We primarily sell <strong>digital products</strong>, including software license keys, activation codes, subscriptions, and downloadable software.
+                    We specialize exclusively in genuine <strong>digital products</strong>, including Electronic Software Distribution (ESD) license keys, activation codes, security subscriptions, and official downloadable software.
                   </p>
                   <p>
-                    Digital products are delivered electronically and become non-returnable once successfully delivered. Some physical products (if offered) will have separate shipping and return conditions mentioned on the respective product pages.
+                    All products are delivered electronically (via registered Email & WhatsApp) and become non-returnable once successfully delivered.
                   </p>
                 </div>
               </div>
@@ -2723,7 +2975,7 @@ export default function CustomerWebsite({
                 <div className="p-5 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-3">
                   <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
                     <Zap className="w-4 h-4 text-emerald-600" />
-                    <span>Digital Product Delivery</span>
+                    <span>Digital ESD License Delivery</span>
                   </h3>
                   <ul className="space-y-2 text-xs sm:text-sm text-slate-600 list-disc pl-5 leading-relaxed">
                     <li>Digital license keys are delivered to the customer&apos;s registered <strong>email address</strong> and/or <strong>WhatsApp number</strong> provided during checkout.</li>
@@ -2731,19 +2983,6 @@ export default function CustomerWebsite({
                     <li>In certain cases involving payment verification, fraud prevention, supplier delays, or technical issues, delivery may take <strong>up to 24 hours</strong>.</li>
                     <li>Customers are responsible for providing accurate email addresses and mobile numbers.</li>
                     <li>VeeraIT is not responsible for delivery failures or delays caused by incorrect customer information.</li>
-                  </ul>
-                </div>
-
-                {/* Physical Product Delivery */}
-                <div className="p-5 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-3">
-                  <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-                    <Truck className="w-4 h-4 text-blue-600" />
-                    <span>Physical Product Delivery (If Applicable)</span>
-                  </h3>
-                  <ul className="space-y-2 text-xs sm:text-sm text-slate-600 list-disc pl-5 leading-relaxed">
-                    <li>Physical products are shipped through trusted courier partners.</li>
-                    <li>Estimated delivery time is generally <strong>3–10 business days</strong>, depending on the destination.</li>
-                    <li>Delivery timelines may vary due to public holidays, weather conditions, courier delays, or other unforeseen circumstances.</li>
                   </ul>
                 </div>
               </div>
@@ -2756,19 +2995,12 @@ export default function CustomerWebsite({
                 </h2>
                 <div className="space-y-4 text-xs sm:text-sm text-slate-600 leading-relaxed">
                   <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl space-y-2">
-                    <h3 className="font-extrabold text-amber-900 text-xs uppercase tracking-wider">Digital Products</h3>
+                    <h3 className="font-extrabold text-amber-900 text-xs uppercase tracking-wider">Digital License Products</h3>
                     <p>
                       Orders may only be cancelled <strong>before</strong> the software license or activation key has been generated or delivered.
                     </p>
                     <p className="font-semibold text-amber-900">
                       Once the license key, activation code, or download information has been sent via email or WhatsApp, the order is considered fulfilled and <strong>cannot be cancelled</strong>.
-                    </p>
-                  </div>
-
-                  <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-1">
-                    <h3 className="font-extrabold text-slate-900 text-xs uppercase tracking-wider">Physical Products (If Applicable)</h3>
-                    <p>
-                      Physical product orders may be cancelled before shipment. Once shipped, cancellation requests may not be accepted.
                     </p>
                   </div>
                 </div>
@@ -3324,7 +3556,7 @@ export default function CustomerWebsite({
                     <p><strong>GSTIN:</strong> 27FZOPS8739E1ZH</p>
                     <p><strong>Technical Support Line:</strong> +91-8485865677</p>
                     <p><strong>Sales & Escalation Line:</strong> +91-9764528777</p>
-                    <p><strong>Email Address:</strong> support@veerait.com / sales@veerait.com</p>
+                    <p><strong>Email Address:</strong> veeracomputersjalna@gmail.com</p>
                   </div>
                 </div>
               </div>
@@ -5542,17 +5774,17 @@ export default function CustomerWebsite({
               {/* Divider line to generic divisions */}
               <div className="border-t border-slate-200 my-10 pt-10">
                 <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-widest font-mono text-center mb-8">
-                  Or Browse Core Hardware & Software Blocks
+                  Browse Genuine Software & Security Suites
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {/* Software Category Card */}
                   <div
                     onClick={() => { 
                       setSelectedCategory('software');
-                      setSelectedSubcategory(null); // Clear subcategory filter when switching main category
+                      setSelectedSubcategory(null);
                     }}
                     className={`bg-white border rounded-3xl p-8 hover:shadow-lg transition-all cursor-pointer group relative overflow-hidden ${
-                      (selectedCategory as string) === 'software' ? 'border-blue-500 ring-2 ring-blue-500/10' : 'border-slate-200 hover:border-blue-400'
+                      (selectedCategory as string) === 'software' && !selectedSubcategory ? 'border-blue-500 ring-2 ring-blue-500/10' : 'border-slate-200 hover:border-blue-400'
                     }`}
                   >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-full opacity-60 group-hover:scale-110 transition-transform" />
@@ -5561,41 +5793,41 @@ export default function CustomerWebsite({
                         Instant Digital Pool
                       </span>
                       <h3 className="text-xl font-extrabold text-slate-900 group-hover:text-blue-600 transition-colors font-sans">
-                        Software License Keys
+                        Operating Systems & Office
                       </h3>
                       <p className="text-xs text-slate-500 leading-relaxed">
-                        LIFETIME activation keys for Microsoft Windows retail OS, classic Office Plus suites, and high-performance Adobe memberships. Delivered instantly.
+                        LIFETIME retail activation keys for Microsoft Windows 10/11 Pro & Home, Microsoft Office 2019/2021/2024, and Adobe Cloud suites. Delivered instantly.
                       </p>
                       <div className="pt-2 flex items-center gap-1.5 text-xs text-blue-600 font-bold">
-                        <span>Browse Software ({products.filter(p => p.category === 'software').length} Products)</span>
+                        <span>Browse Software Keys ({products.length} Products)</span>
                         <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-all" />
                       </div>
                     </div>
                   </div>
 
-                  {/* Hardware Category Card */}
+                  {/* Antivirus & Security Card */}
                   <div
                     onClick={() => { 
-                      setSelectedCategory('hardware');
-                      setSelectedSubcategory(null); // Clear subcategory filter when switching main category
+                      setSelectedCategory('software');
+                      setSelectedSubcategory('Antivirus & Security');
                     }}
                     className={`bg-white border rounded-3xl p-8 hover:shadow-lg transition-all cursor-pointer group relative overflow-hidden ${
-                      (selectedCategory as string) === 'hardware' ? 'border-emerald-500 ring-2 ring-emerald-500/10' : 'border-slate-200 hover:border-emerald-400'
+                      selectedSubcategory === 'Antivirus & Security' ? 'border-emerald-500 ring-2 ring-emerald-500/10' : 'border-slate-200 hover:border-emerald-400'
                     }`}
                   >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-bl-full opacity-60 group-hover:scale-110 transition-transform" />
                     <div className="relative z-10 space-y-4 max-w-md text-left">
                       <span className="text-[10px] font-mono font-extrabold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full uppercase">
-                        Physical Air-Cargo Dispatch
+                        Security & Protection
                       </span>
                       <h3 className="text-xl font-extrabold text-slate-900 group-hover:text-emerald-600 transition-colors font-sans">
-                        Premium PC Hardware
+                        Antivirus & Security Software
                       </h3>
                       <p className="text-xs text-slate-500 leading-relaxed">
-                        Maximize workstation frame rates with NVIDIA GeForce founders editions, unlocked extreme multicore CPUs, and blazing PCIe 4.0 storage arrays.
+                        Shield your personal and enterprise devices with genuine Quick Heal, K7 Total Security, Net Protector, and ESET Internet Security license keys.
                       </p>
                       <div className="pt-2 flex items-center gap-1.5 text-xs text-emerald-600 font-bold">
-                        <span>Browse PC Parts ({products.filter(p => p.category === 'hardware').length} Products)</span>
+                        <span>Browse Antivirus Licenses</span>
                         <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-all" />
                       </div>
                     </div>
@@ -5708,110 +5940,7 @@ export default function CustomerWebsite({
             </div>
           </section>
 
-          {/* 8. POPULAR HARDWARE PRODUCTS SECTION */}
-          <section className="bg-slate-50 py-14 border-b border-slate-200" id="popular-hardware">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
-                <div>
-                  <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest font-mono">Workstation Grade</span>
-                  <h2 className="text-3xl font-extrabold text-slate-900 mt-1 font-sans">Popular PC Hardware</h2>
-                  <p className="text-xs text-slate-500 mt-1">Manufacturer warranty certified components packed securely with tracking ID.</p>
-                </div>
-                <button
-                  onClick={() => { setSelectedCategory('hardware'); }}
-                  className="text-xs font-bold bg-white text-slate-700 hover:text-emerald-600 hover:bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl transition-all self-start sm:self-center cursor-pointer font-sans"
-                >
-                  View All Hardware
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {hardwareProducts.map(product => (
-                  <div
-                    key={product.id}
-                    className={`bg-white rounded-3xl overflow-hidden group flex flex-col hover:shadow-xl hover:shadow-emerald-900/5 transition-all duration-300 ${
-                      product.featured
-                        ? 'border border-amber-300/80 shadow-sm shadow-amber-500/5 bg-gradient-to-b from-amber-50/10 to-white'
-                        : 'border border-slate-200 hover:border-emerald-300'
-                    }`}
-                  >
-                    <div className="relative h-48 bg-slate-100 overflow-hidden border-b border-slate-100">
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        referrerPolicy="no-referrer"
-                      />
-                      <span className="absolute top-3 left-3 bg-emerald-600 text-white text-[10px] font-mono tracking-wider uppercase font-bold px-2.5 py-1 rounded-full shadow-md">
-                        PC component
-                      </span>
-
-                      {product.featured && (
-                        <span className="absolute top-3 right-3 bg-amber-500 text-white text-[9px] font-extrabold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1 uppercase tracking-wider">
-                          <Star className="w-3 h-3 fill-white text-white animate-pulse" />
-                          Featured
-                        </span>
-                      )}
-
-                      <div className="absolute bottom-3 right-3 flex items-center gap-1 px-2.5 py-1 bg-white/95 border border-slate-150 backdrop-blur rounded-lg text-xs font-semibold text-amber-500 shadow-sm">
-                        <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                        {product.rating}
-                      </div>
-                    </div>
-
-                    <div className="p-6 flex-1 flex flex-col justify-between">
-                      <div className="space-y-3">
-                        <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-emerald-600 transition-colors line-clamp-2">
-                          {product.name}
-                        </h3>
-                        <p className="text-slate-500 text-xs line-clamp-2 leading-relaxed">
-                          {product.description}
-                        </p>
-                        <div className="border-t border-slate-100 pt-3 space-y-1">
-                          {product.features.slice(0, 2).map((feat, idx) => (
-                            <div key={idx} className="text-[11px] text-slate-600 flex items-center gap-1.5">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
-                              <span className="truncate">{feat}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="mt-5 pt-4 border-t border-slate-150 flex items-center justify-between">
-                        <div>
-                          <div className="flex items-baseline gap-1.5">
-                            <span className="text-base font-bold text-slate-950">₹{product.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                            <span className="text-xs text-slate-400 line-through">₹{product.originalPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                          </div>
-                          <p className="text-[10px] text-emerald-600 font-extrabold mt-0.5">
-                            Save {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
-                          </p>
-                        </div>
-
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            onClick={() => setSelectedProduct(product)}
-                            className="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 rounded-xl transition-all"
-                            title="Specs Details"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => addToCart(product)}
-                            className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-emerald-100 cursor-pointer"
-                          >
-                            Add to Bag
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* 9. DEALS SECTION (Countdown deals & Active Coupons Copier) */}
+          {/* 8. DEALS SECTION (Countdown deals & Active Coupons Copier) */}
           <section className="bg-gradient-to-r from-blue-900 via-indigo-950 to-slate-900 text-white py-16" id="deals-section">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
               
@@ -5903,9 +6032,9 @@ export default function CustomerWebsite({
                   <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto text-lg font-bold">
                     ✓
                   </div>
-                  <h4 className="text-sm font-extrabold text-slate-900 font-sans">Air Express Airbills</h4>
+                  <h4 className="text-sm font-extrabold text-slate-900 font-sans">Instant ESD Delivery</h4>
                   <p className="text-xs text-slate-500 leading-relaxed">
-                    All physical hardware shipments are packaged inside certified anti-static bubbles and delivered via top logistics dispatchers with real-time tracking IDs.
+                    Automated licensing dispatcher delivers verified product activation codes within 60 seconds directly to your screen, WhatsApp, and registered email address.
                   </p>
                 </div>
 
@@ -5915,7 +6044,7 @@ export default function CustomerWebsite({
                   </div>
                   <h4 className="text-sm font-extrabold text-slate-900 font-sans">SMS / WhatsApp Alerts</h4>
                   <p className="text-xs text-slate-500 leading-relaxed">
-                    Receive instant status alerts for licensing keys and hardware shipping waybill dispatch notifications straight to your verified WhatsApp profile.
+                    Receive instant payment confirmation receipt and licensing key dispatch notifications straight to your verified mobile number and WhatsApp profile.
                   </p>
                 </div>
               </div>
@@ -6098,11 +6227,11 @@ export default function CustomerWebsite({
                   </div>
 
                   <ul className="space-y-1 pt-1">
-                    {/* About Us */}
+                    {/* Terms & Conditions */}
                     <li>
                       <button
                         onClick={() => {
-                          setCurrentScreen('about');
+                          setCurrentScreen('terms');
                           setSelectedProduct(null);
                           setSelectedSubcategory(null);
                           setFooterModalType(null);
@@ -6111,8 +6240,48 @@ export default function CustomerWebsite({
                         className="w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-slate-900/80 text-slate-300 hover:text-white transition-all text-xs font-semibold group cursor-pointer"
                       >
                         <span className="flex items-center gap-2.5">
-                          <User className="w-4 h-4 text-slate-400 group-hover:text-emerald-400 transition-colors" />
-                          About Us
+                          <FileText className="w-4 h-4 text-slate-400 group-hover:text-emerald-400 transition-colors" />
+                          Terms & Conditions (T&C)
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+                      </button>
+                    </li>
+
+                    {/* Refund & Cancellation Policy */}
+                    <li>
+                      <button
+                        onClick={() => {
+                          setCurrentScreen('refund');
+                          setSelectedProduct(null);
+                          setSelectedSubcategory(null);
+                          setFooterModalType(null);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className="w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-slate-900/80 text-slate-300 hover:text-white transition-all text-xs font-semibold group cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <CreditCard className="w-4 h-4 text-slate-400 group-hover:text-emerald-400 transition-colors" />
+                          Refund & Cancellation Policy
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+                      </button>
+                    </li>
+
+                    {/* Shipping Policy */}
+                    <li>
+                      <button
+                        onClick={() => {
+                          setCurrentScreen('shipping');
+                          setSelectedProduct(null);
+                          setSelectedSubcategory(null);
+                          setFooterModalType(null);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className="w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-slate-900/80 text-slate-300 hover:text-white transition-all text-xs font-semibold group cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <Truck className="w-4 h-4 text-slate-400 group-hover:text-emerald-400 transition-colors" />
+                          Shipping Policy
                         </span>
                         <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
                       </button>
@@ -6131,18 +6300,18 @@ export default function CustomerWebsite({
                         className="w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-slate-900/80 text-slate-300 hover:text-white transition-all text-xs font-semibold group cursor-pointer"
                       >
                         <span className="flex items-center gap-2.5">
-                          <FileText className="w-4 h-4 text-slate-400 group-hover:text-emerald-400 transition-colors" />
+                          <Lock className="w-4 h-4 text-slate-400 group-hover:text-emerald-400 transition-colors" />
                           Privacy Policy
                         </span>
                         <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
                       </button>
                     </li>
 
-                    {/* Shipping & Return */}
+                    {/* About Us */}
                     <li>
                       <button
                         onClick={() => {
-                          setCurrentScreen('shipping');
+                          setCurrentScreen('about');
                           setSelectedProduct(null);
                           setSelectedSubcategory(null);
                           setFooterModalType(null);
@@ -6151,22 +6320,8 @@ export default function CustomerWebsite({
                         className="w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-slate-900/80 text-slate-300 hover:text-white transition-all text-xs font-semibold group cursor-pointer"
                       >
                         <span className="flex items-center gap-2.5">
-                          <Truck className="w-4 h-4 text-slate-400 group-hover:text-emerald-400 transition-colors" />
-                          Refund & Cancellation Policy
-                        </span>
-                        <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
-                      </button>
-                    </li>
-
-                    {/* T&C and Disclaimer */}
-                    <li>
-                      <button
-                        onClick={() => setFooterModalType('terms')}
-                        className="w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-slate-900/80 text-slate-300 hover:text-white transition-all text-xs font-semibold group cursor-pointer"
-                      >
-                        <span className="flex items-center gap-2.5">
-                          <FileText className="w-4 h-4 text-slate-400 group-hover:text-emerald-400 transition-colors" />
-                          T&C and Disclaimer
+                          <User className="w-4 h-4 text-slate-400 group-hover:text-emerald-400 transition-colors" />
+                          About Us
                         </span>
                         <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
                       </button>

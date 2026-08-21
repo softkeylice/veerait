@@ -10,8 +10,8 @@ import { BRAND_CATEGORIES } from './CategoryGrid';
 import VeeraitLogo from './VeeraitLogo';
 
 interface CustomerHeaderProps {
-  currentScreen: 'store' | 'dashboard' | 'admin' | 'tracking' | 'about' | 'contact' | 'privacy' | 'shipping' | 'terms';
-  setCurrentScreen: (screen: 'store' | 'dashboard' | 'admin' | 'tracking' | 'about' | 'contact' | 'privacy' | 'shipping' | 'terms') => void;
+  currentScreen: 'store' | 'dashboard' | 'admin' | 'tracking' | 'about' | 'contact' | 'privacy' | 'shipping' | 'terms' | 'return' | 'refund';
+  setCurrentScreen: (screen: 'store' | 'dashboard' | 'admin' | 'tracking' | 'about' | 'contact' | 'privacy' | 'shipping' | 'terms' | 'return' | 'refund') => void;
   cart: { product: Product; quantity: number }[];
   toggleCart: () => void;
   user: { email: string; name: string; phone?: string; role?: string } | null;
@@ -138,7 +138,6 @@ export default function CustomerHeader({
                 >
                   <option value="all">All Categories</option>
                   <option value="software">Software Keys</option>
-                  <option value="hardware">PC Hardware</option>
                 </select>
                 <ChevronDown className="w-3.5 h-3.5 text-slate-500 absolute right-3.5 top-3.5 pointer-events-none" />
               </div>
