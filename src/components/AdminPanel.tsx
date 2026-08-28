@@ -97,7 +97,10 @@ export default function AdminPanel({
   const [razorpayConfigured, setRazorpayConfigured] = useState(false);
   const [paytmMid, setPaytmMid] = useState('OPDDHV86006252156720');
   const [paytmMode, setPaytmMode] = useState<'test' | 'live'>('test');
+  const [upiWebhookSecret, setUpiWebhookSecret] = useState('veerait_upi_secret_2026');
   const [isSavingPaymentSettings, setIsSavingPaymentSettings] = useState(false);
+  const [isTestingUpiWebhook, setIsTestingUpiWebhook] = useState(false);
+  const [upiTestResult, setUpiTestResult] = useState<{ success: boolean; message: string; details?: any } | null>(null);
 
   // Product Manager Display Configuration
   const [productViewMode, setProductViewMode] = useState<'list' | 'gallery'>('list');
@@ -358,6 +361,9 @@ export default function AdminPanel({
           if (data.settings.paytmMode) {
             setPaytmMode(data.settings.paytmMode);
           }
+          if (data.settings.upiWebhookSecret) {
+            setUpiWebhookSecret(data.settings.upiWebhookSecret);
+          }
         }
         if (data.paytm) {
           if (data.paytm.merchantId) {
@@ -466,12 +472,13 @@ export default function AdminPanel({
           upiId,
           upiQrCodeUrl,
           paytmMid,
-          paytmMode
+          paytmMode,
+          upiWebhookSecret
         })
       });
       const data = await response.json();
       if (response.ok && data.success) {
-        addNotification('Settings Saved', 'Store payment options updated successfully.', 'success');
+        addNotification('Settings Saved', 'Store payment options & Android UPI Webhook settings updated successfully.', 'success');
       } else {
         addNotification('Save Failed', data.error || 'Could not update payment configurations.', 'error');
       }
@@ -480,6 +487,52 @@ export default function AdminPanel({
       addNotification('Network Error', 'Could not establish connection to payment setting endpoints.', 'error');
     } finally {
       setIsSavingPaymentSettings(false);
+    }
+  };
+
+  const handleTestUpiWebhook = async () => {
+    setIsTestingUpiWebhook(true);
+    setUpiTestResult(null);
+    try {
+      const response = await fetch('/api/payment/upi-webhook/test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('session_token') || ''}`,
+          'x-webhook-secret': upiWebhookSecret
+        },
+        body: JSON.stringify({
+          amount: 499.00,
+          utr: '4' + Math.floor(10000000000 + Math.random() * 90000000000),
+          appName: 'Paytm for Business (Android App Simulation)',
+          sender: 'Test Verified Customer',
+          source: 'NOTIFICATION'
+        })
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setUpiTestResult({
+          success: true,
+          message: `Webhook Test Passed! Server verified simulation payload: ${data.message}`,
+          details: data
+        });
+        addNotification('Webhook Test Success', 'Android UPI Webhook simulation received and verified by server.', 'success');
+      } else {
+        setUpiTestResult({
+          success: false,
+          message: data.error || 'Webhook test failed or returned error.',
+          details: data
+        });
+        addNotification('Webhook Test Failed', data.error || 'Test failed.', 'error');
+      }
+    } catch (err: any) {
+      setUpiTestResult({
+        success: false,
+        message: err.message || 'Network exception testing webhook.'
+      });
+      addNotification('Webhook Test Error', err.message || 'Failed to ping webhook endpoint.', 'error');
+    } finally {
+      setIsTestingUpiWebhook(false);
     }
   };
 
@@ -6132,6 +6185,122 @@ export default function AdminPanel({
                   </div>
                 </div>
 
+                {/* Android UPI Payment Gateway & SMS Listener Section */}
+                <div className="space-y-4 border-t-2 border-emerald-100 bg-emerald-50/40 -mx-6 px-6 py-5 rounded-xl">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h5 className="text-xs font-black text-emerald-900 uppercase tracking-wider font-mono flex items-center gap-2">
+                        <span className="bg-emerald-600 text-white text-[9px] px-2 py-0.5 rounded font-black tracking-widest shadow-xs">ANDROID UPI GATEWAY</span>
+                        Owner Mobile SMS & Notification Webhook
+                      </h5>
+                      <p className="text-[11px] text-emerald-700 mt-0.5">
+                        Forward Bank SMS & Paytm/PhonePe/GPay alerts from your Android app to auto-verify customer payments and dispatch keys on WhatsApp.
+                      </p>
+                    </div>
+                    <span className="text-[10px] bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-1 rounded-full font-bold flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                      0% Fee Gateway Active
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Android Webhook Endpoint URL
+                      </label>
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="text"
+                          readOnly
+                          value={typeof window !== 'undefined' ? `${window.location.origin}/api/payment/upi-webhook` : '/api/payment/upi-webhook'}
+                          className="w-full px-3 py-2 bg-white border border-emerald-200 rounded-xl text-xs font-mono text-emerald-950 font-bold select-all focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const url = `${window.location.origin}/api/payment/upi-webhook`;
+                            navigator.clipboard.writeText(url);
+                            addNotification('URL Copied', 'Webhook URL copied to clipboard for your Android App.', 'success');
+                          }}
+                          className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shrink-0 shadow-xs"
+                        >
+                          Copy URL
+                        </button>
+                      </div>
+                      <p className="text-[10px] text-emerald-600 mt-1">Configure this URL inside your Android App settings.</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Webhook Secret Key (Header: <code className="text-emerald-800 font-mono">x-webhook-secret</code>)
+                      </label>
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="text"
+                          value={upiWebhookSecret}
+                          onChange={(e) => setUpiWebhookSecret(e.target.value)}
+                          className="w-full px-3 py-2 bg-white border border-emerald-200 rounded-xl text-xs font-mono text-slate-800 font-bold focus:outline-none focus:border-emerald-600"
+                          placeholder="e.g. veerait_upi_secret_2026"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(upiWebhookSecret);
+                            addNotification('Secret Copied', 'Webhook secret token copied to clipboard.', 'success');
+                          }}
+                          className="px-3 py-2 bg-slate-700 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shrink-0"
+                        >
+                          Copy
+                        </button>
+                      </div>
+                      <p className="text-[10px] text-emerald-600 mt-1">Keeps incoming webhook payloads authentic and tamper-proof.</p>
+                    </div>
+                  </div>
+
+                  {/* Webhook Testing Bar */}
+                  <div className="bg-white border border-emerald-200 p-3.5 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
+                    <div className="text-xs text-slate-600">
+                      <p className="font-bold text-slate-800 flex items-center gap-1.5">
+                        <span>🧪</span> Live Webhook Simulator
+                      </p>
+                      <p className="text-[11px] text-slate-500">Test if your server correctly receives, logs, and processes Android payment alerts.</p>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={isTestingUpiWebhook}
+                      onClick={handleTestUpiWebhook}
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shrink-0 shadow-xs"
+                    >
+                      {isTestingUpiWebhook ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          Simulating Payment...
+                        </>
+                      ) : (
+                        <>
+                          <span>⚡</span>
+                          Send Test Payment Alert (₹499)
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {upiTestResult && (
+                    <div className={`p-3 rounded-xl border text-xs ${
+                      upiTestResult.success 
+                        ? 'bg-emerald-100/70 border-emerald-300 text-emerald-900' 
+                        : 'bg-red-50 border-red-200 text-red-800'
+                    }`}>
+                      <p className="font-bold">{upiTestResult.message}</p>
+                      {upiTestResult.details && (
+                        <pre className="mt-1.5 p-2 bg-white/80 rounded-lg text-[10px] font-mono overflow-x-auto border border-emerald-200">
+                          {JSON.stringify(upiTestResult.details, null, 2)}
+                        </pre>
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 <div className="pt-4 border-t border-slate-100 flex justify-between items-center gap-4">
                   <button
                     type="button"
@@ -7740,12 +7909,17 @@ export default function AdminPanel({
                         .map(log => {
                           const orderId = log.payload?.payload?.payment?.entity?.order_id || 
                                           log.payload?.payload?.order?.entity?.id || 
+                                          log.payload?.orderId ||
+                                          log.payload?.targetOrderId ||
                                           "N/A";
-                          const paymentId = log.payload?.payload?.payment?.entity?.id || "N/A";
+                          const paymentId = log.payload?.payload?.payment?.entity?.id || 
+                                            log.payload?.utr || 
+                                            log.payload?.paymentId || 
+                                            "N/A";
 
                           let eventColor = "bg-slate-100 text-slate-800 border-slate-200";
-                          if (log.event.includes("captured") || log.event.includes("paid")) {
-                            eventColor = "bg-emerald-50 text-emerald-700 border-emerald-100";
+                          if (log.event.includes("captured") || log.event.includes("paid") || log.event.includes("upi.payment")) {
+                            eventColor = "bg-emerald-50 text-emerald-700 border-emerald-200 font-bold";
                           } else if (log.event.includes("failed")) {
                             eventColor = "bg-rose-50 text-rose-700 border-rose-100";
                           } else if (log.event.includes("authorized")) {

@@ -234,6 +234,9 @@ export default function CustomerWebsite({
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'razorpay' | 'paytm' | 'bank_transfer' | 'upi_qr'>('paytm');
   const [paymentReference, setPaymentReference] = useState('');
   const [uploadedReceipt, setUploadedReceipt] = useState('');
+  const [currentUpiOrderId, setCurrentUpiOrderId] = useState('');
+  const [dynamicUpiUri, setDynamicUpiUri] = useState('');
+  const [isUpiOrderCreating, setIsUpiOrderCreating] = useState(false);
   const [storePaymentSettings, setStorePaymentSettings] = useState({
     bankName: 'State Bank of India',
     bankAccountName: 'Veera Computers',
@@ -283,6 +286,59 @@ export default function CustomerWebsite({
     }, 5000);
     return () => clearInterval(interval);
   }, [isHeroSliderPaused]);
+
+  // Auto-initiate dynamic UPI order when UPI QR payment modal opens
+  React.useEffect(() => {
+    if (isAlternativeOpen && selectedPaymentMethod === 'upi_qr') {
+      setIsUpiOrderCreating(true);
+      fetch('/api/payment/upi/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: netPayable,
+          customerEmail,
+          customerPhone,
+          customerName,
+          cart: cart.map(i => ({ id: i.product.id, name: i.product.name, price: i.product.price, quantity: i.quantity })),
+          total: netPayable
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.orderId) {
+          setCurrentUpiOrderId(data.orderId);
+          setDynamicUpiUri(data.upiUri);
+        }
+      })
+      .catch(err => console.error("Failed to generate dynamic UPI order:", err))
+      .finally(() => setIsUpiOrderCreating(false));
+    }
+  }, [isAlternativeOpen, selectedPaymentMethod]);
+
+  // Live polling for payment confirmation received by Android App Webhook
+  React.useEffect(() => {
+    let intervalId: any = null;
+    if (isAlternativeOpen && selectedPaymentMethod === 'upi_qr' && currentUpiOrderId) {
+      intervalId = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/payment/upi/status/${currentUpiOrderId}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.isPaid) {
+              clearInterval(intervalId);
+              addNotification('Payment Confirmed!', `Payment received for ₹${data.order?.total || netPayable}. Auto-fulfilling licenses now...`, 'success');
+              createSuccessfulOrder(data.utr || data.paymentId || currentUpiOrderId, 'Android UPI Listener (Auto-Verified)', 'paid');
+            }
+          }
+        } catch (e) {
+          // ignore transient polling errors
+        }
+      }, 2500);
+    }
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [isAlternativeOpen, selectedPaymentMethod, currentUpiOrderId]);
 
   // Count how many products belong to each subcategory/brandCategory
   const subcategoryCountMap = React.useMemo(() => {
@@ -7549,8 +7605,31 @@ export default function CustomerWebsite({
                 /* UPI QR Code Details */
                 <div className="space-y-4 text-center">
                   
-                  <div className="w-48 h-48 bg-slate-50 border border-slate-200 p-2 rounded-2xl mx-auto flex items-center justify-center overflow-hidden shadow-inner">
-                    {storePaymentSettings.upiQrCodeUrl ? (
+                  {/* Dynamic Live Auto-Detect Status Banner */}
+                  <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl flex items-center justify-between text-left gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping shrink-0" />
+                      <div>
+                        <p className="text-xs font-bold text-emerald-900">Auto-Detect Payment Active</p>
+                        <p className="text-[10px] text-emerald-700">Scan & pay with any UPI app (GPay / PhonePe / Paytm). Once transferred, license keys auto-dispatch to WhatsApp & email!</p>
+                      </div>
+                    </div>
+                    {currentUpiOrderId && (
+                      <span className="text-[10px] font-mono font-bold bg-white text-emerald-800 px-2 py-1 rounded border border-emerald-200 shrink-0">
+                        {currentUpiOrderId}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="w-52 h-52 bg-white border-2 border-emerald-300 p-2 rounded-2xl mx-auto flex items-center justify-center overflow-hidden shadow-md">
+                    {dynamicUpiUri ? (
+                      <img
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(dynamicUpiUri)}`}
+                        alt="Dynamic UPI QR Code"
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-contain"
+                      />
+                    ) : storePaymentSettings.upiQrCodeUrl ? (
                       <img
                         src={storePaymentSettings.upiQrCodeUrl}
                         alt="UPI QR Code"
@@ -7559,13 +7638,25 @@ export default function CustomerWebsite({
                       />
                     ) : (
                       <img
-                        src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=${encodeURIComponent(storePaymentSettings.upiId)}&pn=${encodeURIComponent(storePaymentSettings.bankAccountName)}&am=${total.toFixed(0)}&cu=INR`}
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${encodeURIComponent(storePaymentSettings.upiId)}&pn=${encodeURIComponent(storePaymentSettings.bankAccountName)}&am=${netPayable.toFixed(2)}&cu=INR`}
                         alt="Default UPI QR Code"
                         referrerPolicy="no-referrer"
                         className="w-full h-full object-contain"
                       />
                     )}
                   </div>
+
+                  {/* 1-Click Pay on Mobile with UPI Apps */}
+                  {dynamicUpiUri && (
+                    <div className="sm:hidden pt-1">
+                      <a
+                        href={dynamicUpiUri}
+                        className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow-md shadow-emerald-100"
+                      >
+                        <span>📱</span> Pay via Installed UPI App (GPay / PhonePe / Paytm)
+                      </a>
+                    </div>
+                  )}
 
                   <div className="space-y-1">
                     <p className="text-xs text-slate-500">Scan QR Code or pay directly to the UPI ID:</p>

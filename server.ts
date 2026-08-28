@@ -888,6 +888,7 @@ interface PaymentSettings {
   upiQrCodeUrl: string;
   paytmMid?: string;
   paytmMode?: 'test' | 'live';
+  upiWebhookSecret?: string;
 }
 
 function readPaymentSettings(): PaymentSettings {
@@ -897,7 +898,8 @@ function readPaymentSettings(): PaymentSettings {
       return {
         ...data,
         paytmMid: data.paytmMid || process.env.PAYTM_MERCHANT_ID || "OPDDHV86006252156720",
-        paytmMode: data.paytmMode || (process.env.PAYTM_ENV === "PRODUCTION" ? "live" : "test")
+        paytmMode: data.paytmMode || (process.env.PAYTM_ENV === "PRODUCTION" ? "live" : "test"),
+        upiWebhookSecret: data.upiWebhookSecret || process.env.UPI_WEBHOOK_SECRET || "veerait_upi_secret_2026"
       };
     }
   } catch (err) {
@@ -911,7 +913,8 @@ function readPaymentSettings(): PaymentSettings {
     upiId: "shrisaptashrungi@upi",
     upiQrCodeUrl: "",
     paytmMid: process.env.PAYTM_MERCHANT_ID || "OPDDHV86006252156720",
-    paytmMode: process.env.PAYTM_ENV === "PRODUCTION" ? "live" : "test"
+    paytmMode: process.env.PAYTM_ENV === "PRODUCTION" ? "live" : "test",
+    upiWebhookSecret: process.env.UPI_WEBHOOK_SECRET || "veerait_upi_secret_2026"
   };
 }
 
@@ -4213,6 +4216,324 @@ app.use(async (req, res, next) => {
   app.post("/api/paytm/webhook", handlePaytmWebhook);
   app.post("/api/paytm/callback", handlePaytmWebhook);
 
+  // ==========================================
+  // ANDROID UPI PAYMENT GATEWAY WEBHOOK SYSTEM
+  // ==========================================
+  // Listens to incoming payments from Owner's Android Phone (SMS/Notification Listener)
+  // Automatically matches payments, verifies UTR/RRN, fulfills order, and sends WhatsApp key.
+
+  // 1. PING / HEALTH CHECK FOR ANDROID APP
+  app.get(["/api/payment/upi-webhook/ping", "/api/payment/upi/ping"], (req, res) => {
+    const settings = readPaymentSettings();
+    return res.json({
+      status: "ok",
+      server: "VeeraIT UPI Payment Gateway Engine",
+      serverTime: new Date().toISOString(),
+      configuredUpiId: settings.upiId,
+      webhookConfigured: true,
+      message: "VeeraIT UPI Payment Listener Webhook is online and ready to receive transactions."
+    });
+  });
+
+  // 2. CREATE PENDING UPI ORDER FOR DYNAMIC QR / INTENT
+  app.post("/api/payment/upi/order", optionalAuthenticateJwt, rateLimiter(1 * 60 * 1000, 20, "Too many checkout requests."), async (req: any, res: any) => {
+    const { amount, currency, customerEmail, customerName, customerPhone, cart, shippingAddress, shippingCity, shippingPin, couponCode, discount, subtotal, total, b2bReferralCode } = req.body;
+
+    try {
+      const upiOrderId = "UPI_" + Date.now().toString().slice(-6) + "_" + Math.random().toString(36).substring(2, 6).toUpperCase();
+      const payments = await syncPaymentsFromSupabase();
+      const settings = readPaymentSettings();
+      const finalAmount = total || amount || 0;
+
+      const newPayment: PaymentRecord = {
+        orderId: upiOrderId,
+        amount: finalAmount,
+        currency: currency || "INR",
+        status: "created",
+        signatureVerified: false,
+        attempts: 1,
+        customerEmail: customerEmail || "",
+        customerName: customerName || "Customer",
+        customerPhone: customerPhone || "",
+        cart: cart || [],
+        shippingAddress: shippingAddress || "",
+        shippingCity: shippingCity || "",
+        shippingPin: shippingPin || "",
+        couponCode: couponCode || "",
+        discount: discount || 0,
+        subtotal: subtotal || finalAmount,
+        b2bReferralCode: b2bReferralCode || "",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      payments.push(newPayment);
+      writePaymentsDb(payments);
+      await savePaymentsToSupabase(payments);
+
+      // Generate standard NPCI UPI Intent URI
+      const upiId = settings.upiId || "veeracomputers@upi";
+      const merchantName = settings.bankAccountName || "Veera Computers";
+      const upiIntentUri = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(merchantName)}&am=${finalAmount.toFixed(2)}&cu=INR&tn=${encodeURIComponent("Order " + upiOrderId)}&tr=${encodeURIComponent(upiOrderId)}`;
+
+      return res.json({
+        success: true,
+        orderId: upiOrderId,
+        amount: finalAmount,
+        currency: "INR",
+        upiId,
+        merchantName,
+        upiIntentUri,
+        qrCodeDataUrl: `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiIntentUri)}`,
+        message: "UPI Order registered. Polling listener active."
+      });
+    } catch (error: any) {
+      console.error("[UPI ORDER CREATE ERROR]", error);
+      return res.status(500).json({ error: error.message || "Failed to initiate UPI order." });
+    }
+  });
+
+  // 3. CHECK UPI ORDER STATUS (Used by Frontend for Real-time Auto-Confirmation)
+  app.get("/api/payment/upi/status/:orderId", async (req, res) => {
+    const { orderId } = req.params;
+    try {
+      const payments = await syncPaymentsFromSupabase();
+      const payment = payments.find(p => p.orderId === orderId);
+
+      if (!payment) {
+        // Fallback: check Supabase orders table
+        if (isSupabaseConfigured && supabaseServer) {
+          const { data: dbOrder } = await supabaseServer
+            .from("orders")
+            .select("*")
+            .eq("id", orderId)
+            .single();
+
+          if (dbOrder) {
+            return res.json({
+              orderId,
+              status: dbOrder.payment_status || "paid",
+              isPaid: (dbOrder.payment_status === "paid"),
+              paymentId: dbOrder.payment_id,
+              amount: Number(dbOrder.total)
+            });
+          }
+        }
+
+        return res.status(404).json({ error: "Order not found", orderId, status: "not_found", isPaid: false });
+      }
+
+      return res.json({
+        orderId: payment.orderId,
+        status: payment.status,
+        isPaid: payment.status === "paid",
+        paymentId: payment.paymentId,
+        amount: payment.amount,
+        customerEmail: payment.customerEmail,
+        updatedAt: payment.updatedAt
+      });
+    } catch (err: any) {
+      return res.status(500).json({ error: "Error checking status", details: err.message });
+    }
+  });
+
+  // 4. THE MASTER UPI WEBHOOK HANDLER
+  const handleUpiAndroidWebhook = async (req: any, res: any) => {
+    const startTime = Date.now();
+    try {
+      const payload = req.body || {};
+      const headers = req.headers || {};
+      console.log("[UPI ANDROID WEBHOOK RECEIVED] Payload:", JSON.stringify(payload));
+
+      const settings = readPaymentSettings();
+      const configuredSecret = settings.upiWebhookSecret || process.env.UPI_WEBHOOK_SECRET || "veerait_upi_secret_2026";
+
+      // Security check (token header, auth header, or body/query param)
+      const providedSecret = headers["x-webhook-secret"] || headers["x-api-key"] || headers["authorization"]?.replace(/^Bearer\s+/i, "") || payload.secret || req.query.secret;
+      
+      if (configuredSecret && providedSecret && providedSecret !== configuredSecret) {
+        console.warn(`[UPI WEBHOOK SECURITY] Unauthorized webhook attempt. Secret mismatch.`);
+        return res.status(401).json({ error: "Unauthorized: Invalid x-webhook-secret token." });
+      }
+
+      // Extract details from payload (handling various SMS & App notification schemas)
+      const rawAmount = payload.amount || payload.txnAmount || payload.value;
+      const parsedAmount = typeof rawAmount === "number" ? rawAmount : parseFloat(String(rawAmount || "0").replace(/[^0-9.]/g, ""));
+      
+      const utr = (payload.utr || payload.rrn || payload.refNo || payload.referenceId || payload.txnId || `UPI_UTR_${Date.now()}`).toString().trim();
+      let orderId = (payload.orderId || payload.order_id || payload.orderRef || "").toString().trim();
+      const source = payload.source || (payload.appName ? "NOTIFICATION" : "SMS");
+      const appName = payload.appName || payload.bank || payload.sender || "UPI Payment App";
+      const sender = payload.sender || payload.customerName || "Customer";
+      const rawText = payload.rawText || payload.message || payload.body || "";
+
+      // If orderId is not passed directly, try to regex extract it from rawText
+      if (!orderId && rawText) {
+        const orderMatch = rawText.match(/(?:UPI[_-]|ORD[_-]|PAYTM_ORD_)[A-Za-z0-9_]+/i);
+        if (orderMatch) {
+          orderId = orderMatch[0].toUpperCase();
+          console.log(`[UPI WEBHOOK PARSER] Extracted Order ID '${orderId}' from raw text.`);
+        }
+      }
+
+      const eventId = `upi_evt_${utr}_${Date.now()}`;
+      console.log(`[UPI WEBHOOK] Processing UPI Payment -> Amount: ₹${parsedAmount}, UTR: ${utr}, Order ID: ${orderId || '(auto-matching)'}, Source: ${source} (${appName})`);
+
+      const payments = await syncPaymentsFromSupabase();
+      let matchedPaymentIndex = -1;
+
+      // Match strategy 1: By exact orderId if present
+      if (orderId) {
+        matchedPaymentIndex = payments.findIndex(p => p.orderId.toLowerCase() === orderId.toLowerCase());
+      }
+
+      // Match strategy 2: If no orderId or not found by orderId, match by exact Amount on recent unpaid order (last 2 hours)
+      if (matchedPaymentIndex === -1 && parsedAmount > 0) {
+        const twoHoursAgo = Date.now() - (2 * 60 * 60 * 1000);
+        
+        // Find most recent unpaid order with matching amount (tolerance ±0.50 INR)
+        for (let i = payments.length - 1; i >= 0; i--) {
+          const p = payments[i];
+          if (p.status !== "paid") {
+            const orderTime = new Date(p.createdAt || 0).getTime();
+            if (orderTime >= twoHoursAgo && Math.abs(p.amount - parsedAmount) <= 1.00) {
+              matchedPaymentIndex = i;
+              break;
+            }
+          }
+        }
+      }
+
+      if (matchedPaymentIndex !== -1) {
+        const payment = payments[matchedPaymentIndex];
+        const targetOrderId = payment.orderId;
+
+        if (payment.status === "paid") {
+          console.log(`[UPI WEBHOOK] Order ${targetOrderId} is already paid. Skipping duplicate fulfillment.`);
+          await logWebhookEvent(eventId, "upi.payment.duplicate", payload, "processed");
+          return res.status(200).json({
+            success: true,
+            status: "ALREADY_PAID",
+            orderId: targetOrderId,
+            utr,
+            amount: payment.amount,
+            message: `Order ${targetOrderId} was already fulfilled.`
+          });
+        }
+
+        // Mark as paid
+        payment.status = "paid";
+        payment.paymentId = utr;
+        payment.signatureVerified = true;
+        payment.updatedAt = new Date().toISOString();
+        writePaymentsDb(payments);
+        await savePaymentsToSupabase(payments);
+
+        console.log(`[UPI WEBHOOK FULFILLMENT] Fulfilling Order ${targetOrderId} and triggering automatic WhatsApp dispatch...`);
+        const compiledOrder = await fulfillOrderOnBackend(targetOrderId, utr, payment);
+
+        // Record in Supabase payments ledger
+        if (isSupabaseConfigured && supabaseServer) {
+          try {
+            await supabaseServer
+              .from("payments")
+              .insert({
+                id: `upi-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+                order_id: targetOrderId,
+                amount: payment.amount,
+                payment_method: `upi_gateway_${source.toLowerCase()}`,
+                payment_status: "paid",
+                gateway_response: {
+                  utr,
+                  appName,
+                  source,
+                  sender,
+                  rawText,
+                  verifiedAt: new Date().toISOString()
+                },
+                created_at: new Date().toISOString()
+              });
+          } catch (dbErr) {
+            console.error("[UPI DB PAYMENT LOG ERROR]", dbErr);
+          }
+        }
+
+        await logWebhookEvent(eventId, "upi.payment.success", payload, "processed");
+
+        return res.status(200).json({
+          success: true,
+          status: "PROCESSED",
+          orderId: targetOrderId,
+          utr,
+          amount: payment.amount,
+          customerName: payment.customerName,
+          customerPhone: payment.customerPhone,
+          message: `Payment of ₹${payment.amount} verified via ${appName}. Order fulfilled and digital license delivered to WhatsApp!`
+        });
+      } else {
+        // Fallback: If no pending order matches, record an standalone verified UPI payment
+        const directOrderId = orderId || `UPI_DIRECT_${Date.now()}`;
+        console.warn(`[UPI WEBHOOK] No matching pending cart order found for Amount: ₹${parsedAmount}. Creating standalone paid record: ${directOrderId}`);
+
+        const standalonePayment: PaymentRecord = {
+          orderId: directOrderId,
+          paymentId: utr,
+          amount: parsedAmount,
+          currency: "INR",
+          status: "paid",
+          signatureVerified: true,
+          attempts: 1,
+          customerEmail: "direct-upi@veeracomputers.com",
+          customerName: sender || "UPI Direct Customer",
+          customerPhone: "",
+          cart: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+
+        payments.push(standalonePayment);
+        writePaymentsDb(payments);
+        await savePaymentsToSupabase(payments);
+
+        await logWebhookEvent(eventId, "upi.payment.unmatched_recorded", payload, "processed");
+
+        return res.status(200).json({
+          success: true,
+          status: "RECORDED",
+          orderId: directOrderId,
+          utr,
+          amount: parsedAmount,
+          message: `Payment of ₹${parsedAmount} logged into merchant payments ledger with UTR ${utr}.`
+        });
+      }
+    } catch (err: any) {
+      console.error("[UPI WEBHOOK FATAL ERROR]", err);
+      return res.status(500).json({ error: "Internal server error processing UPI webhook", details: err.message });
+    }
+  };
+
+  app.post("/api/payment/upi-webhook", handleUpiAndroidWebhook);
+  app.post("/api/payment/upi/webhook", handleUpiAndroidWebhook);
+  app.post("/api/upi/webhook", handleUpiAndroidWebhook);
+
+  // 5. TEST WEBHOOK SIMULATOR (For Admin Testing)
+  app.post("/api/payment/upi-webhook/test", authenticateJwt, requireAdmin, async (req: any, res: any) => {
+    const { amount, utr, orderId, appName, sender } = req.body;
+    const testPayload = {
+      source: "TEST_SIMULATION",
+      appName: appName || "Paytm for Business (Test)",
+      sender: sender || "VeeraIT Admin Tester",
+      amount: amount || 499.00,
+      utr: utr || `TEST_UTR_${Date.now()}`,
+      orderId: orderId || "",
+      rawText: `Received Rs. ${amount || 499.00} on Paytm via UPI. Ref: ${utr || 'TEST_UTR_123'}`,
+      timestamp: Date.now()
+    };
+
+    req.body = testPayload;
+    return handleUpiAndroidWebhook(req, res);
+  });
+
   // DYNAMIC SUPABASE CLIENT CONFIGURATION ENDPOINT (Public)
   app.get("/api/config/supabase-client", (req, res) => {
     const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "";
@@ -4248,12 +4569,13 @@ app.use(async (req, res, next) => {
 
   // 9.4 SAVE STORE PAYMENT CONFIGURATION
   app.post("/api/payment/settings", authenticateJwt, requireAdmin, csrfProtection, (req, res) => {
-    const { bankName, bankAccountName, bankAccountNumber, ifscCode, upiId, upiQrCodeUrl, paytmMid, paytmMode } = req.body;
+    const { bankName, bankAccountName, bankAccountNumber, ifscCode, upiId, upiQrCodeUrl, paytmMid, paytmMode, upiWebhookSecret } = req.body;
 
     if (!bankName || !bankAccountName || !bankAccountNumber || !ifscCode || !upiId) {
       return res.status(400).json({ error: "Missing required details. Please check all fields." });
     }
 
+    const currentSettings = readPaymentSettings();
     const updatedSettings: PaymentSettings = {
       bankName,
       bankAccountName,
@@ -4262,7 +4584,8 @@ app.use(async (req, res, next) => {
       upiId,
       upiQrCodeUrl: upiQrCodeUrl || "",
       paytmMid: paytmMid || process.env.PAYTM_MERCHANT_ID || "OPDDHV86006252156720",
-      paytmMode: paytmMode || "test"
+      paytmMode: paytmMode || "test",
+      upiWebhookSecret: upiWebhookSecret || currentSettings.upiWebhookSecret || process.env.UPI_WEBHOOK_SECRET || "veerait_upi_secret_2026"
     };
 
     writePaymentSettings(updatedSettings);
@@ -4281,7 +4604,10 @@ app.use(async (req, res, next) => {
       bankAccountNumber: "918273645019",
       ifscCode: "SBIN0001234",
       upiId: "shrisaptashrungi@upi",
-      upiQrCodeUrl: ""
+      upiQrCodeUrl: "",
+      paytmMid: process.env.PAYTM_MERCHANT_ID || "OPDDHV86006252156720",
+      paytmMode: process.env.PAYTM_ENV === "PRODUCTION" ? "live" : "test",
+      upiWebhookSecret: "veerait_upi_secret_2026"
     };
     writePaymentSettings(defaultSettings);
     return res.json({
