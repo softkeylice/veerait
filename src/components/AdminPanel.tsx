@@ -381,6 +381,10 @@ export default function AdminPanel({
       .catch(err => {
         console.error("Failed to load payment settings:", err);
       });
+
+    if (activeTab === 'payments' || activeTab === 'webhook-logs') {
+      fetchWebhookLogs();
+    }
   }, [activeTab]);
 
   const fetchWhatsappLogs = async () => {
@@ -6265,24 +6269,34 @@ export default function AdminPanel({
                       </p>
                       <p className="text-[11px] text-slate-500">Test if your server correctly receives, logs, and processes Android payment alerts.</p>
                     </div>
-                    <button
-                      type="button"
-                      disabled={isTestingUpiWebhook}
-                      onClick={handleTestUpiWebhook}
-                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shrink-0 shadow-xs"
-                    >
-                      {isTestingUpiWebhook ? (
-                        <>
-                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                          Simulating Payment...
-                        </>
-                      ) : (
-                        <>
-                          <span>⚡</span>
-                          Send Test Payment Alert (₹499)
-                        </>
-                      )}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={fetchWebhookLogs}
+                        className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 cursor-pointer border border-slate-200 shadow-xs"
+                      >
+                        <RefreshCw className={`w-3.5 h-3.5 ${isLoadingWebhooks ? 'animate-spin' : ''}`} />
+                        Refresh Live Events
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isTestingUpiWebhook}
+                        onClick={handleTestUpiWebhook}
+                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shrink-0 shadow-xs"
+                      >
+                        {isTestingUpiWebhook ? (
+                          <>
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            Simulating Payment...
+                          </>
+                        ) : (
+                          <>
+                            <span>⚡</span>
+                            Send Test Payment Alert (₹499)
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
 
                   {upiTestResult && (
@@ -6299,6 +6313,60 @@ export default function AdminPanel({
                       )}
                     </div>
                   )}
+
+                  {/* Real-time received webhook messages from mobile app */}
+                  <div className="bg-white border border-emerald-200 rounded-xl p-4 shadow-xs space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h6 className="text-xs font-bold text-slate-800 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Recent Live Android App Webhook Inbound Alerts (From Phone)
+                      </h6>
+                      <button
+                        type="button"
+                        onClick={fetchWebhookLogs}
+                        className="text-[11px] text-emerald-700 hover:text-emerald-900 font-bold hover:underline"
+                      >
+                        Check New Messages
+                      </button>
+                    </div>
+
+                    {webhookLogs.filter(l => l.event && l.event.includes('upi')).length === 0 ? (
+                      <div className="p-4 bg-slate-50 border border-dashed border-slate-200 rounded-lg text-center">
+                        <p className="text-xs text-slate-500">
+                          No mobile app UPI webhooks received yet. Send a test message or payment from your Android App to see it appear here instantly!
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-emerald-100 max-h-56 overflow-y-auto">
+                        {webhookLogs
+                          .filter(l => l.event && l.event.includes('upi'))
+                          .slice(0, 5)
+                          .map((log, idx) => (
+                            <div key={idx} className="py-2.5 flex items-center justify-between text-xs gap-3">
+                              <div className="space-y-0.5">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold text-slate-900 font-mono">
+                                    UTR: {log.payload?.utr || log.payload?.paymentId || log.eventId}
+                                  </span>
+                                  <span className="bg-emerald-100 text-emerald-800 font-extrabold text-[10px] px-2 py-0.5 rounded-full">
+                                    ₹{log.payload?.amount || '499.00'}
+                                  </span>
+                                  <span className="text-[10px] text-slate-400">
+                                    {new Date(log.processedAt || Date.now()).toLocaleTimeString()}
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-slate-600 truncate max-w-md">
+                                  {log.payload?.message || log.payload?.sender || log.payload?.appName || 'Bank SMS / Notification Auto-Captured'}
+                                </p>
+                              </div>
+                              <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded-md shrink-0">
+                                Processed & Verified
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="pt-4 border-t border-slate-100 flex justify-between items-center gap-4">
