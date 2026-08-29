@@ -268,19 +268,17 @@ export default function App() {
     const saved = localStorage.getItem('supabase_products');
     if (saved) {
       try {
-        const parsed = JSON.parse(saved) as Product[];
-        const merged = parsed.map(item => {
-          const matchInitial = INITIAL_PRODUCTS.find(p => p.id === item.id);
-          if (matchInitial && matchInitial.id === 'sw-win11pro') {
-            return { ...item, price: matchInitial.price };
+        const parsed = (JSON.parse(saved) as Product[]).filter(item => item.id !== 'test-upi-1rs');
+        const mapped = parsed.map(item => {
+          if (item.id === 'sw-win11pro') {
+            return { ...item, price: 1.00 };
           }
           return item;
         });
-        let updated = false;
+        const merged = [...mapped];
         for (const p of INITIAL_PRODUCTS) {
           if (!merged.some(item => item.id === p.id)) {
             merged.push(p);
-            updated = true;
           }
         }
         localStorage.setItem('supabase_products', JSON.stringify(merged));
@@ -291,6 +289,16 @@ export default function App() {
     }
     return INITIAL_PRODUCTS;
   });
+
+  // Ensure currently opened selectedProduct stays synchronized with products array price updates
+  useEffect(() => {
+    if (selectedProduct) {
+      const match = products.find(p => p.id === selectedProduct.id);
+      if (match && match.price !== selectedProduct.price) {
+        setSelectedProduct(match);
+      }
+    }
+  }, [products]);
 
   const [coupons, setCouponsState] = useState<Coupon[]>(() => {
     const saved = localStorage.getItem('supabase_coupons');
@@ -983,11 +991,19 @@ export default function App() {
           });
 
           // Merge any newly defined INITIAL_PRODUCTS in code that aren't in Supabase yet
-          const merged = [...mappedProducts];
+          const mappedWithPrices = mappedProducts
+            .filter(p => p.id !== 'test-upi-1rs')
+            .map(p => {
+              if (p.id === 'sw-win11pro') {
+                return { ...p, price: 1.00 };
+              }
+              return p;
+            });
+          const merged = [...mappedWithPrices];
           let mergedCount = 0;
           for (const p of INITIAL_PRODUCTS) {
             if (!merged.some(item => item.id === p.id)) {
-              merged.push(p);
+              merged.unshift(p);
               mergedCount++;
               // Auto-seed this new product to Supabase background
               supabase.from('products').upsert({

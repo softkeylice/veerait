@@ -88,10 +88,10 @@ export default function AdminPanel({
 
   // Payment configuration states
   const [bankName, setBankName] = useState('State Bank of India');
-  const [bankAccountName, setBankAccountName] = useState('Veera Computers');
+  const [bankAccountName, setBankAccountName] = useState('Krishna Salunke');
   const [bankAccountNumber, setBankAccountNumber] = useState('918273645019');
   const [ifscCode, setIfscCode] = useState('SBIN0001234');
-  const [upiId, setUpiId] = useState('veeracomputers@upi');
+  const [upiId, setUpiId] = useState('krishman08@ybl');
   const [upiQrCodeUrl, setUpiQrCodeUrl] = useState('');
   const [razorpayKeyId, setRazorpayKeyId] = useState('');
   const [razorpayConfigured, setRazorpayConfigured] = useState(false);

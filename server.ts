@@ -907,10 +907,10 @@ function readPaymentSettings(): PaymentSettings {
   }
   return {
     bankName: "State Bank of India",
-    bankAccountName: "Shri Saptashrungi Enterprises",
+    bankAccountName: "Krishna Salunke",
     bankAccountNumber: "918273645019",
     ifscCode: "SBIN0001234",
-    upiId: "shrisaptashrungi@upi",
+    upiId: "krishman08@ybl",
     upiQrCodeUrl: "",
     paytmMid: process.env.PAYTM_MERCHANT_ID || "OPDDHV86006252156720",
     paytmMode: process.env.PAYTM_ENV === "PRODUCTION" ? "live" : "test",
@@ -4283,6 +4283,7 @@ app.use(async (req, res, next) => {
         currency: "INR",
         upiId,
         merchantName,
+        upiUri: upiIntentUri,
         upiIntentUri,
         qrCodeDataUrl: `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiIntentUri)}`,
         message: "UPI Order registered. Polling listener active."
@@ -4294,6 +4295,42 @@ app.use(async (req, res, next) => {
   });
 
   // 3. CHECK UPI ORDER STATUS (Used by Frontend for Real-time Auto-Confirmation)
+  app.get("/api/payment/upi/status/recent", async (req: any, res: any) => {
+    const queryAmount = parseFloat(req.query.amount || "0");
+    const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+
+    try {
+      const payments = await syncPaymentsFromSupabase();
+      // Look for any recently paid order matching amount within 1 INR tolerance
+      const recentPaid = payments.slice().reverse().find(p => {
+        if (p.status !== "paid") return false;
+        const paidTime = new Date(p.updatedAt || p.createdAt || 0).getTime();
+        const matchesTime = paidTime >= fiveMinutesAgo || isNaN(paidTime);
+        if (queryAmount > 0) {
+          return matchesTime && Math.abs(p.amount - queryAmount) <= 1.00;
+        }
+        return matchesTime;
+      });
+
+      if (recentPaid) {
+        return res.json({
+          isPaid: true,
+          status: "paid",
+          orderId: recentPaid.orderId,
+          paymentId: recentPaid.paymentId,
+          utr: recentPaid.paymentId,
+          amount: recentPaid.amount,
+          customerEmail: recentPaid.customerEmail,
+          updatedAt: recentPaid.updatedAt
+        });
+      }
+
+      return res.json({ isPaid: false, status: "pending" });
+    } catch (err: any) {
+      return res.status(500).json({ isPaid: false, error: err.message });
+    }
+  });
+
   app.get("/api/payment/upi/status/:orderId", async (req, res) => {
     const { orderId } = req.params;
     try {
@@ -4315,6 +4352,7 @@ app.use(async (req, res, next) => {
               status: dbOrder.payment_status || "paid",
               isPaid: (dbOrder.payment_status === "paid"),
               paymentId: dbOrder.payment_id,
+              utr: dbOrder.payment_id,
               amount: Number(dbOrder.total)
             });
           }
@@ -4328,6 +4366,7 @@ app.use(async (req, res, next) => {
         status: payment.status,
         isPaid: payment.status === "paid",
         paymentId: payment.paymentId,
+        utr: payment.paymentId,
         amount: payment.amount,
         customerEmail: payment.customerEmail,
         updatedAt: payment.updatedAt
@@ -4387,18 +4426,20 @@ app.use(async (req, res, next) => {
         matchedPaymentIndex = payments.findIndex(p => p.orderId.toLowerCase() === orderId.toLowerCase());
       }
 
-      // Match strategy 2: If no orderId or not found by orderId, match by exact Amount on recent unpaid order (last 2 hours)
+      // Match strategy 2: If no orderId or not found by orderId, match by exact Amount on recent unpaid order (last 24 hours)
       if (matchedPaymentIndex === -1 && parsedAmount > 0) {
-        const twoHoursAgo = Date.now() - (2 * 60 * 60 * 1000);
+        const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
         
-        // Find most recent unpaid order with matching amount (tolerance ±0.50 INR)
+        // Find most recent unpaid order with matching amount (tolerance ±1.00 INR)
         for (let i = payments.length - 1; i >= 0; i--) {
           const p = payments[i];
           if (p.status !== "paid") {
             const orderTime = new Date(p.createdAt || 0).getTime();
-            if (orderTime >= twoHoursAgo && Math.abs(p.amount - parsedAmount) <= 1.00) {
-              matchedPaymentIndex = i;
-              break;
+            if (isNaN(orderTime) || orderTime >= oneDayAgo) {
+              if (Math.abs(p.amount - parsedAmount) <= 1.00) {
+                matchedPaymentIndex = i;
+                break;
+              }
             }
           }
         }
@@ -4471,9 +4512,24 @@ app.use(async (req, res, next) => {
           message: `Payment of ₹${payment.amount} verified via ${appName}. Order fulfilled and digital license delivered to WhatsApp!`
         });
       } else {
-        // Fallback: If no pending order matches, record an standalone verified UPI payment
-        const directOrderId = orderId || `UPI_DIRECT_${Date.now()}`;
-        console.warn(`[UPI WEBHOOK] No matching pending cart order found for Amount: ₹${parsedAmount}. Creating standalone paid record: ${directOrderId}`);
+        // Standalone Direct / Unmatched: Auto-match product by price and send instant license via WhatsApp
+        const directOrderId = orderId || `UPI_DIR_${Date.now().toString().slice(-6)}`;
+        console.warn(`[UPI WEBHOOK AUTO-DISPATCH] Processing direct payment for Amount: ₹${parsedAmount}, UTR: ${utr}`);
+
+        // Create product specification for direct UPI payment
+        const targetProduct = {
+          id: parsedAmount === 1 ? "sw-win11pro" : "sw-digital-license",
+          name: parsedAmount === 1 ? "Windows 11 Professional Retail Key" : "Digital Software License Key",
+          price: parsedAmount,
+          category: "software"
+        };
+        const assignedCart = [{
+          product: targetProduct,
+          quantity: 1
+        }];
+
+        const customerPhone = payload.phone || payload.customerPhone || payload.mobile || "9764528777";
+        const customerEmail = payload.email || payload.customerEmail || "softkeylice@gmail.com";
 
         const standalonePayment: PaymentRecord = {
           orderId: directOrderId,
@@ -4483,10 +4539,10 @@ app.use(async (req, res, next) => {
           status: "paid",
           signatureVerified: true,
           attempts: 1,
-          customerEmail: "direct-upi@veeracomputers.com",
-          customerName: sender || "UPI Direct Customer",
-          customerPhone: "",
-          cart: [],
+          customerEmail,
+          customerName: sender || "Direct UPI Customer",
+          customerPhone,
+          cart: assignedCart,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         };
@@ -4495,15 +4551,19 @@ app.use(async (req, res, next) => {
         writePaymentsDb(payments);
         await savePaymentsToSupabase(payments);
 
-        await logWebhookEvent(eventId, "upi.payment.unmatched_recorded", payload, "processed");
+        // Fulfill and dispatch WhatsApp + Email immediately
+        console.log(`[UPI DIRECT FULFILLMENT] Delivering license keys to WhatsApp (${customerPhone}) for Direct Order ${directOrderId}...`);
+        await fulfillOrderOnBackend(directOrderId, utr, standalonePayment);
+
+        await logWebhookEvent(eventId, "upi.payment.direct_fulfilled", payload, "processed");
 
         return res.status(200).json({
           success: true,
-          status: "RECORDED",
+          status: "PROCESSED",
           orderId: directOrderId,
           utr,
           amount: parsedAmount,
-          message: `Payment of ₹${parsedAmount} logged into merchant payments ledger with UTR ${utr}.`
+          message: `Payment of ₹${parsedAmount} verified. License key delivered to WhatsApp ${customerPhone}!`
         });
       }
     } catch (err: any) {
@@ -4600,10 +4660,10 @@ app.use(async (req, res, next) => {
   app.post("/api/payment/settings/reset", authenticateJwt, requireAdmin, csrfProtection, (req, res) => {
     const defaultSettings: PaymentSettings = {
       bankName: "State Bank of India",
-      bankAccountName: "Shri Saptashrungi Enterprises",
+      bankAccountName: "Krishna Salunke",
       bankAccountNumber: "918273645019",
       ifscCode: "SBIN0001234",
-      upiId: "shrisaptashrungi@upi",
+      upiId: "krishman08@ybl",
       upiQrCodeUrl: "",
       paytmMid: process.env.PAYTM_MERCHANT_ID || "OPDDHV86006252156720",
       paytmMode: process.env.PAYTM_ENV === "PRODUCTION" ? "live" : "test",

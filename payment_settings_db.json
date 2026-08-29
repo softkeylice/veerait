@@ -1,0 +1,11 @@
+{
+  "bankName": "State Bank of India",
+  "bankAccountName": "Krishna Salunke",
+  "bankAccountNumber": "918273645019",
+  "ifscCode": "SBIN0001234",
+  "upiId": "krishman08@ybl",
+  "upiQrCodeUrl": "",
+  "paytmMid": "OPDDHV86006252156720",
+  "paytmMode": "test",
+  "upiWebhookSecret": "veerait_upi_secret_2026"
+}
