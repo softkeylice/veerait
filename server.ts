@@ -4618,9 +4618,9 @@ app.use(async (req, res, next) => {
   });
 
   // 9.4C GET WEBHOOK EVENT AUDIT LOGS (Admin only)
-  app.get("/api/admin/webhook-logs", authenticateJwt, requireAdmin, (req, res) => {
+  app.get("/api/admin/webhook-logs", authenticateJwt, requireAdmin, async (req, res) => {
     try {
-      const logs = readWebhooksDb();
+      const logs = await syncWebhookLogsFromSupabase();
       const sortedLogs = [...logs].sort((a, b) => new Date(b.processedAt).getTime() - new Date(a.processedAt).getTime());
       return res.json({
         success: true,
@@ -4633,9 +4633,10 @@ app.use(async (req, res, next) => {
   });
 
   // 9.4D CLEAR WEBHOOK EVENT AUDIT LOGS (Admin only)
-  app.post("/api/admin/webhook-logs/clear", authenticateJwt, requireAdmin, csrfProtection, (req, res) => {
+  app.post("/api/admin/webhook-logs/clear", authenticateJwt, requireAdmin, csrfProtection, async (req, res) => {
     try {
       writeWebhooksDb([]);
+      await saveWebhookLogsToSupabase([]);
       return res.json({
         success: true,
         message: "Webhook event audit logs cleared successfully."

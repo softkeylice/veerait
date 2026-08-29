@@ -269,7 +269,13 @@ export default function App() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved) as Product[];
-        const merged = [...parsed];
+        const merged = parsed.map(item => {
+          const matchInitial = INITIAL_PRODUCTS.find(p => p.id === item.id);
+          if (matchInitial && matchInitial.id === 'sw-win11pro') {
+            return { ...item, price: matchInitial.price };
+          }
+          return item;
+        });
         let updated = false;
         for (const p of INITIAL_PRODUCTS) {
           if (!merged.some(item => item.id === p.id)) {
@@ -277,9 +283,7 @@ export default function App() {
             updated = true;
           }
         }
-        if (updated) {
-          localStorage.setItem('supabase_products', JSON.stringify(merged));
-        }
+        localStorage.setItem('supabase_products', JSON.stringify(merged));
         return merged;
       } catch (e) {
         return INITIAL_PRODUCTS;

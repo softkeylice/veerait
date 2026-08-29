@@ -20,7 +20,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     longDescription: 'Upgrade your operating system to Windows 11 Pro and unlock advanced security, productivity tools, and business features. This retail activation key is bound to your Microsoft account, supporting reinstallations and transfers. Features include BitLocker encryption, Windows Information Protection, and full integration with Azure Active Directory.',
     category: 'software',
     brandCategory: 'Windows',
-    price: 2499.00,
+    price: 10.00,
     originalPrice: 14999.00,
     image: 'https://images.unsplash.com/photo-1625014020973-1129b11a1908?auto=format&fit=crop&q=80&w=600',
     rating: 4.9,
