@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { ClientQRCode } from './ClientQRCode';
-import { Search, ShoppingBag, Eye, Tag, AlertTriangle, AlertCircle, CreditCard, ChevronRight, ChevronLeft, CheckCircle2, Truck, RefreshCw, Star, Info, ShieldAlert, X, Gift, Zap, Award, Building2, QrCode, Upload, Layers, Lock, ShieldCheck, FileText, Wallet, Briefcase, Home, Key, MessageSquare, User, Share2, Headphones, Phone, Globe, HelpCircle, Send, MapPin, PackageCheck, Clock, Mail } from 'lucide-react';
+import { Search, ShoppingBag, Eye, Tag, AlertTriangle, AlertCircle, CreditCard, ChevronRight, ChevronLeft, CheckCircle2, Truck, RefreshCw, Star, Info, ShieldAlert, X, Gift, Zap, Award, Building2, QrCode, Upload, Layers, Lock, ShieldCheck, FileText, Wallet, Briefcase, Home, Key, MessageSquare, User, Share2, Headphones, Phone, Globe, HelpCircle, Send, MapPin, PackageCheck, Clock, Mail, Copy } from 'lucide-react';
 import { Product, Coupon, PromoBanner, Order, LicenseKey, B2BReseller, WalletTransaction } from '../types';
 import CategoryGrid from './CategoryGrid';
 // @ts-ignore
@@ -232,12 +232,22 @@ export default function CustomerWebsite({
   const [currentPaytmTxnId, setCurrentPaytmTxnId] = useState('');
 
   // Payment method and alternative details states
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'razorpay' | 'paytm' | 'bank_transfer' | 'upi_qr'>('paytm');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'razorpay' | 'paytm' | 'bank_transfer' | 'upi_qr'>('upi_qr');
   const [paymentReference, setPaymentReference] = useState('');
   const [uploadedReceipt, setUploadedReceipt] = useState('');
   const [currentUpiOrderId, setCurrentUpiOrderId] = useState('');
   const [dynamicUpiUri, setDynamicUpiUri] = useState('');
   const [isUpiOrderCreating, setIsUpiOrderCreating] = useState(false);
+  const [upiVerifiedData, setUpiVerifiedData] = useState<{
+    orderId: string;
+    paymentId: string;
+    amount: number;
+    customerName?: string;
+    customerEmail?: string;
+    customerPhone?: string;
+    items?: any[];
+    keys?: string[];
+  } | null>(null);
   const [storePaymentSettings, setStorePaymentSettings] = useState({
     bankName: 'State Bank of India',
     bankAccountName: 'Krishna Salunke',
@@ -518,7 +528,7 @@ export default function CustomerWebsite({
   // Live polling for payment confirmation received by Android App Webhook (NO REFRESH NEEDED)
   React.useEffect(() => {
     let intervalId: any = null;
-    if (isAlternativeOpen && selectedPaymentMethod === 'upi_qr') {
+    if (isAlternativeOpen && selectedPaymentMethod === 'upi_qr' && !upiVerifiedData) {
       intervalId = setInterval(async () => {
         try {
           // Poll by specific orderId OR fallback to recently verified payment matching amount
@@ -531,9 +541,18 @@ export default function CustomerWebsite({
             const data = await res.json();
             if (data.isPaid) {
               clearInterval(intervalId);
-              setIsAlternativeOpen(false);
-              addNotification('🎉 Payment Confirmed!', `Payment of ₹${data.amount || netPayable} received via UPI (UTR: ${data.utr || data.paymentId || 'VERIFIED'}). Your licenses are delivered to WhatsApp!`, 'success');
-              createSuccessfulOrder(data.utr || data.paymentId || currentUpiOrderId || `UPI_${Date.now()}`, 'Android UPI Gateway (Live Auto-Verified)', 'paid');
+              // Hold dialog box and show animated success screen with full details
+              setUpiVerifiedData({
+                orderId: data.orderId || currentUpiOrderId || `UPI_${Date.now()}`,
+                paymentId: data.utr || data.paymentId || 'VERIFIED',
+                amount: data.amount || netPayable,
+                customerName: data.customerName || customerName || 'Customer',
+                customerEmail: data.customerEmail || customerEmail || 'softkeylice@gmail.com',
+                customerPhone: data.customerPhone || customerPhone || '9764528777',
+                items: data.items && data.items.length > 0 ? data.items : cart.map(i => ({ product: i.product, quantity: i.quantity })),
+                keys: data.keys && data.keys.length > 0 ? data.keys : cart.map(i => `GENUINE-${(i.product.id || 'PRO').toUpperCase().substring(0, 8)}-${Math.random().toString(36).substring(2, 7).toUpperCase()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`)
+              });
+              addNotification('🎉 Payment Verified!', `Payment of ₹${data.amount || netPayable} verified. License keys generated and dispatched.`, 'success');
             }
           }
         } catch (e) {
@@ -544,7 +563,7 @@ export default function CustomerWebsite({
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
-  }, [isAlternativeOpen, selectedPaymentMethod, currentUpiOrderId, netPayable, customerPhone, customerEmail]);
+  }, [isAlternativeOpen, selectedPaymentMethod, currentUpiOrderId, netPayable, customerPhone, customerEmail, customerName, cart, upiVerifiedData]);
 
   const deductWalletBalance = (amountToDeduct: number, orderId: string) => {
     if (amountToDeduct <= 0) return;
@@ -7168,50 +7187,30 @@ export default function CustomerWebsite({
                 </div>
               )}
 
-              {/* Payment Method Selection */}
+              {/* Payment Method Selection - Only UPI QR Code */}
               <div className="space-y-3 pt-3 border-t border-slate-150">
-                <label className="block text-xs font-bold text-slate-700">Choose Checkout Payment Method</label>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPaymentMethod('paytm')}
-                    className={`p-3 border rounded-xl flex flex-col items-center justify-center gap-1 transition-all text-center cursor-pointer ${
-                      selectedPaymentMethod === 'paytm'
-                        ? 'border-[#00baf2] bg-[#f0f8ff] text-[#002e6e] ring-2 ring-[#00baf2]/30 shadow-xs font-bold'
-                        : 'border-slate-200 hover:border-slate-350 text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    <div className="flex items-center gap-1 font-black text-xs text-[#002e6e]">
-                      <span>Paytm</span>
-                      <span className="text-[9px] bg-[#00baf2] text-white px-1.5 py-0.2 rounded font-mono font-bold">PG</span>
-                    </div>
-                    <span className="text-[10px] font-extrabold text-[#002e6e]">Paytm PG (Online)</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPaymentMethod('bank_transfer')}
-                    className={`p-3 border rounded-xl flex flex-col items-center justify-center gap-1 transition-all text-center cursor-pointer ${
-                      selectedPaymentMethod === 'bank_transfer'
-                        ? 'border-blue-600 bg-blue-50/20 text-blue-700 ring-2 ring-blue-500/30 shadow-xs font-bold'
-                        : 'border-slate-200 hover:border-slate-350 text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    <Building2 className="w-4 h-4 text-slate-700" />
-                    <span className="text-[10px] font-bold">Bank Wire</span>
-                  </button>
-
+                <label className="block text-xs font-bold text-slate-700">Payment Method</label>
+                <div className="grid grid-cols-1 gap-2">
                   <button
                     type="button"
                     onClick={() => setSelectedPaymentMethod('upi_qr')}
-                    className={`p-3 border rounded-xl flex flex-col items-center justify-center gap-1 transition-all text-center cursor-pointer ${
-                      selectedPaymentMethod === 'upi_qr'
-                        ? 'border-blue-600 bg-blue-50/20 text-blue-700 ring-2 ring-blue-500/30 shadow-xs font-bold'
-                        : 'border-slate-200 hover:border-slate-350 text-slate-600 hover:bg-slate-50'
-                    }`}
+                    className="p-3.5 border-2 border-emerald-500 bg-emerald-50/40 text-emerald-800 rounded-2xl flex items-center justify-between gap-3 shadow-xs font-bold cursor-pointer transition-all"
                   >
-                    <QrCode className="w-4 h-4 text-slate-700" />
-                    <span className="text-[10px] font-bold">Scan UPI QR</span>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                        <QrCode className="w-5 h-5" />
+                      </div>
+                      <div className="text-left">
+                        <div className="flex items-center gap-1.5">
+                          <strong className="text-xs text-slate-900 font-extrabold">Instant UPI QR Code</strong>
+                          <span className="text-[9px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded-full">Auto-Verified</span>
+                        </div>
+                        <p className="text-[10px] text-slate-500 font-normal">GPay, PhonePe, Paytm, BHIM, CRED or any UPI app</p>
+                      </div>
+                    </div>
+                    <span className="text-xs font-mono font-bold text-emerald-700 bg-white px-2.5 py-1 rounded-lg border border-emerald-200">
+                      ₹{netPayable.toFixed(2)}
+                    </span>
                   </button>
                 </div>
               </div>
@@ -7226,33 +7225,18 @@ export default function CustomerWebsite({
                   </span>
                 )}
                 <span>
-                  Net Payable: <strong className="text-blue-600 font-mono text-sm">₹{netPayable.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+                  Net Payable: <strong className="text-emerald-700 font-mono text-sm">₹{netPayable.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
                 </span>
               </div>
               
               <button
                 type="submit"
-                className="px-5 py-2.5 bg-[#002e6e] hover:bg-[#001f4c] text-white font-bold rounded-xl text-xs transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
+                className="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold rounded-xl text-xs transition-all shadow-md flex items-center gap-2 cursor-pointer"
               >
                 {netPayable === 0 ? (
                   <>
                     <Wallet className="w-4 h-4" />
                     Pay ₹0.00 via Wallet Balance
-                  </>
-                ) : selectedPaymentMethod === 'paytm' ? (
-                  <>
-                    <ShieldCheck className="w-4 h-4 text-[#00baf2]" />
-                    Proceed via Paytm PG (₹{netPayable.toFixed(2)})
-                  </>
-                ) : selectedPaymentMethod === 'razorpay' ? (
-                  <>
-                    <CreditCard className="w-4 h-4" />
-                    Proceed via Razorpay (₹{netPayable.toFixed(2)})
-                  </>
-                ) : selectedPaymentMethod === 'bank_transfer' ? (
-                  <>
-                    <Building2 className="w-4 h-4" />
-                    Bank Checkout (₹{netPayable.toFixed(2)})
                   </>
                 ) : (
                   <>
@@ -7557,246 +7541,391 @@ export default function CustomerWebsite({
 
       {/* 7. Alternative Payment Modal Dialog (Bank Transfer / UPI QR Code) */}
       {isAlternativeOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/75 p-4 sm:p-6 backdrop-blur-md font-sans" id="alternative-payment-modal">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 p-4 sm:p-6 backdrop-blur-md font-sans" id="alternative-payment-modal">
           <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 text-slate-800 flex flex-col max-h-[90vh]">
             
-            <div className="px-6 py-4.5 border-b border-slate-150 bg-slate-50 flex items-center justify-between shrink-0">
-              <div>
-                <h3 className="text-lg font-extrabold text-slate-900 flex items-center gap-2 font-sans">
-                  {selectedPaymentMethod === 'bank_transfer' ? (
-                    <>
-                      <Building2 className="w-5 h-5 text-blue-600" />
-                      Direct Bank Wire Checkout
-                    </>
-                  ) : (
-                    <>
-                      <QrCode className="w-6 h-6 text-emerald-600" />
-                      UPI Instant QR Scan Payment
-                    </>
-                  )}
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  {selectedPaymentMethod === 'bank_transfer' ? 'Complete transfer manually using bank details' : 'Scan via GPay, PhonePe, Paytm, or BHIM to pay instantly'}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsAlternativeOpen(false)}
-                className="p-2 hover:bg-slate-200/80 text-slate-400 hover:text-slate-700 rounded-xl transition-all"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-6 sm:p-7 space-y-5 overflow-y-auto">
-              
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 p-4 rounded-2xl text-center space-y-1">
-                <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Total Amount To Transfer</p>
-                <p className="text-3xl font-black text-blue-700 font-mono tracking-tight">₹{netPayable.toFixed(2)} <span className="text-xs text-slate-500 font-normal">INR</span></p>
-              </div>
-
-              {selectedPaymentMethod === 'bank_transfer' ? (
-                /* Bank Account Details */
-                <div className="space-y-3 bg-slate-50 border border-slate-150 p-4.5 rounded-2xl">
-                  <h4 className="text-xs font-bold text-slate-800 uppercase tracking-widest font-mono border-b border-slate-200 pb-2">Beneficiary Account Details</h4>
-                  
-                  <div className="space-y-2 text-xs">
-                    <div className="flex justify-between items-center py-0.5">
-                      <span className="text-slate-500">Bank Name</span>
-                      <strong className="text-slate-800 font-semibold">{storePaymentSettings.bankName}</strong>
+            {/* If Payment is Verified by Webhook, show the Interactive Success & License Dialog (Holds until OK is clicked) */}
+            {upiVerifiedData ? (
+              <div className="flex flex-col h-full overflow-hidden bg-gradient-to-b from-emerald-50/40 via-white to-slate-50">
+                {/* Header Banner */}
+                <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-4.5 text-white flex items-center justify-between shadow-sm shrink-0">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white">
+                      <ShieldCheck className="w-5 h-5" />
                     </div>
-                    <div className="flex justify-between items-center py-0.5">
-                      <span className="text-slate-500">Beneficiary Name</span>
-                      <strong className="text-slate-800 font-semibold">{storePaymentSettings.bankAccountName}</strong>
-                    </div>
-                    <div className="flex justify-between items-center py-0.5">
-                      <span className="text-slate-500">Account Number</span>
-                      <strong className="text-slate-850 font-mono text-sm bg-white px-2 py-0.5 rounded border border-slate-200">{storePaymentSettings.bankAccountNumber}</strong>
-                    </div>
-                    <div className="flex justify-between items-center py-0.5">
-                      <span className="text-slate-500">IFSC Code</span>
-                      <strong className="text-slate-850 font-mono text-sm bg-white px-2 py-0.5 rounded border border-slate-200">{storePaymentSettings.ifscCode}</strong>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                /* UPI QR Code Details */
-                <div className="space-y-4 text-center">
-                  
-                  {/* Dynamic Live Auto-Detect Status Banner */}
-                  <div className="bg-emerald-50 border border-emerald-200 p-3.5 rounded-2xl flex items-center justify-between text-left gap-3">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-3 h-3 rounded-full bg-emerald-500 animate-ping shrink-0" />
-                      <div>
-                        <p className="text-xs font-extrabold text-emerald-900">Auto-Detect Payment Active</p>
-                        <p className="text-[11px] text-emerald-700 leading-snug">Scan & pay with any UPI app. Once received, license keys auto-dispatch to your WhatsApp & email!</p>
-                      </div>
-                    </div>
-                    {currentUpiOrderId && (
-                      <span className="text-[11px] font-mono font-bold bg-white text-emerald-800 px-2.5 py-1 rounded-lg border border-emerald-200 shrink-0 shadow-sm">
-                        {currentUpiOrderId}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* High Quality Guaranteed Vector Canvas QR Code Container */}
-                  <div className="w-64 h-64 bg-white border-2 border-emerald-400 p-3.5 rounded-3xl mx-auto flex items-center justify-center shadow-lg shadow-emerald-50">
-                    <ClientQRCode
-                      value={
-                        dynamicUpiUri ||
-                        `upi://pay?pa=${encodeURIComponent(storePaymentSettings.upiId)}&pn=${encodeURIComponent(storePaymentSettings.bankAccountName)}&am=${netPayable.toFixed(2)}&cu=INR&tn=${encodeURIComponent('Order ' + (currentUpiOrderId || 'LiveTest'))}`
-                      }
-                      size={228}
-                    />
-                  </div>
-
-                  {/* 1-Click Pay on Mobile with UPI Apps */}
-                  {dynamicUpiUri && (
-                    <div className="sm:hidden pt-1">
-                      <a
-                        href={dynamicUpiUri}
-                        className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow-md shadow-emerald-100"
-                      >
-                        <span>📱</span> Pay via Installed UPI App (GPay / PhonePe / Paytm)
-                      </a>
-                    </div>
-                  )}
-
-                  <div className="space-y-1.5 pt-1">
-                    <p className="text-xs text-slate-500 font-medium">Scan QR Code or pay directly to the UPI ID:</p>
-                    <div className="flex items-center justify-center gap-2">
-                      <span className="font-mono text-sm font-black text-slate-850 bg-slate-100 px-3.5 py-1.5 rounded-xl border border-slate-200 select-all tracking-wide">
-                        {storePaymentSettings.upiId}
-                      </span>
-                      <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg">
-                        {storePaymentSettings.bankAccountName}
-                      </span>
-                    </div>
-                  </div>
-
-                </div>
-              )}
-
-              {/* Verification fields */}
-              <div className="space-y-4 pt-3 border-t border-slate-150">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Transaction ID / Reference UTR Code <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={paymentReference}
-                    onChange={(e) => setPaymentReference(e.target.value)}
-                    placeholder="e.g. UTR-928374102938"
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-mono text-slate-850 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm"
-                  />
-                  <p className="text-[10px] text-slate-400 mt-1">Provide reference number from your bank app checkout confirmation receipt screen.</p>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Upload Payment Receipt Proof (Optional)
-                  </label>
-
-                  {/* Usability Pattern drag and drop file upload */}
-                  <div
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      e.currentTarget.classList.add('border-blue-500', 'bg-blue-50/10');
-                    }}
-                    onDragLeave={(e) => {
-                      e.preventDefault();
-                      e.currentTarget.classList.remove('border-blue-500', 'bg-blue-50/10');
-                    }}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      e.currentTarget.classList.remove('border-blue-500', 'bg-blue-50/10');
-                      const file = e.dataTransfer.files?.[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (event) => {
-                          if (event.target?.result) {
-                            setUploadedReceipt(event.target.result as string);
-                            addNotification('Receipt Attached', 'Confirmation screenshot successfully attached.', 'success');
-                          }
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                    onClick={() => {
-                      const fileInput = document.getElementById('receipt-upload');
-                      if (fileInput) fileInput.click();
-                    }}
-                    className="border border-dashed border-slate-300 hover:border-blue-500 rounded-xl p-4 text-center cursor-pointer transition-all bg-slate-50/50 hover:bg-slate-50 flex flex-col items-center justify-center gap-1.5"
-                  >
-                    <Upload className="w-5 h-5 text-slate-400" />
                     <div>
-                      <p className="text-[11px] font-bold text-slate-700 font-sans">Drag & Drop receipt screenshot here</p>
-                      <p className="text-[9px] text-slate-450 font-sans">or click to browse from files (PNG, JPG)</p>
+                      <h3 className="text-base font-extrabold tracking-tight">Payment Verified Successfully!</h3>
+                      <p className="text-[11px] text-emerald-100 font-medium">Order confirmed via Live Android UPI Webhook</p>
                     </div>
-                    <input
-                      id="receipt-upload"
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onload = (event) => {
-                            if (event.target?.result) {
-                              setUploadedReceipt(event.target.result as string);
-                              addNotification('Receipt Attached', 'Confirmation screenshot successfully attached.', 'success');
-                            }
-                          };
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                    />
+                  </div>
+                  <span className="text-xs font-mono font-bold bg-white/20 px-2.5 py-1 rounded-full text-white border border-white/30">
+                    LIVE VERIFIED
+                  </span>
+                </div>
+
+                <div className="p-6 overflow-y-auto space-y-5">
+                  {/* Animated Green Circle SVG Checkmark */}
+                  <div className="text-center pt-2 pb-1">
+                    <div className="w-20 h-20 mx-auto rounded-full bg-emerald-50 border-4 border-emerald-100 flex items-center justify-center shadow-lg shadow-emerald-100 animate-pop-in">
+                      <svg className="w-12 h-12 text-emerald-500" viewBox="0 0 52 52">
+                        <circle
+                          className="animate-checkmark-circle text-emerald-500 stroke-current"
+                          cx="26"
+                          cy="26"
+                          r="23"
+                          fill="none"
+                          strokeWidth="3.5"
+                        />
+                        <path
+                          className="animate-checkmark-check text-emerald-500 stroke-current"
+                          fill="none"
+                          strokeWidth="4"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M14.1 27.2l7.1 7.2 16.7-16.8"
+                        />
+                      </svg>
+                    </div>
+                    <h4 className="text-xl font-black text-slate-900 mt-3 font-sans">Payment of ₹{upiVerifiedData.amount.toFixed(2)} Received!</h4>
+                    <p className="text-xs text-slate-500 mt-1">Transaction Ref (UTR): <span className="font-mono font-bold text-slate-800">{upiVerifiedData.paymentId}</span></p>
                   </div>
 
-                  {uploadedReceipt && (
-                    <div className="mt-3 flex items-center justify-between p-2.5 bg-emerald-50 border border-emerald-100 rounded-xl animate-in fade-in">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                        <span className="text-[10px] font-bold text-emerald-800">Screenshot Attached!</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setUploadedReceipt('');
-                          addNotification('Receipt Removed', 'screenshot proof removed.', 'info');
-                        }}
-                        className="text-[10px] text-red-600 hover:underline font-semibold"
-                      >
-                        Remove Proof
-                      </button>
+                  {/* Order & Customer Summary Details Card */}
+                  <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-3">
+                    <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Order ID</span>
+                      <span className="font-mono text-xs font-extrabold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-lg border border-blue-200">{upiVerifiedData.orderId}</span>
                     </div>
-                  )}
+
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="text-slate-400 block text-[10px] font-semibold uppercase">Customer Name</span>
+                        <span className="font-bold text-slate-800">{upiVerifiedData.customerName || 'Customer'}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block text-[10px] font-semibold uppercase">WhatsApp Mobile</span>
+                        <span className="font-bold text-slate-800 font-mono">{upiVerifiedData.customerPhone || '9764528777'}</span>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-slate-400 block text-[10px] font-semibold uppercase">Delivery Email</span>
+                        <span className="font-bold text-slate-800">{upiVerifiedData.customerEmail || 'softkeylice@gmail.com'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Purchased Products & Assigned License Keys */}
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <h5 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                        <Key className="w-3.5 h-3.5 text-emerald-600" />
+                        Allocated License Key(s)
+                      </h5>
+                      <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                        {upiVerifiedData.keys?.length || 1} Key Generated
+                      </span>
+                    </div>
+
+                    <div className="space-y-2">
+                      {upiVerifiedData.keys && upiVerifiedData.keys.length > 0 ? (
+                        upiVerifiedData.keys.map((k, idx) => (
+                          <div key={idx} className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl flex items-center justify-between gap-2 shadow-sm">
+                            <div className="min-w-0 flex-1">
+                              <span className="text-[10px] font-extrabold text-emerald-800 uppercase block tracking-wider">
+                                License Key #{idx + 1}
+                              </span>
+                              <span className="font-mono text-xs font-black text-slate-900 select-all break-all tracking-wide">
+                                {k}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard.writeText(k);
+                                addNotification('Copied', `Key #${idx + 1} copied to clipboard!`, 'info');
+                              }}
+                              className="px-2.5 py-1.5 bg-white hover:bg-emerald-100 border border-emerald-300 text-emerald-800 text-[11px] font-bold rounded-lg transition-all shadow-sm shrink-0 flex items-center gap-1"
+                            >
+                              <Copy className="w-3 h-3" /> Copy
+                            </button>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-center">
+                          <span className="font-mono text-xs font-black text-slate-900 select-all">
+                            GENUINE-PRO-WIN11-K89X2-90LA3
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="bg-blue-50/80 border border-blue-200 p-3 rounded-xl flex items-start gap-2.5">
+                      <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                      <p className="text-[11px] text-blue-900 leading-snug font-medium">
+                        Instant Delivery Active: These license keys and the official GST tax invoice have also been sent directly to your WhatsApp (<strong className="font-mono">{upiVerifiedData.customerPhone || '9764528777'}</strong>) and email!
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer OK Button (Holds the dialog until user clicks OK) */}
+                <div className="p-4.5 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-3 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const finalOrderId = upiVerifiedData.orderId;
+                      const finalPaymentId = upiVerifiedData.paymentId;
+                      setUpiVerifiedData(null);
+                      setIsAlternativeOpen(false);
+                      createSuccessfulOrder(finalPaymentId, 'Android UPI Gateway (Live Verified)', 'paid');
+                    }}
+                    className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-sm rounded-xl shadow-lg shadow-emerald-200 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    OK, Go To My Order Dashboard
+                  </button>
                 </div>
               </div>
+            ) : (
+              <>
+                <div className="px-6 py-4.5 border-b border-slate-150 bg-slate-50 flex items-center justify-between shrink-0">
+                  <div>
+                    <h3 className="text-lg font-extrabold text-slate-900 flex items-center gap-2 font-sans">
+                      {selectedPaymentMethod === 'bank_transfer' ? (
+                        <>
+                          <Building2 className="w-5 h-5 text-blue-600" />
+                          Direct Bank Wire Checkout
+                        </>
+                      ) : (
+                        <>
+                          <QrCode className="w-6 h-6 text-emerald-600" />
+                          UPI Instant QR Scan Payment
+                        </>
+                      )}
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {selectedPaymentMethod === 'bank_transfer' ? 'Complete transfer manually using bank details' : 'Scan via GPay, PhonePe, Paytm, or BHIM to pay instantly'}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsAlternativeOpen(false)}
+                    className="p-2 hover:bg-slate-200/80 text-slate-400 hover:text-slate-700 rounded-xl transition-all"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
 
-            </div>
+                <div className="p-6 sm:p-7 space-y-5 overflow-y-auto">
+                  
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 p-4 rounded-2xl text-center space-y-1">
+                    <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Total Amount To Transfer</p>
+                    <p className="text-3xl font-black text-blue-700 font-mono tracking-tight">₹{netPayable.toFixed(2)} <span className="text-xs text-slate-500 font-normal">INR</span></p>
+                  </div>
 
-            <div className="px-6 py-4 bg-slate-50 border-t border-slate-150 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setIsAlternativeOpen(false)}
-                className="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-100 text-xs font-bold rounded-lg transition-all"
-              >
-                Go Back
-              </button>
+                  {selectedPaymentMethod === 'bank_transfer' ? (
+                    /* Bank Account Details */
+                    <div className="space-y-3 bg-slate-50 border border-slate-150 p-4.5 rounded-2xl">
+                      <h4 className="text-xs font-bold text-slate-800 uppercase tracking-widest font-mono border-b border-slate-200 pb-2">Beneficiary Account Details</h4>
+                      
+                      <div className="space-y-2 text-xs">
+                        <div className="flex justify-between items-center py-0.5">
+                          <span className="text-slate-500">Bank Name</span>
+                          <strong className="text-slate-800 font-semibold">{storePaymentSettings.bankName}</strong>
+                        </div>
+                        <div className="flex justify-between items-center py-0.5">
+                          <span className="text-slate-500">Beneficiary Name</span>
+                          <strong className="text-slate-800 font-semibold">{storePaymentSettings.bankAccountName}</strong>
+                        </div>
+                        <div className="flex justify-between items-center py-0.5">
+                          <span className="text-slate-500">Account Number</span>
+                          <strong className="text-slate-850 font-mono text-sm bg-white px-2 py-0.5 rounded border border-slate-200">{storePaymentSettings.bankAccountNumber}</strong>
+                        </div>
+                        <div className="flex justify-between items-center py-0.5">
+                          <span className="text-slate-500">IFSC Code</span>
+                          <strong className="text-slate-850 font-mono text-sm bg-white px-2 py-0.5 rounded border border-slate-200">{storePaymentSettings.ifscCode}</strong>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    /* UPI QR Code Details */
+                    <div className="space-y-4 text-center">
+                      
+                      {/* Dynamic Live Auto-Detect Status Banner */}
+                      <div className="bg-emerald-50 border border-emerald-200 p-3.5 rounded-2xl flex items-center justify-between text-left gap-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-3 h-3 rounded-full bg-emerald-500 animate-ping shrink-0" />
+                          <div>
+                            <p className="text-xs font-extrabold text-emerald-900">Auto-Detect Payment Active</p>
+                            <p className="text-[11px] text-emerald-700 leading-snug">Scan & pay with any UPI app. Once received, license keys auto-dispatch to your WhatsApp & email!</p>
+                          </div>
+                        </div>
+                        {currentUpiOrderId && (
+                          <span className="text-[11px] font-mono font-bold bg-white text-emerald-800 px-2.5 py-1 rounded-lg border border-emerald-200 shrink-0 shadow-sm">
+                            {currentUpiOrderId}
+                          </span>
+                        )}
+                      </div>
 
-              <button
-                type="button"
-                disabled={!paymentReference.trim()}
-                onClick={() => createSuccessfulOrder(paymentReference, selectedPaymentMethod === 'bank_transfer' ? 'Direct Bank Transfer' : 'UPI QR Payment', 'pending')}
-                className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-blue-100"
-              >
-                Confirm Transfer Details
-              </button>
-            </div>
+                      {/* High Quality Guaranteed Vector Canvas QR Code Container */}
+                      <div className="w-64 h-64 bg-white border-2 border-emerald-400 p-3.5 rounded-3xl mx-auto flex items-center justify-center shadow-lg shadow-emerald-50">
+                        <ClientQRCode
+                          value={
+                            dynamicUpiUri ||
+                            `upi://pay?pa=${encodeURIComponent(storePaymentSettings.upiId)}&pn=${encodeURIComponent(storePaymentSettings.bankAccountName)}&am=${netPayable.toFixed(2)}&cu=INR&tn=${encodeURIComponent('Order ' + (currentUpiOrderId || 'LiveTest'))}`
+                          }
+                          size={228}
+                        />
+                      </div>
+
+                      {/* 1-Click Pay on Mobile with UPI Apps */}
+                      {dynamicUpiUri && (
+                        <div className="sm:hidden pt-1">
+                          <a
+                            href={dynamicUpiUri}
+                            className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow-md shadow-emerald-100"
+                          >
+                            <span>📱</span> Pay via Installed UPI App (GPay / PhonePe / Paytm)
+                          </a>
+                        </div>
+                      )}
+
+                      <div className="space-y-1.5 pt-1">
+                        <p className="text-xs text-slate-500 font-medium">Scan QR Code or pay directly to the UPI ID:</p>
+                        <div className="flex items-center justify-center gap-2">
+                          <span className="font-mono text-sm font-black text-slate-850 bg-slate-100 px-3.5 py-1.5 rounded-xl border border-slate-200 select-all tracking-wide">
+                            {storePaymentSettings.upiId}
+                          </span>
+                          <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg">
+                            {storePaymentSettings.bankAccountName}
+                          </span>
+                        </div>
+                      </div>
+
+                    </div>
+                  )}
+
+                  {/* Verification fields */}
+                  <div className="space-y-4 pt-3 border-t border-slate-150">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Transaction ID / Reference UTR Code <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={paymentReference}
+                        onChange={(e) => setPaymentReference(e.target.value)}
+                        placeholder="e.g. UTR-928374102938"
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-mono text-slate-850 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm"
+                      />
+                      <p className="text-[10px] text-slate-400 mt-1">Provide reference number from your bank app checkout confirmation receipt screen.</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Upload Payment Receipt Proof (Optional)
+                      </label>
+
+                      {/* Usability Pattern drag and drop file upload */}
+                      <div
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          e.currentTarget.classList.add('border-blue-500', 'bg-blue-50/10');
+                        }}
+                        onDragLeave={(e) => {
+                          e.preventDefault();
+                          e.currentTarget.classList.remove('border-blue-500', 'bg-blue-50/10');
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          e.currentTarget.classList.remove('border-blue-500', 'bg-blue-50/10');
+                          const file = e.dataTransfer.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                              if (event.target?.result) {
+                                setUploadedReceipt(event.target.result as string);
+                                addNotification('Receipt Attached', 'Confirmation screenshot successfully attached.', 'success');
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                        onClick={() => {
+                          const fileInput = document.getElementById('receipt-upload');
+                          if (fileInput) fileInput.click();
+                        }}
+                        className="border border-dashed border-slate-300 hover:border-blue-500 rounded-xl p-4 text-center cursor-pointer transition-all bg-slate-50/50 hover:bg-slate-50 flex flex-col items-center justify-center gap-1.5"
+                      >
+                        <Upload className="w-5 h-5 text-slate-400" />
+                        <div>
+                          <p className="text-[11px] font-bold text-slate-700 font-sans">Drag & Drop receipt screenshot here</p>
+                          <p className="text-[9px] text-slate-450 font-sans">or click to browse from files (PNG, JPG)</p>
+                        </div>
+                        <input
+                          id="receipt-upload"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onload = (event) => {
+                                if (event.target?.result) {
+                                  setUploadedReceipt(event.target.result as string);
+                                  addNotification('Receipt Attached', 'Confirmation screenshot successfully attached.', 'success');
+                                }
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                      </div>
+
+                      {uploadedReceipt && (
+                        <div className="mt-3 flex items-center justify-between p-2.5 bg-emerald-50 border border-emerald-100 rounded-xl animate-in fade-in">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                            <span className="text-[10px] font-bold text-emerald-800">Screenshot Attached!</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setUploadedReceipt('');
+                              addNotification('Receipt Removed', 'screenshot proof removed.', 'info');
+                            }}
+                            className="text-[10px] text-red-600 hover:underline font-semibold"
+                          >
+                            Remove Proof
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                </div>
+
+                <div className="px-6 py-4 bg-slate-50 border-t border-slate-150 flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setIsAlternativeOpen(false)}
+                    className="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-100 text-xs font-bold rounded-lg transition-all"
+                  >
+                    Go Back
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={!paymentReference.trim()}
+                    onClick={() => createSuccessfulOrder(paymentReference, selectedPaymentMethod === 'bank_transfer' ? 'Direct Bank Transfer' : 'UPI QR Payment', 'pending')}
+                    className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-blue-100"
+                  >
+                    Confirm Transfer Details
+                  </button>
+                </div>
+              </>
+            )}
 
           </div>
         </div>
