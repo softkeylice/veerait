@@ -263,7 +263,7 @@ export default function CustomerWebsite({
     bankAccountName: 'Krishna Salunke',
     bankAccountNumber: '918273645019',
     ifscCode: 'SBIN0001234',
-    upiId: 'krishman09@ybl',
+    upiId: 'krishman08@ybl',
     upiQrCodeUrl: ''
   });
   const [razorpayPublicId, setRazorpayPublicId] = useState('');

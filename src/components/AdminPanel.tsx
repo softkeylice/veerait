@@ -91,7 +91,7 @@ export default function AdminPanel({
   const [bankAccountName, setBankAccountName] = useState('Krishna Salunke');
   const [bankAccountNumber, setBankAccountNumber] = useState('918273645019');
   const [ifscCode, setIfscCode] = useState('SBIN0001234');
-  const [upiId, setUpiId] = useState('krishman09@ybl');
+  const [upiId, setUpiId] = useState('krishman08@ybl');
   const [upiQrCodeUrl, setUpiQrCodeUrl] = useState('');
   const [razorpayKeyId, setRazorpayKeyId] = useState('');
   const [razorpayConfigured, setRazorpayConfigured] = useState(false);
@@ -353,7 +353,7 @@ export default function AdminPanel({
           setBankAccountName(data.settings.bankAccountName || 'Krishna Salunke');
           setBankAccountNumber(data.settings.bankAccountNumber || '918273645019');
           setIfscCode(data.settings.ifscCode || 'SBIN0001234');
-          setUpiId(data.settings.upiId || 'krishman09@ybl');
+          setUpiId(data.settings.upiId || 'krishman08@ybl');
           setUpiQrCodeUrl(data.settings.upiQrCodeUrl || '');
           if (data.settings.paytmMid) {
             setPaytmMid(data.settings.paytmMid);

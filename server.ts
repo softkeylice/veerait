@@ -910,7 +910,7 @@ function readPaymentSettings(): PaymentSettings {
     bankAccountName: "Krishna Salunke",
     bankAccountNumber: "918273645019",
     ifscCode: "SBIN0001234",
-    upiId: "krishman09@ybl",
+    upiId: "krishman08@ybl",
     upiQrCodeUrl: "",
     paytmMid: process.env.PAYTM_MERCHANT_ID || "OPDDHV86006252156720",
     paytmMode: process.env.PAYTM_ENV === "PRODUCTION" ? "live" : "test",
@@ -4272,7 +4272,7 @@ app.use(async (req, res, next) => {
       await savePaymentsToSupabase(payments);
 
       // Generate standard NPCI Universal UPI URI (Works seamlessly on PhonePe, Google Pay, Paytm, BHIM, Cred, Amazon Pay)
-      const upiId = (settings.upiId || "krishman09@ybl").trim();
+      const upiId = (settings.upiId || "krishman08@ybl").trim();
       const merchantName = (settings.bankAccountName || "Krishna Salunke").trim();
       const upiIntentUri = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(merchantName)}&am=${finalAmount.toFixed(2)}&cu=INR&tn=${encodeURIComponent("VeeraIT " + (upiOrderId ? upiOrderId.slice(-6) : ""))}`;
 
@@ -4734,7 +4734,7 @@ app.use(async (req, res, next) => {
       bankAccountName: "Krishna Salunke",
       bankAccountNumber: "918273645019",
       ifscCode: "SBIN0001234",
-      upiId: "krishman09@ybl",
+      upiId: "krishman08@ybl",
       upiQrCodeUrl: "",
       paytmMid: process.env.PAYTM_MERCHANT_ID || "OPDDHV86006252156720",
       paytmMode: process.env.PAYTM_ENV === "PRODUCTION" ? "live" : "test",
