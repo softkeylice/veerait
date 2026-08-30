@@ -527,7 +527,7 @@ export default function CustomerWebsite({
       .then(data => {
         if (data.orderId) {
           setCurrentUpiOrderId(data.orderId);
-          setDynamicUpiUri(data.upiIntentUri || data.upiUri || `upi://pay?pa=${encodeURIComponent(storePaymentSettings.upiId)}&pn=${encodeURIComponent(storePaymentSettings.bankAccountName)}&am=${netPayable.toFixed(2)}&cu=INR&tn=${encodeURIComponent('Order ' + data.orderId)}&tr=${encodeURIComponent(data.orderId)}`);
+          setDynamicUpiUri(data.upiIntentUri || data.upiUri || `upi://pay?pa=${encodeURIComponent(storePaymentSettings.upiId.trim())}&pn=${encodeURIComponent(storePaymentSettings.bankAccountName.trim())}&am=${netPayable.toFixed(2)}&cu=INR&tn=${encodeURIComponent('VeeraIT ' + data.orderId.slice(-6))}`);
         }
       })
       .catch(err => console.error("Failed to generate dynamic UPI order:", err))
@@ -7830,34 +7830,50 @@ export default function CustomerWebsite({
                       </div>
 
                       {/* High Quality Guaranteed Vector Canvas QR Code Container */}
-                      <div className="w-64 h-64 bg-white border-2 border-emerald-400 p-3.5 rounded-3xl mx-auto flex items-center justify-center shadow-lg shadow-emerald-50">
+                      <div className="bg-white border-2 border-emerald-400 p-4 rounded-3xl mx-auto flex flex-col items-center justify-center shadow-lg shadow-emerald-50 max-w-[280px]">
                         <ClientQRCode
                           value={
                             dynamicUpiUri ||
-                            `upi://pay?pa=${encodeURIComponent(storePaymentSettings.upiId)}&pn=${encodeURIComponent(storePaymentSettings.bankAccountName)}&am=${netPayable.toFixed(2)}&cu=INR&tn=${encodeURIComponent('Order ' + (currentUpiOrderId || 'LiveTest'))}`
+                            `upi://pay?pa=${encodeURIComponent(storePaymentSettings.upiId.trim())}&pn=${encodeURIComponent(storePaymentSettings.bankAccountName.trim())}&am=${netPayable.toFixed(2)}&cu=INR&tn=${encodeURIComponent('VeeraIT')}`
                           }
-                          size={228}
+                          size={220}
                         />
+                        <div className="flex items-center gap-1.5 mt-2.5 text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+                          <span>PhonePe</span> • <span>Google Pay</span> • <span>Paytm</span> • <span>BHIM</span>
+                        </div>
                       </div>
 
                       {/* 1-Click Pay on Mobile with UPI Apps */}
                       {dynamicUpiUri && (
-                        <div className="sm:hidden pt-1">
+                        <div className="sm:hidden space-y-2 pt-1">
                           <a
                             href={dynamicUpiUri}
                             className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow-md shadow-emerald-100"
                           >
-                            <span>📱</span> Pay via Installed UPI App (GPay / PhonePe / Paytm)
+                            <span>📱</span> Pay ₹{netPayable.toFixed(2)} via Any UPI App
                           </a>
                         </div>
                       )}
 
                       <div className="space-y-1.5 pt-1">
-                        <p className="text-xs text-slate-500 font-medium">Scan QR Code or pay directly to the UPI ID:</p>
-                        <div className="flex items-center justify-center gap-2">
-                          <span className="font-mono text-sm font-black text-slate-850 bg-slate-100 px-3.5 py-1.5 rounded-xl border border-slate-200 select-all tracking-wide">
-                            {storePaymentSettings.upiId}
-                          </span>
+                        <p className="text-xs text-slate-500 font-medium text-center">Or pay directly to UPI ID:</p>
+                        <div className="flex items-center justify-center gap-2 flex-wrap">
+                          <div className="flex items-center bg-slate-100 border border-slate-200 rounded-xl px-3 py-1.5">
+                            <span className="font-mono text-sm font-black text-slate-850 select-all tracking-wide">
+                              {storePaymentSettings.upiId}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard.writeText(storePaymentSettings.upiId);
+                                addNotification('Copied', 'UPI ID copied to clipboard!', 'info');
+                              }}
+                              className="ml-2 p-1 text-slate-600 hover:text-emerald-700 hover:bg-slate-200 rounded transition-colors"
+                              title="Copy UPI ID"
+                            >
+                              <Copy className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                           <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg">
                             {storePaymentSettings.bankAccountName}
                           </span>

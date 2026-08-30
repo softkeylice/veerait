@@ -16,15 +16,23 @@ export const ClientQRCode: React.FC<ClientQRCodeProps> = ({
 
   useEffect(() => {
     if (canvasRef.current && value) {
+      // Clear canvas before drawing
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, size, size);
+      }
+
       QRCode.toCanvas(
-        canvasRef.current,
+        canvas,
         value,
         {
           width: size,
-          margin: 1,
+          margin: 3, // Full quiet zone to prevent camera scan failures
           color: {
-            dark: '#0f172a',
-            light: '#ffffff'
+            dark: '#000000', // Pure black for 100% optical camera readability
+            light: '#ffffff'  // Pure white
           },
           errorCorrectionLevel: 'M'
         },
@@ -36,10 +44,13 @@ export const ClientQRCode: React.FC<ClientQRCodeProps> = ({
   }, [value, size]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className={`mx-auto rounded-2xl shadow-sm ${className}`}
-      style={{ width: `${size}px`, height: `${size}px` }}
-    />
+    <div className="bg-white p-2 rounded-2xl flex items-center justify-center shadow-inner">
+      <canvas
+        ref={canvasRef}
+        className={`mx-auto block ${className}`}
+        style={{ width: `${size}px`, height: `${size}px` }}
+      />
+    </div>
   );
 };
+

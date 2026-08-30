@@ -4271,10 +4271,10 @@ app.use(async (req, res, next) => {
       writePaymentsDb(payments);
       await savePaymentsToSupabase(payments);
 
-      // Generate standard NPCI UPI Intent URI
-      const upiId = settings.upiId || "krishman09@ybl";
-      const merchantName = settings.bankAccountName || "Krishna Salunke";
-      const upiIntentUri = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(merchantName)}&am=${finalAmount.toFixed(2)}&cu=INR&tn=${encodeURIComponent("Order " + upiOrderId)}&tr=${encodeURIComponent(upiOrderId)}`;
+      // Generate standard NPCI Universal UPI URI (Works seamlessly on PhonePe, Google Pay, Paytm, BHIM, Cred, Amazon Pay)
+      const upiId = (settings.upiId || "krishman09@ybl").trim();
+      const merchantName = (settings.bankAccountName || "Krishna Salunke").trim();
+      const upiIntentUri = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(merchantName)}&am=${finalAmount.toFixed(2)}&cu=INR&tn=${encodeURIComponent("VeeraIT " + (upiOrderId ? upiOrderId.slice(-6) : ""))}`;
 
       return res.json({
         success: true,
