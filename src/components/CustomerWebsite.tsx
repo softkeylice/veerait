@@ -260,10 +260,10 @@ export default function CustomerWebsite({
   } | null>(null);
   const [storePaymentSettings, setStorePaymentSettings] = useState({
     bankName: 'State Bank of India',
-    bankAccountName: 'Veera Computers, Jalna',
+    bankAccountName: 'Krishna Salunke',
     bankAccountNumber: '918273645019',
     ifscCode: 'SBIN0001234',
-    upiId: 'veeracomputers@uboi',
+    upiId: 'krishman09@ybl',
     upiQrCodeUrl: ''
   });
   const [razorpayPublicId, setRazorpayPublicId] = useState('');

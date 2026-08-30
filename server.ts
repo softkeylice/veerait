@@ -907,10 +907,10 @@ function readPaymentSettings(): PaymentSettings {
   }
   return {
     bankName: "State Bank of India",
-    bankAccountName: "Veera Computers, Jalna",
+    bankAccountName: "Krishna Salunke",
     bankAccountNumber: "918273645019",
     ifscCode: "SBIN0001234",
-    upiId: "veeracomputers@uboi",
+    upiId: "krishman09@ybl",
     upiQrCodeUrl: "",
     paytmMid: process.env.PAYTM_MERCHANT_ID || "OPDDHV86006252156720",
     paytmMode: process.env.PAYTM_ENV === "PRODUCTION" ? "live" : "test",
@@ -4272,8 +4272,8 @@ app.use(async (req, res, next) => {
       await savePaymentsToSupabase(payments);
 
       // Generate standard NPCI UPI Intent URI
-      const upiId = settings.upiId || "veeracomputers@uboi";
-      const merchantName = settings.bankAccountName || "Veera Computers, Jalna";
+      const upiId = settings.upiId || "krishman09@ybl";
+      const merchantName = settings.bankAccountName || "Krishna Salunke";
       const upiIntentUri = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(merchantName)}&am=${finalAmount.toFixed(2)}&cu=INR&tn=${encodeURIComponent("Order " + upiOrderId)}&tr=${encodeURIComponent(upiOrderId)}`;
 
       return res.json({
@@ -4731,10 +4731,10 @@ app.use(async (req, res, next) => {
   app.post("/api/payment/settings/reset", authenticateJwt, requireAdmin, csrfProtection, (req, res) => {
     const defaultSettings: PaymentSettings = {
       bankName: "State Bank of India",
-      bankAccountName: "Veera Computers, Jalna",
+      bankAccountName: "Krishna Salunke",
       bankAccountNumber: "918273645019",
       ifscCode: "SBIN0001234",
-      upiId: "veeracomputers@uboi",
+      upiId: "krishman09@ybl",
       upiQrCodeUrl: "",
       paytmMid: process.env.PAYTM_MERCHANT_ID || "OPDDHV86006252156720",
       paytmMode: process.env.PAYTM_ENV === "PRODUCTION" ? "live" : "test",
