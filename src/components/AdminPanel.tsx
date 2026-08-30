@@ -88,10 +88,10 @@ export default function AdminPanel({
 
   // Payment configuration states
   const [bankName, setBankName] = useState('State Bank of India');
-  const [bankAccountName, setBankAccountName] = useState('Krishna Salunke');
+  const [bankAccountName, setBankAccountName] = useState('Veera Computers, Jalna');
   const [bankAccountNumber, setBankAccountNumber] = useState('918273645019');
   const [ifscCode, setIfscCode] = useState('SBIN0001234');
-  const [upiId, setUpiId] = useState('krishman08@ybl');
+  const [upiId, setUpiId] = useState('veeracomputers@uboi');
   const [upiQrCodeUrl, setUpiQrCodeUrl] = useState('');
   const [razorpayKeyId, setRazorpayKeyId] = useState('');
   const [razorpayConfigured, setRazorpayConfigured] = useState(false);
@@ -350,10 +350,10 @@ export default function AdminPanel({
       .then(data => {
         if (data.settings) {
           setBankName(data.settings.bankName || 'State Bank of India');
-          setBankAccountName(data.settings.bankAccountName || 'Veera Computers');
+          setBankAccountName(data.settings.bankAccountName || 'Veera Computers, Jalna');
           setBankAccountNumber(data.settings.bankAccountNumber || '918273645019');
           setIfscCode(data.settings.ifscCode || 'SBIN0001234');
-          setUpiId(data.settings.upiId || 'veeracomputers@upi');
+          setUpiId(data.settings.upiId || 'veeracomputers@uboi');
           setUpiQrCodeUrl(data.settings.upiQrCodeUrl || '');
           if (data.settings.paytmMid) {
             setPaytmMid(data.settings.paytmMid);

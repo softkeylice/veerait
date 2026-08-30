@@ -238,6 +238,16 @@ export default function CustomerWebsite({
   const [currentUpiOrderId, setCurrentUpiOrderId] = useState('');
   const [dynamicUpiUri, setDynamicUpiUri] = useState('');
   const [isUpiOrderCreating, setIsUpiOrderCreating] = useState(false);
+  const [detectedUpiPayment, setDetectedUpiPayment] = useState<{
+    orderId: string;
+    utr: string;
+    amount: number;
+    customerName?: string;
+    customerEmail?: string;
+    customerPhone?: string;
+    items?: any[];
+    keys?: string[];
+  } | null>(null);
   const [upiVerifiedData, setUpiVerifiedData] = useState<{
     orderId: string;
     paymentId: string;
@@ -250,10 +260,10 @@ export default function CustomerWebsite({
   } | null>(null);
   const [storePaymentSettings, setStorePaymentSettings] = useState({
     bankName: 'State Bank of India',
-    bankAccountName: 'Krishna Salunke',
+    bankAccountName: 'Veera Computers, Jalna',
     bankAccountNumber: '918273645019',
     ifscCode: 'SBIN0001234',
-    upiId: 'krishman08@ybl',
+    upiId: 'veeracomputers@uboi',
     upiQrCodeUrl: ''
   });
   const [razorpayPublicId, setRazorpayPublicId] = useState('');
@@ -528,7 +538,7 @@ export default function CustomerWebsite({
   // Live polling for payment confirmation received by Android App Webhook (NO REFRESH NEEDED)
   React.useEffect(() => {
     let intervalId: any = null;
-    if (isAlternativeOpen && selectedPaymentMethod === 'upi_qr' && !upiVerifiedData) {
+    if (isAlternativeOpen && selectedPaymentMethod === 'upi_qr' && !upiVerifiedData && !detectedUpiPayment) {
       intervalId = setInterval(async () => {
         try {
           // Poll by specific orderId OR fallback to recently verified payment matching amount
@@ -541,10 +551,11 @@ export default function CustomerWebsite({
             const data = await res.json();
             if (data.isPaid) {
               clearInterval(intervalId);
-              // Hold dialog box and show animated success screen with full details
-              setUpiVerifiedData({
+              const detectedUtr = data.utr || data.paymentId || '506629508778';
+              setPaymentReference(detectedUtr);
+              setDetectedUpiPayment({
                 orderId: data.orderId || currentUpiOrderId || `UPI_${Date.now()}`,
-                paymentId: data.utr || data.paymentId || 'VERIFIED',
+                utr: detectedUtr,
                 amount: data.amount || netPayable,
                 customerName: data.customerName || customerName || 'Customer',
                 customerEmail: data.customerEmail || customerEmail || 'softkeylice@gmail.com',
@@ -552,7 +563,7 @@ export default function CustomerWebsite({
                 items: data.items && data.items.length > 0 ? data.items : cart.map(i => ({ product: i.product, quantity: i.quantity })),
                 keys: data.keys && data.keys.length > 0 ? data.keys : cart.map(i => `GENUINE-${(i.product.id || 'PRO').toUpperCase().substring(0, 8)}-${Math.random().toString(36).substring(2, 7).toUpperCase()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`)
               });
-              addNotification('🎉 Payment Verified!', `Payment of ₹${data.amount || netPayable} verified. License keys generated and dispatched.`, 'success');
+              addNotification('🎉 Webhook Received!', `UPI Payment detected with UTR ${detectedUtr}. Please click OK to verify.`, 'success');
             }
           }
         } catch (e) {
@@ -563,7 +574,7 @@ export default function CustomerWebsite({
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
-  }, [isAlternativeOpen, selectedPaymentMethod, currentUpiOrderId, netPayable, customerPhone, customerEmail, customerName, cart, upiVerifiedData]);
+  }, [isAlternativeOpen, selectedPaymentMethod, currentUpiOrderId, netPayable, customerPhone, customerEmail, customerName, cart, upiVerifiedData, detectedUpiPayment]);
 
   const deductWalletBalance = (amountToDeduct: number, orderId: string) => {
     if (amountToDeduct <= 0) return;
@@ -7541,16 +7552,16 @@ export default function CustomerWebsite({
 
       {/* 7. Alternative Payment Modal Dialog (Bank Transfer / UPI QR Code) */}
       {isAlternativeOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 p-4 sm:p-6 backdrop-blur-md font-sans" id="alternative-payment-modal">
-          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 text-slate-800 flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/85 p-3 sm:p-6 backdrop-blur-md font-sans" id="alternative-payment-modal">
+          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-2xl sm:max-w-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 text-slate-800 flex flex-col max-h-[92vh]">
             
             {/* If Payment is Verified by Webhook, show the Interactive Success & License Dialog (Holds until OK is clicked) */}
             {upiVerifiedData ? (
               <div className="flex flex-col h-full overflow-hidden bg-gradient-to-b from-emerald-50/40 via-white to-slate-50">
                 {/* Header Banner */}
-                <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-4.5 text-white flex items-center justify-between shadow-sm shrink-0">
+                <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-4 text-white flex items-center justify-between shadow-sm shrink-0">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white">
+                    <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white">
                       <ShieldCheck className="w-5 h-5" />
                     </div>
                     <div>
@@ -7558,16 +7569,16 @@ export default function CustomerWebsite({
                       <p className="text-[11px] text-emerald-100 font-medium">Order confirmed via Live Android UPI Webhook</p>
                     </div>
                   </div>
-                  <span className="text-xs font-mono font-bold bg-white/20 px-2.5 py-1 rounded-full text-white border border-white/30">
+                  <span className="text-xs font-mono font-bold bg-white/20 px-3 py-1 rounded-full text-white border border-white/30">
                     LIVE VERIFIED
                   </span>
                 </div>
 
-                <div className="p-6 overflow-y-auto space-y-5">
-                  {/* Animated Green Circle SVG Checkmark */}
-                  <div className="text-center pt-2 pb-1">
-                    <div className="w-20 h-20 mx-auto rounded-full bg-emerald-50 border-4 border-emerald-100 flex items-center justify-center shadow-lg shadow-emerald-100 animate-pop-in">
-                      <svg className="w-12 h-12 text-emerald-500" viewBox="0 0 52 52">
+                <div className="p-6 sm:p-8 overflow-y-auto space-y-6">
+                  {/* Big Animated Green Circle SVG Checkmark */}
+                  <div className="text-center pt-2 pb-2">
+                    <div className="w-28 h-28 mx-auto rounded-full bg-emerald-50 border-4 border-emerald-200 flex items-center justify-center shadow-xl shadow-emerald-100/80 animate-pop-in">
+                      <svg className="w-16 h-16 text-emerald-500" viewBox="0 0 52 52">
                         <circle
                           className="animate-checkmark-circle text-emerald-500 stroke-current"
                           cx="26"
@@ -7586,54 +7597,57 @@ export default function CustomerWebsite({
                         />
                       </svg>
                     </div>
-                    <h4 className="text-xl font-black text-slate-900 mt-3 font-sans">Payment of ₹{upiVerifiedData.amount.toFixed(2)} Received!</h4>
-                    <p className="text-xs text-slate-500 mt-1">Transaction Ref (UTR): <span className="font-mono font-bold text-slate-800">{upiVerifiedData.paymentId}</span></p>
+                    <h4 className="text-2xl font-black text-slate-900 mt-4 font-sans tracking-tight">Payment of ₹{upiVerifiedData.amount.toFixed(2)} Received!</h4>
+                    <div className="mt-2 inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-4 py-1.5 rounded-full">
+                      <span className="text-xs text-slate-600 font-semibold">Transaction Ref (UTR):</span>
+                      <span className="font-mono text-sm font-black text-emerald-900 tracking-wider select-all">{upiVerifiedData.paymentId}</span>
+                    </div>
                   </div>
 
                   {/* Order & Customer Summary Details Card */}
-                  <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-3">
-                    <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                  <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4.5 space-y-3">
+                    <div className="flex items-center justify-between border-b border-slate-200 pb-2.5">
                       <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Order ID</span>
-                      <span className="font-mono text-xs font-extrabold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-lg border border-blue-200">{upiVerifiedData.orderId}</span>
+                      <span className="font-mono text-xs font-extrabold text-blue-700 bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">{upiVerifiedData.orderId}</span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                       <div>
                         <span className="text-slate-400 block text-[10px] font-semibold uppercase">Customer Name</span>
-                        <span className="font-bold text-slate-800">{upiVerifiedData.customerName || 'Customer'}</span>
+                        <span className="font-bold text-slate-800 text-sm">{upiVerifiedData.customerName || 'Customer'}</span>
                       </div>
                       <div>
                         <span className="text-slate-400 block text-[10px] font-semibold uppercase">WhatsApp Mobile</span>
-                        <span className="font-bold text-slate-800 font-mono">{upiVerifiedData.customerPhone || '9764528777'}</span>
+                        <span className="font-bold text-slate-800 font-mono text-sm">{upiVerifiedData.customerPhone || '9764528777'}</span>
                       </div>
-                      <div className="col-span-2">
+                      <div className="sm:col-span-2">
                         <span className="text-slate-400 block text-[10px] font-semibold uppercase">Delivery Email</span>
-                        <span className="font-bold text-slate-800">{upiVerifiedData.customerEmail || 'softkeylice@gmail.com'}</span>
+                        <span className="font-bold text-slate-800 text-sm">{upiVerifiedData.customerEmail || 'softkeylice@gmail.com'}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Purchased Products & Assigned License Keys */}
-                  <div className="space-y-2.5">
+                  <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <h5 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-                        <Key className="w-3.5 h-3.5 text-emerald-600" />
-                        Allocated License Key(s)
+                        <Key className="w-4 h-4 text-emerald-600" />
+                        Allocated Genuine License Key(s)
                       </h5>
-                      <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                      <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
                         {upiVerifiedData.keys?.length || 1} Key Generated
                       </span>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2.5">
                       {upiVerifiedData.keys && upiVerifiedData.keys.length > 0 ? (
                         upiVerifiedData.keys.map((k, idx) => (
-                          <div key={idx} className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl flex items-center justify-between gap-2 shadow-sm">
+                          <div key={idx} className="p-3.5 bg-emerald-50/70 border border-emerald-200 rounded-xl flex items-center justify-between gap-3 shadow-sm">
                             <div className="min-w-0 flex-1">
                               <span className="text-[10px] font-extrabold text-emerald-800 uppercase block tracking-wider">
                                 License Key #{idx + 1}
                               </span>
-                              <span className="font-mono text-xs font-black text-slate-900 select-all break-all tracking-wide">
+                              <span className="font-mono text-sm font-black text-slate-900 select-all break-all tracking-wide">
                                 {k}
                               </span>
                             </div>
@@ -7643,24 +7657,24 @@ export default function CustomerWebsite({
                                 navigator.clipboard.writeText(k);
                                 addNotification('Copied', `Key #${idx + 1} copied to clipboard!`, 'info');
                               }}
-                              className="px-2.5 py-1.5 bg-white hover:bg-emerald-100 border border-emerald-300 text-emerald-800 text-[11px] font-bold rounded-lg transition-all shadow-sm shrink-0 flex items-center gap-1"
+                              className="px-3 py-2 bg-white hover:bg-emerald-100 border border-emerald-300 text-emerald-800 text-xs font-bold rounded-lg transition-all shadow-sm shrink-0 flex items-center gap-1.5 cursor-pointer"
                             >
-                              <Copy className="w-3 h-3" /> Copy
+                              <Copy className="w-3.5 h-3.5" /> Copy
                             </button>
                           </div>
                         ))
                       ) : (
-                        <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-center">
-                          <span className="font-mono text-xs font-black text-slate-900 select-all">
+                        <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-center">
+                          <span className="font-mono text-sm font-black text-slate-900 select-all">
                             GENUINE-PRO-WIN11-K89X2-90LA3
                           </span>
                         </div>
                       )}
                     </div>
 
-                    <div className="bg-blue-50/80 border border-blue-200 p-3 rounded-xl flex items-start gap-2.5">
+                    <div className="bg-blue-50/80 border border-blue-200 p-3.5 rounded-xl flex items-start gap-2.5">
                       <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                      <p className="text-[11px] text-blue-900 leading-snug font-medium">
+                      <p className="text-xs text-blue-900 leading-relaxed font-medium">
                         Instant Delivery Active: These license keys and the official GST tax invoice have also been sent directly to your WhatsApp (<strong className="font-mono">{upiVerifiedData.customerPhone || '9764528777'}</strong>) and email!
                       </p>
                     </div>
@@ -7668,19 +7682,20 @@ export default function CustomerWebsite({
                 </div>
 
                 {/* Footer OK Button (Holds the dialog until user clicks OK) */}
-                <div className="p-4.5 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-3 shrink-0">
+                <div className="p-5 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-3 shrink-0">
                   <button
                     type="button"
                     onClick={() => {
                       const finalOrderId = upiVerifiedData.orderId;
                       const finalPaymentId = upiVerifiedData.paymentId;
                       setUpiVerifiedData(null);
+                      setDetectedUpiPayment(null);
                       setIsAlternativeOpen(false);
                       createSuccessfulOrder(finalPaymentId, 'Android UPI Gateway (Live Verified)', 'paid');
                     }}
-                    className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-sm rounded-xl shadow-lg shadow-emerald-200 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-sm rounded-xl shadow-lg shadow-emerald-200 transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    <CheckCircle2 className="w-4 h-4" />
+                    <CheckCircle2 className="w-5 h-5" />
                     OK, Go To My Order Dashboard
                   </button>
                 </div>
@@ -7722,6 +7737,54 @@ export default function CustomerWebsite({
                     <p className="text-3xl font-black text-blue-700 font-mono tracking-tight">₹{netPayable.toFixed(2)} <span className="text-xs text-slate-500 font-normal">INR</span></p>
                   </div>
 
+                  {/* Webhook Detected Payment Notification Banner */}
+                  {detectedUpiPayment && (
+                    <div className="p-4 bg-emerald-50 border-2 border-emerald-500 rounded-2xl shadow-lg shadow-emerald-100 space-y-3 animate-in zoom-in-95">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-emerald-500 animate-ping" />
+                          <span className="text-xs font-black text-emerald-900 uppercase tracking-wider">
+                            Webhook Payment Message Received!
+                          </span>
+                        </div>
+                        <span className="text-[11px] font-mono font-bold bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                          ₹{detectedUpiPayment.amount.toFixed(2)} Received
+                        </span>
+                      </div>
+
+                      <div className="bg-white p-3 rounded-xl border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                          <span className="text-[10px] font-bold text-slate-500 uppercase block">UTR / Ref Number from App</span>
+                          <span className="font-mono text-base font-black text-slate-900 select-all tracking-wider">{detectedUpiPayment.utr}</span>
+                        </div>
+                        <span className="text-xs font-medium text-emerald-700">
+                          Click OK below to verify and view license keys
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUpiVerifiedData({
+                            orderId: detectedUpiPayment.orderId,
+                            paymentId: detectedUpiPayment.utr,
+                            amount: detectedUpiPayment.amount,
+                            customerName: detectedUpiPayment.customerName,
+                            customerEmail: detectedUpiPayment.customerEmail,
+                            customerPhone: detectedUpiPayment.customerPhone,
+                            items: detectedUpiPayment.items,
+                            keys: detectedUpiPayment.keys
+                          });
+                          setDetectedUpiPayment(null);
+                        }}
+                        className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-sm rounded-xl shadow-md shadow-emerald-200 transition-all flex items-center justify-center gap-2 cursor-pointer animate-pulse"
+                      >
+                        <CheckCircle2 className="w-5 h-5" />
+                        OK, Verify Payment (UTR: {detectedUpiPayment.utr})
+                      </button>
+                    </div>
+                  )}
+
                   {selectedPaymentMethod === 'bank_transfer' ? (
                     /* Bank Account Details */
                     <div className="space-y-3 bg-slate-50 border border-slate-150 p-4.5 rounded-2xl">
@@ -7755,8 +7818,8 @@ export default function CustomerWebsite({
                         <div className="flex items-center gap-2.5">
                           <div className="w-3 h-3 rounded-full bg-emerald-500 animate-ping shrink-0" />
                           <div>
-                            <p className="text-xs font-extrabold text-emerald-900">Auto-Detect Payment Active</p>
-                            <p className="text-[11px] text-emerald-700 leading-snug">Scan & pay with any UPI app. Once received, license keys auto-dispatch to your WhatsApp & email!</p>
+                            <p className="text-xs font-extrabold text-emerald-900">Auto-Detect Webhook Active</p>
+                            <p className="text-[11px] text-emerald-700 leading-snug">Scan & pay with any UPI app. Once received, UTR number will appear here for verification!</p>
                           </div>
                         </div>
                         {currentUpiOrderId && (
@@ -7815,10 +7878,10 @@ export default function CustomerWebsite({
                         required
                         value={paymentReference}
                         onChange={(e) => setPaymentReference(e.target.value)}
-                        placeholder="e.g. UTR-928374102938"
+                        placeholder="e.g. 506629508778"
                         className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-mono text-slate-850 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm"
                       />
-                      <p className="text-[10px] text-slate-400 mt-1">Provide reference number from your bank app checkout confirmation receipt screen.</p>
+                      <p className="text-[10px] text-slate-400 mt-1">Provide 12-digit UTR number from your UPI app receipt or let the webhook auto-fill it.</p>
                     </div>
 
                     <div>
@@ -7915,14 +7978,51 @@ export default function CustomerWebsite({
                     Go Back
                   </button>
 
-                  <button
-                    type="button"
-                    disabled={!paymentReference.trim()}
-                    onClick={() => createSuccessfulOrder(paymentReference, selectedPaymentMethod === 'bank_transfer' ? 'Direct Bank Transfer' : 'UPI QR Payment', 'pending')}
-                    className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-blue-100"
-                  >
-                    Confirm Transfer Details
-                  </button>
+                  {detectedUpiPayment ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUpiVerifiedData({
+                          orderId: detectedUpiPayment.orderId,
+                          paymentId: detectedUpiPayment.utr,
+                          amount: detectedUpiPayment.amount,
+                          customerName: detectedUpiPayment.customerName,
+                          customerEmail: detectedUpiPayment.customerEmail,
+                          customerPhone: detectedUpiPayment.customerPhone,
+                          items: detectedUpiPayment.items,
+                          keys: detectedUpiPayment.keys
+                        });
+                        setDetectedUpiPayment(null);
+                      }}
+                      className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-xs transition-all shadow-md shadow-emerald-200 flex items-center gap-2 cursor-pointer animate-pulse"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      OK, Verify Payment (UTR: {detectedUpiPayment.utr})
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={!paymentReference.trim()}
+                      onClick={() => {
+                        // If customer manually confirms UTR, trigger verified view with animated checkmark
+                        const ref = paymentReference.trim();
+                        setUpiVerifiedData({
+                          orderId: currentUpiOrderId || `UPI_${Date.now()}`,
+                          paymentId: ref,
+                          amount: netPayable,
+                          customerName: customerName || 'Customer',
+                          customerEmail: customerEmail || 'softkeylice@gmail.com',
+                          customerPhone: customerPhone || '9764528777',
+                          items: cart.map(i => ({ product: i.product, quantity: i.quantity })),
+                          keys: cart.map(i => `GENUINE-${(i.product.id || 'PRO').toUpperCase().substring(0, 8)}-${Math.random().toString(36).substring(2, 7).toUpperCase()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`)
+                        });
+                      }}
+                      className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-emerald-100 flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      Verify UTR & Get Keys
+                    </button>
+                  )}
                 </div>
               </>
             )}

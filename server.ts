@@ -907,10 +907,10 @@ function readPaymentSettings(): PaymentSettings {
   }
   return {
     bankName: "State Bank of India",
-    bankAccountName: "Krishna Salunke",
+    bankAccountName: "Veera Computers, Jalna",
     bankAccountNumber: "918273645019",
     ifscCode: "SBIN0001234",
-    upiId: "krishman08@ybl",
+    upiId: "veeracomputers@uboi",
     upiQrCodeUrl: "",
     paytmMid: process.env.PAYTM_MERCHANT_ID || "OPDDHV86006252156720",
     paytmMode: process.env.PAYTM_ENV === "PRODUCTION" ? "live" : "test",
@@ -4272,8 +4272,8 @@ app.use(async (req, res, next) => {
       await savePaymentsToSupabase(payments);
 
       // Generate standard NPCI UPI Intent URI
-      const upiId = settings.upiId || "veeracomputers@upi";
-      const merchantName = settings.bankAccountName || "Veera Computers";
+      const upiId = settings.upiId || "veeracomputers@uboi";
+      const merchantName = settings.bankAccountName || "Veera Computers, Jalna";
       const upiIntentUri = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(merchantName)}&am=${finalAmount.toFixed(2)}&cu=INR&tn=${encodeURIComponent("Order " + upiOrderId)}&tr=${encodeURIComponent(upiOrderId)}`;
 
       return res.json({
@@ -4439,15 +4439,43 @@ app.use(async (req, res, next) => {
       }
 
       // Extract details from payload (handling various SMS & App notification schemas)
+      const rawText = payload.rawText || payload.message || payload.body || payload.text || payload.notification || "";
       const rawAmount = payload.amount || payload.txnAmount || payload.value;
-      const parsedAmount = typeof rawAmount === "number" ? rawAmount : parseFloat(String(rawAmount || "0").replace(/[^0-9.]/g, ""));
+      let parsedAmount = typeof rawAmount === "number" ? rawAmount : parseFloat(String(rawAmount || "0").replace(/[^0-9.]/g, ""));
       
-      const utr = (payload.utr || payload.rrn || payload.refNo || payload.referenceId || payload.txnId || `UPI_UTR_${Date.now()}`).toString().trim();
+      // If amount not in explicit field, parse from SMS / Notification text
+      if ((!parsedAmount || isNaN(parsedAmount)) && rawText) {
+        const amtMatch = rawText.match(/(?:Rs\.?|INR|₹|credited\s*(?:by|for|with)?\s*(?:Rs\.?|INR|₹)?)\s*([0-9]+(?:\.[0-9]{1,2})?)/i);
+        if (amtMatch && amtMatch[1]) {
+          parsedAmount = parseFloat(amtMatch[1]);
+        }
+      }
+
+      let utr = (payload.utr || payload.rrn || payload.refNo || payload.referenceId || payload.txnId || "").toString().trim();
+      
+      // If UTR not in explicit field, parse from SMS / notification text
+      if (!utr && rawText) {
+        // Look for labeled UPI Ref / UTR / RRN / Transaction ID
+        const utrLabeledMatch = rawText.match(/(?:UTR|UPI\s*Ref(?:\s*no\.?)?|Ref\s*(?:no\.?|Num(?:ber)?)?|RRN|Txn(?:\s*ID)?|Transaction\s*ID|UPI\/)\s*[:#-]?\s*([A-Za-z0-9]{8,22})/i);
+        if (utrLabeledMatch && utrLabeledMatch[1]) {
+          utr = utrLabeledMatch[1].trim();
+        } else {
+          // Look for 12-digit NPCI standard reference number
+          const twelveDigitMatch = rawText.match(/\b\d{12}\b/);
+          if (twelveDigitMatch) {
+            utr = twelveDigitMatch[0].trim();
+          }
+        }
+      }
+
+      if (!utr) {
+        utr = `UPI_UTR_${Date.now()}`;
+      }
+
       let orderId = (payload.orderId || payload.order_id || payload.orderRef || "").toString().trim();
       const source = payload.source || (payload.appName ? "NOTIFICATION" : "SMS");
       const appName = payload.appName || payload.bank || payload.sender || "UPI Payment App";
       const sender = payload.sender || payload.customerName || "Customer";
-      const rawText = payload.rawText || payload.message || payload.body || "";
 
       // If orderId is not passed directly, try to regex extract it from rawText
       if (!orderId && rawText) {
@@ -4703,10 +4731,10 @@ app.use(async (req, res, next) => {
   app.post("/api/payment/settings/reset", authenticateJwt, requireAdmin, csrfProtection, (req, res) => {
     const defaultSettings: PaymentSettings = {
       bankName: "State Bank of India",
-      bankAccountName: "Krishna Salunke",
+      bankAccountName: "Veera Computers, Jalna",
       bankAccountNumber: "918273645019",
       ifscCode: "SBIN0001234",
-      upiId: "krishman08@ybl",
+      upiId: "veeracomputers@uboi",
       upiQrCodeUrl: "",
       paytmMid: process.env.PAYTM_MERCHANT_ID || "OPDDHV86006252156720",
       paytmMode: process.env.PAYTM_ENV === "PRODUCTION" ? "live" : "test",
