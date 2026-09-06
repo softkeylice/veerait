@@ -98,6 +98,12 @@ export default function AdminPanel({
   const [paytmMid, setPaytmMid] = useState('OPDDHV86006252156720');
   const [paytmMode, setPaytmMode] = useState<'test' | 'live'>('test');
   const [upiWebhookSecret, setUpiWebhookSecret] = useState('veerait_upi_secret_2026');
+  const [ccavenueMerchantId, setCcavenueMerchantId] = useState('');
+  const [ccavenueAccessCode, setCcavenueAccessCode] = useState('');
+  const [ccavenueWorkingKey, setCcavenueWorkingKey] = useState('');
+  const [ccavenueMode, setCcavenueMode] = useState<'test' | 'live'>('test');
+  const [ccavenueEnabled, setCcavenueEnabled] = useState(true);
+  const [showCcavenueKey, setShowCcavenueKey] = useState(false);
   const [isSavingPaymentSettings, setIsSavingPaymentSettings] = useState(false);
   const [isTestingUpiWebhook, setIsTestingUpiWebhook] = useState(false);
   const [upiTestResult, setUpiTestResult] = useState<{ success: boolean; message: string; details?: any } | null>(null);
@@ -364,6 +370,27 @@ export default function AdminPanel({
           if (data.settings.upiWebhookSecret) {
             setUpiWebhookSecret(data.settings.upiWebhookSecret);
           }
+          if (data.settings.ccavenueMerchantId !== undefined) {
+            setCcavenueMerchantId(data.settings.ccavenueMerchantId);
+          }
+          if (data.settings.ccavenueAccessCode !== undefined) {
+            setCcavenueAccessCode(data.settings.ccavenueAccessCode);
+          }
+          if (data.settings.ccavenueWorkingKey !== undefined) {
+            setCcavenueWorkingKey(data.settings.ccavenueWorkingKey);
+          }
+          if (data.settings.ccavenueMode) {
+            setCcavenueMode(data.settings.ccavenueMode);
+          }
+          if (data.settings.ccavenueEnabled !== undefined) {
+            setCcavenueEnabled(data.settings.ccavenueEnabled);
+          }
+        }
+        if (data.ccavenue) {
+          if (data.ccavenue.merchantId) setCcavenueMerchantId(data.ccavenue.merchantId);
+          if (data.ccavenue.accessCode) setCcavenueAccessCode(data.ccavenue.accessCode);
+          if (data.ccavenue.mode) setCcavenueMode(data.ccavenue.mode);
+          if (data.ccavenue.enabled !== undefined) setCcavenueEnabled(data.ccavenue.enabled);
         }
         if (data.paytm) {
           if (data.paytm.merchantId) {
@@ -477,12 +504,17 @@ export default function AdminPanel({
           upiQrCodeUrl,
           paytmMid,
           paytmMode,
-          upiWebhookSecret
+          upiWebhookSecret,
+          ccavenueMerchantId,
+          ccavenueAccessCode,
+          ccavenueWorkingKey,
+          ccavenueMode,
+          ccavenueEnabled
         })
       });
       const data = await response.json();
       if (response.ok && data.success) {
-        addNotification('Settings Saved', 'Store payment options & Android UPI Webhook settings updated successfully.', 'success');
+        addNotification('Settings Saved', 'Store payment options, CCAvenue Gateway & Android UPI settings updated successfully.', 'success');
       } else {
         addNotification('Save Failed', data.error || 'Could not update payment configurations.', 'error');
       }
@@ -618,6 +650,11 @@ export default function AdminPanel({
         setIfscCode(data.settings.ifscCode || '');
         setUpiId(data.settings.upiId || '');
         setUpiQrCodeUrl(data.settings.upiQrCodeUrl || '');
+        setCcavenueMerchantId('');
+        setCcavenueAccessCode('');
+        setCcavenueWorkingKey('');
+        setCcavenueMode('test');
+        setCcavenueEnabled(true);
         addNotification('Settings Reset', 'Store payment options reset to standard defaults successfully.', 'success');
       } else {
         addNotification('Reset Failed', data.error || 'Could not reset payment configurations.', 'error');
@@ -6189,6 +6226,150 @@ export default function AdminPanel({
                   </div>
                 </div>
 
+                {/* CCAvenue Payment Gateway Section */}
+                <div className="space-y-4 border-t-2 border-orange-200/60 bg-gradient-to-br from-amber-50/40 via-orange-50/20 to-white -mx-6 px-6 py-5 rounded-2xl shadow-xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <h5 className="text-xs font-black text-amber-950 uppercase tracking-wider font-mono flex items-center gap-2">
+                        <span className="bg-orange-600 text-white text-[9px] px-2 py-0.5 rounded font-black tracking-widest shadow-xs">CCAVENUE PG</span>
+                        CCAvenue Payment Gateway Credentials
+                      </h5>
+                      <p className="text-[11px] text-amber-900/80 mt-0.5">
+                        Accept all Credit/Debit Cards, 58+ Net Banking, EMI, and Wallets via official CCAvenue AES-128-CBC encryption.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setCcavenueEnabled(!ccavenueEnabled)}
+                        className={`text-[10px] font-extrabold px-3 py-1 rounded-full border transition-all cursor-pointer flex items-center gap-1.5 ${
+                          ccavenueEnabled
+                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                            : 'bg-slate-100 text-slate-600 border-slate-300'
+                        }`}
+                      >
+                        <span className={`w-2 h-2 rounded-full ${ccavenueEnabled ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}></span>
+                        {ccavenueEnabled ? 'Enabled on Checkout' : 'Disabled'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        CCAvenue Merchant ID (MID)
+                      </label>
+                      <input
+                        type="text"
+                        value={ccavenueMerchantId}
+                        onChange={(e) => setCcavenueMerchantId(e.target.value)}
+                        className="w-full px-3.5 py-2.5 bg-white border border-amber-300/80 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-orange-500 font-mono font-bold shadow-xs"
+                        placeholder="e.g. 3298101"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Access Code
+                      </label>
+                      <input
+                        type="text"
+                        value={ccavenueAccessCode}
+                        onChange={(e) => setCcavenueAccessCode(e.target.value)}
+                        className="w-full px-3.5 py-2.5 bg-white border border-amber-300/80 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-orange-500 font-mono font-bold shadow-xs"
+                        placeholder="e.g. AVAB92KL20..."
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Working Key (AES-128 Encryption Key)
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showCcavenueKey ? 'text' : 'password'}
+                          value={ccavenueWorkingKey}
+                          onChange={(e) => setCcavenueWorkingKey(e.target.value)}
+                          className="w-full px-3.5 py-2.5 pr-10 bg-white border border-amber-300/80 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-orange-500 font-mono font-bold shadow-xs"
+                          placeholder="32-character AES working key"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowCcavenueKey(!showCcavenueKey)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer"
+                        >
+                          {showCcavenueKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Environment Mode</label>
+                      <div className="flex items-center justify-between bg-white border border-amber-300/80 px-3.5 py-2 rounded-xl shadow-xs">
+                        <div>
+                          <span className="text-xs font-extrabold text-orange-950 block">
+                            {ccavenueMode === 'test' ? 'Test / Sandbox Mode' : 'Live Production Mode'}
+                          </span>
+                          <span className="text-[10px] text-slate-500 font-mono">
+                            {ccavenueMode === 'test' ? 'test.ccavenue.com' : 'secure.ccavenue.com'}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setCcavenueMode(ccavenueMode === 'test' ? 'live' : 'test')}
+                          className="text-[10px] bg-orange-600 hover:bg-orange-700 text-white font-bold px-3 py-1 rounded-lg transition-all cursor-pointer shadow-xs"
+                        >
+                          Switch Mode
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* CCAvenue Callback URL */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      CCAvenue Redirect & Return Callback URL (Auto-Generated)
+                    </label>
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="text"
+                        readOnly
+                        value={typeof window !== 'undefined' ? `${window.location.origin}/api/payment/ccavenue/callback` : '/api/payment/ccavenue/callback'}
+                        className="w-full px-3 py-2 bg-white border border-amber-300/80 rounded-xl text-xs font-mono text-slate-900 font-bold select-all focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const url = `${window.location.origin}/api/payment/ccavenue/callback`;
+                          navigator.clipboard.writeText(url);
+                          addNotification('URL Copied', 'CCAvenue callback URL copied to clipboard.', 'success');
+                        }}
+                        className="px-3.5 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shrink-0 shadow-xs flex items-center gap-1"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                        Copy URL
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-amber-800 mt-1">
+                      Is link ko apne CCAvenue M.A.R.S Merchant Portal me Redirect URL & Cancel URL me save kare.
+                    </p>
+                  </div>
+
+                  {/* Step-by-Step Launch Guide Callout */}
+                  <div className="bg-amber-100/70 border border-amber-300/90 rounded-xl p-3 text-xs text-amber-950 space-y-1.5">
+                    <p className="font-extrabold flex items-center gap-1 text-orange-900">
+                      <span>💡</span> CCAvenue Launch Guide (Kaise Connect Kare):
+                    </p>
+                    <ol className="list-decimal list-inside space-y-0.5 text-[11px] text-amber-900/90 leading-relaxed font-medium">
+                      <li><strong>CCAvenue M.A.R.S</strong> (<a href="https://login.ccavenue.com" target="_blank" rel="noreferrer" className="underline font-bold text-orange-800">login.ccavenue.com</a>) me login kare.</li>
+                      <li>Left Menu me <strong>Settings</strong> ➔ <strong>API Keys</strong> par click kare.</li>
+                      <li>Waha se apna <strong>Merchant ID</strong>, <strong>Access Code</strong> aur <strong>Working Key</strong> copy karke upar enter kare.</li>
+                      <li>Agar account activate ho gaya hai to <strong>Live Production Mode</strong> select kare, fir <strong>"Save Payment Configurations"</strong> dabaye!</li>
+                    </ol>
+                  </div>
+                </div>
+
                 {/* Android UPI Payment Gateway & SMS Listener Section */}
                 <div className="space-y-4 border-t-2 border-emerald-100 bg-emerald-50/40 -mx-6 px-6 py-5 rounded-xl">
                   <div className="flex items-center justify-between">
@@ -6439,6 +6620,65 @@ export default function AdminPanel({
 
                   <p className="text-[11px] text-slate-500 leading-relaxed">
                     Paytm PG Gateway is configured with MID <strong className="font-mono text-slate-700">{paytmMid}</strong>. Transactions will be processed through Paytm PG modal popup and auto-settled to your bank.
+                  </p>
+                </div>
+
+                {/* CCAvenue connection status panel */}
+                <div className="bg-white border border-orange-200 p-6 rounded-2xl shadow-sm space-y-4">
+                  <h4 className="text-xs font-bold text-orange-600 uppercase tracking-widest font-mono flex items-center gap-1.5">
+                    <ShieldAlert className="w-4 h-4" />
+                    CCAvenue Gateway Status
+                  </h4>
+
+                  <div className="p-4 bg-orange-50/50 border border-orange-100 rounded-xl space-y-3">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-slate-600">Merchant MID</span>
+                      <span className="font-mono bg-orange-100/70 text-orange-900 border border-orange-200 px-2 py-0.5 rounded text-[11px] font-extrabold">
+                        {ccavenueMerchantId || 'Not Configured'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-slate-600">Access Code</span>
+                      <span className="font-mono bg-orange-100/70 text-orange-900 border border-orange-200 px-2 py-0.5 rounded text-[10px] font-bold">
+                        {ccavenueAccessCode ? `${ccavenueAccessCode.slice(0, 6)}••••••` : 'Not Set'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-slate-600">Working Key</span>
+                      <span className="font-mono bg-orange-100/70 text-orange-900 border border-orange-200 px-2 py-0.5 rounded text-[10px] font-bold">
+                        {ccavenueWorkingKey ? '●●●●●●●● (AES-128)' : 'Not Set'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-slate-600">Gateway Status</span>
+                      <span className={`font-mono px-2 py-0.5 rounded text-[10px] font-bold ${
+                        ccavenueEnabled && ccavenueMerchantId && ccavenueAccessCode && ccavenueWorkingKey
+                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                          : ccavenueEnabled
+                          ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                          : 'bg-slate-100 text-slate-600'
+                      }`}>
+                        {ccavenueEnabled && ccavenueMerchantId && ccavenueAccessCode && ccavenueWorkingKey
+                          ? 'Live Ready'
+                          : ccavenueEnabled
+                          ? 'Test / Incomplete'
+                          : 'Disabled'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs border-t border-orange-200/50 pt-2">
+                      <span className="font-semibold text-slate-600">Environment</span>
+                      <span className="font-mono text-orange-900 font-bold uppercase text-[10px]">
+                        {ccavenueMode} Mode
+                      </span>
+                    </div>
+                  </div>
+
+                  <p className="text-[11px] text-slate-500 leading-relaxed">
+                    CCAvenue secures payments with AES-128 encryption. Supports Credit & Debit cards, 58+ Net Banking, UPI, and Digital Wallets.
                   </p>
                 </div>
 

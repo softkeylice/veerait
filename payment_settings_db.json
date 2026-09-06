@@ -7,5 +7,10 @@
   "upiQrCodeUrl": "",
   "paytmMid": "OPDDHV86006252156720",
   "paytmMode": "test",
-  "upiWebhookSecret": "veerait_upi_secret_2026"
+  "upiWebhookSecret": "veerait_upi_secret_2026",
+  "ccavenueMerchantId": "",
+  "ccavenueAccessCode": "",
+  "ccavenueWorkingKey": "",
+  "ccavenueMode": "test",
+  "ccavenueEnabled": true
 }
