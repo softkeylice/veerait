@@ -4,6 +4,296 @@
     "templateName": "softkey_new_order_notify_v1",
     "recipientPhone": "919876543210",
     "variables": [
+      "sim_order_gzfjsy1d",
+      "Sunil Patil",
+      " (₹199.00)"
+    ],
+    "status": "success",
+    "attempts": 1,
+    "requestPayload": {
+      "messaging_product": "whatsapp",
+      "recipient_type": "individual",
+      "to": "919876543210",
+      "type": "template",
+      "template": {
+        "name": "softkey_new_order_notify_v1",
+        "language": {
+          "code": "en"
+        },
+        "components": [
+          {
+            "type": "body",
+            "parameters": [
+              {
+                "type": "text",
+                "text": "sim_order_gzfjsy1d"
+              },
+              {
+                "type": "text",
+                "text": "Sunil Patil"
+              },
+              {
+                "type": "text",
+                "text": " (₹199.00)"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "id": "31bbffee-7ba6-4573-9889-38aa687dcd3c",
+    "timestamp": "2026-10-07T06:20:01.334Z",
+    "responsePayload": {
+      "simulated": true,
+      "status": "sent_simulated",
+      "message": "Simulated WhatsApp delivery due to Meta API token expiration or invalid credentials.",
+      "originalError": "Authentication Error"
+    }
+  },
+  {
+    "eventType": "order_confirmation",
+    "templateName": "order_confirmation",
+    "recipientPhone": "919123456789",
+    "variables": [
+      "Sunil Patil",
+      "₹199.00",
+      "sim_order_gzfjsy1d",
+      "Catalog Purchase",
+      "Order is confirmed. License keys and download instructions are sent.",
+      "https://veerait.com"
+    ],
+    "status": "success",
+    "attempts": 1,
+    "requestPayload": {
+      "messaging_product": "whatsapp",
+      "recipient_type": "individual",
+      "to": "919123456789",
+      "type": "template",
+      "template": {
+        "name": "order_confirmation",
+        "language": {
+          "code": "en"
+        },
+        "components": [
+          {
+            "type": "body",
+            "parameters": [
+              {
+                "type": "text",
+                "text": "Sunil Patil"
+              },
+              {
+                "type": "text",
+                "text": "₹199.00"
+              },
+              {
+                "type": "text",
+                "text": "sim_order_gzfjsy1d"
+              },
+              {
+                "type": "text",
+                "text": "Catalog Purchase"
+              },
+              {
+                "type": "text",
+                "text": "Order is confirmed. License keys and download instructions are sent."
+              },
+              {
+                "type": "text",
+                "text": "https://veerait.com"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "id": "e560683f-b64f-4722-83c2-7d1c9ce3bb3e",
+    "timestamp": "2026-10-07T06:20:01.324Z",
+    "responsePayload": {
+      "simulated": true,
+      "status": "sent_simulated",
+      "message": "Simulated WhatsApp delivery due to Meta API token expiration or invalid credentials.",
+      "originalError": "Authentication Error"
+    }
+  },
+  {
+    "eventType": "payment_failed",
+    "templateName": "softkey_payment_failed_v1",
+    "recipientPhone": "919876543210",
+    "variables": [
+      "Ramesh Kumar",
+      "order_TkuuCz7cqy7fnu",
+      "₹499.00",
+      "Signature verification failed. Potential transaction signature tampering detected."
+    ],
+    "status": "success",
+    "attempts": 1,
+    "requestPayload": {
+      "messaging_product": "whatsapp",
+      "recipient_type": "individual",
+      "to": "919876543210",
+      "type": "template",
+      "template": {
+        "name": "softkey_payment_failed_v1",
+        "language": {
+          "code": "en"
+        },
+        "components": [
+          {
+            "type": "body",
+            "parameters": [
+              {
+                "type": "text",
+                "text": "Ramesh Kumar"
+              },
+              {
+                "type": "text",
+                "text": "order_TkuuCz7cqy7fnu"
+              },
+              {
+                "type": "text",
+                "text": "₹499.00"
+              },
+              {
+                "type": "text",
+                "text": "Signature verification failed. Potential transaction signature tampering detected."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "id": "661033a8-ffc2-49c2-ab14-c8eb84dfd883",
+    "timestamp": "2026-10-07T06:19:32.798Z",
+    "responsePayload": {
+      "simulated": true,
+      "status": "sent_simulated",
+      "message": "Simulated WhatsApp delivery due to Meta API token expiration or invalid credentials.",
+      "originalError": "Authentication Error"
+    }
+  },
+  {
+    "eventType": "new_order_notifications",
+    "templateName": "softkey_new_order_notify_v1",
+    "recipientPhone": "919876543210",
+    "variables": [
+      "TG_ORD_1789040391276",
+      "Krishna Salunke",
+      " (₹499.00)"
+    ],
+    "status": "success",
+    "attempts": 1,
+    "requestPayload": {
+      "messaging_product": "whatsapp",
+      "recipient_type": "individual",
+      "to": "919876543210",
+      "type": "template",
+      "template": {
+        "name": "softkey_new_order_notify_v1",
+        "language": {
+          "code": "en"
+        },
+        "components": [
+          {
+            "type": "body",
+            "parameters": [
+              {
+                "type": "text",
+                "text": "TG_ORD_1789040391276"
+              },
+              {
+                "type": "text",
+                "text": "Krishna Salunke"
+              },
+              {
+                "type": "text",
+                "text": " (₹499.00)"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "id": "457c2d89-8d1d-44eb-92e9-602745e78c55",
+    "timestamp": "2026-09-10T11:39:59.744Z",
+    "responsePayload": {
+      "simulated": true,
+      "status": "sent_simulated",
+      "message": "Simulated WhatsApp delivery due to Meta API token expiration or invalid credentials.",
+      "originalError": "Authentication Error"
+    }
+  },
+  {
+    "eventType": "order_confirmation",
+    "templateName": "order_confirmation",
+    "recipientPhone": "919876543210",
+    "variables": [
+      "Krishna Salunke",
+      "₹499.00",
+      "TG_ORD_1789040391276",
+      "Catalog Purchase",
+      "Order is confirmed. License keys and download instructions are sent.",
+      "https://veerait.com"
+    ],
+    "status": "success",
+    "attempts": 1,
+    "requestPayload": {
+      "messaging_product": "whatsapp",
+      "recipient_type": "individual",
+      "to": "919876543210",
+      "type": "template",
+      "template": {
+        "name": "order_confirmation",
+        "language": {
+          "code": "en"
+        },
+        "components": [
+          {
+            "type": "body",
+            "parameters": [
+              {
+                "type": "text",
+                "text": "Krishna Salunke"
+              },
+              {
+                "type": "text",
+                "text": "₹499.00"
+              },
+              {
+                "type": "text",
+                "text": "TG_ORD_1789040391276"
+              },
+              {
+                "type": "text",
+                "text": "Catalog Purchase"
+              },
+              {
+                "type": "text",
+                "text": "Order is confirmed. License keys and download instructions are sent."
+              },
+              {
+                "type": "text",
+                "text": "https://veerait.com"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "id": "42bb93ef-e749-4da4-ace7-b363223edafa",
+    "timestamp": "2026-09-10T11:39:59.719Z",
+    "responsePayload": {
+      "simulated": true,
+      "status": "sent_simulated",
+      "message": "Simulated WhatsApp delivery due to Meta API token expiration or invalid credentials.",
+      "originalError": "Authentication Error"
+    }
+  },
+  {
+    "eventType": "new_order_notifications",
+    "templateName": "softkey_new_order_notify_v1",
+    "recipientPhone": "919876543210",
+    "variables": [
       "PAYTM_ORD_1786017963805_D7LB",
       "Test User",
       " (₹499.00)"

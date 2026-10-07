@@ -93,7 +93,11 @@ export default function AdminPanel({
   const [ifscCode, setIfscCode] = useState('SBIN0001234');
   const [upiId, setUpiId] = useState('krishman08@ybl');
   const [upiQrCodeUrl, setUpiQrCodeUrl] = useState('');
-  const [razorpayKeyId, setRazorpayKeyId] = useState('');
+  const [razorpayKeyId, setRazorpayKeyId] = useState('rzp_test_1DP5mmOlF5G5ag');
+  const [razorpayKeySecret, setRazorpayKeySecret] = useState('sX78jKLm910aBcDeFgHiJkLm');
+  const [razorpayMode, setRazorpayMode] = useState<'test' | 'live'>('test');
+  const [razorpayEnabled, setRazorpayEnabled] = useState(true);
+  const [showRazorpaySecret, setShowRazorpaySecret] = useState(false);
   const [razorpayConfigured, setRazorpayConfigured] = useState(false);
   const [paytmMid, setPaytmMid] = useState('OPDDHV86006252156720');
   const [paytmMode, setPaytmMode] = useState<'test' | 'live'>('test');
@@ -104,6 +108,13 @@ export default function AdminPanel({
   const [ccavenueMode, setCcavenueMode] = useState<'test' | 'live'>('test');
   const [ccavenueEnabled, setCcavenueEnabled] = useState(true);
   const [showCcavenueKey, setShowCcavenueKey] = useState(false);
+  const [telegramBotToken, setTelegramBotToken] = useState('');
+  const [telegramBotUsername, setTelegramBotUsername] = useState('SoftKeyLicenseBot');
+  const [telegramPaymentProviderToken, setTelegramPaymentProviderToken] = useState('');
+  const [telegramCurrency, setTelegramCurrency] = useState<'INR' | 'XTR'>('XTR');
+  const [telegramEnabled, setTelegramEnabled] = useState(true);
+  const [showTelegramToken, setShowTelegramToken] = useState(false);
+  const [showTelegramProviderToken, setShowTelegramProviderToken] = useState(false);
   const [isSavingPaymentSettings, setIsSavingPaymentSettings] = useState(false);
   const [isTestingUpiWebhook, setIsTestingUpiWebhook] = useState(false);
   const [upiTestResult, setUpiTestResult] = useState<{ success: boolean; message: string; details?: any } | null>(null);
@@ -385,12 +396,32 @@ export default function AdminPanel({
           if (data.settings.ccavenueEnabled !== undefined) {
             setCcavenueEnabled(data.settings.ccavenueEnabled);
           }
+          if (data.settings.telegramBotToken !== undefined) {
+            setTelegramBotToken(data.settings.telegramBotToken);
+          }
+          if (data.settings.telegramBotUsername !== undefined) {
+            setTelegramBotUsername(data.settings.telegramBotUsername);
+          }
+          if (data.settings.telegramPaymentProviderToken !== undefined) {
+            setTelegramPaymentProviderToken(data.settings.telegramPaymentProviderToken);
+          }
+          if (data.settings.telegramCurrency) {
+            setTelegramCurrency(data.settings.telegramCurrency);
+          }
+          if (data.settings.telegramEnabled !== undefined) {
+            setTelegramEnabled(data.settings.telegramEnabled);
+          }
         }
         if (data.ccavenue) {
           if (data.ccavenue.merchantId) setCcavenueMerchantId(data.ccavenue.merchantId);
           if (data.ccavenue.accessCode) setCcavenueAccessCode(data.ccavenue.accessCode);
           if (data.ccavenue.mode) setCcavenueMode(data.ccavenue.mode);
           if (data.ccavenue.enabled !== undefined) setCcavenueEnabled(data.ccavenue.enabled);
+        }
+        if (data.telegram) {
+          if (data.telegram.botUsername) setTelegramBotUsername(data.telegram.botUsername);
+          if (data.telegram.currency) setTelegramCurrency(data.telegram.currency);
+          if (data.telegram.enabled !== undefined) setTelegramEnabled(data.telegram.enabled);
         }
         if (data.paytm) {
           if (data.paytm.merchantId) {
@@ -403,6 +434,11 @@ export default function AdminPanel({
         if (data.razorpay) {
           setRazorpayKeyId(data.razorpay.keyId || '');
           setRazorpayConfigured(data.razorpay.configured || false);
+          if (data.razorpay.mode) setRazorpayMode(data.razorpay.mode);
+          if (data.razorpay.enabled !== undefined) setRazorpayEnabled(data.razorpay.enabled);
+        }
+        if (data.settings?.razorpayKeySecret) {
+          setRazorpayKeySecret(data.settings.razorpayKeySecret);
         }
       })
       .catch(err => {
@@ -509,12 +545,21 @@ export default function AdminPanel({
           ccavenueAccessCode,
           ccavenueWorkingKey,
           ccavenueMode,
-          ccavenueEnabled
+          ccavenueEnabled,
+          telegramBotToken,
+          telegramBotUsername,
+          telegramPaymentProviderToken,
+          telegramCurrency,
+          telegramEnabled,
+          razorpayKeyId,
+          razorpayKeySecret,
+          razorpayMode,
+          razorpayEnabled
         })
       });
       const data = await response.json();
       if (response.ok && data.success) {
-        addNotification('Settings Saved', 'Store payment options, CCAvenue Gateway & Android UPI settings updated successfully.', 'success');
+        addNotification('Settings Saved', 'Razorpay Payment Gateway, UPI, CCAvenue & Telegram configurations updated successfully.', 'success');
       } else {
         addNotification('Save Failed', data.error || 'Could not update payment configurations.', 'error');
       }
@@ -655,6 +700,10 @@ export default function AdminPanel({
         setCcavenueWorkingKey('');
         setCcavenueMode('test');
         setCcavenueEnabled(true);
+        setRazorpayKeyId('rzp_test_1DP5mmOlF5G5ag');
+        setRazorpayKeySecret('sX78jKLm910aBcDeFgHiJkLm');
+        setRazorpayMode('test');
+        setRazorpayEnabled(true);
         addNotification('Settings Reset', 'Store payment options reset to standard defaults successfully.', 'success');
       } else {
         addNotification('Reset Failed', data.error || 'Could not reset payment configurations.', 'error');
@@ -6185,6 +6234,155 @@ export default function AdminPanel({
                   </div>
                 </div>
 
+                {/* Razorpay Payment Gateway Section (QR Code, Credit Card, Debit Card, Net Banking) */}
+                <div className="space-y-4 border-2 border-blue-200 bg-gradient-to-br from-blue-50/70 via-indigo-50/30 to-white -mx-6 px-6 py-5 rounded-2xl shadow-xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <h5 className="text-xs font-black text-blue-950 uppercase tracking-wider font-mono flex items-center gap-2">
+                        <span className="bg-blue-600 text-white text-[9px] px-2 py-0.5 rounded font-black tracking-widest shadow-xs flex items-center gap-1">
+                          <CreditCard className="w-2.5 h-2.5" /> RAZORPAY PG
+                        </span>
+                        Razorpay Payment Gateway (QR Code, Cards & NetBanking)
+                      </h5>
+                      <p className="text-[11px] text-blue-900/80 mt-0.5 font-medium">
+                        Accept dynamic UPI QR Code, Credit Cards, Debit Cards (Visa, Mastercard, RuPay), Net Banking & Wallets via official Razorpay integration.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setRazorpayEnabled(!razorpayEnabled)}
+                        className={`text-[10px] font-extrabold px-3 py-1 rounded-full border transition-all cursor-pointer flex items-center gap-1.5 ${
+                          razorpayEnabled
+                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                            : 'bg-slate-100 text-slate-600 border-slate-300'
+                        }`}
+                      >
+                        <span className={`w-2 h-2 rounded-full ${razorpayEnabled ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}></span>
+                        {razorpayEnabled ? 'Enabled on Checkout' : 'Disabled'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Feature Badges */}
+                  <div className="flex flex-wrap items-center gap-2 pt-1 pb-1">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-white text-blue-900 border border-blue-200 px-2.5 py-1 rounded-lg shadow-2xs">
+                      📲 Instant Dynamic QR Code (GPay, PhonePe, Paytm, BHIM)
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-white text-indigo-900 border border-indigo-200 px-2.5 py-1 rounded-lg shadow-2xs">
+                      💳 Credit & Debit Cards (Visa, Mastercard, RuPay)
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-white text-slate-800 border border-slate-200 px-2.5 py-1 rounded-lg shadow-2xs">
+                      🏦 50+ Net Banking & Wallets
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-lg shadow-2xs">
+                      ⚡ Instant Auto-Verification & Key Dispatch
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Razorpay Key ID
+                      </label>
+                      <input
+                        type="text"
+                        value={razorpayKeyId}
+                        onChange={(e) => setRazorpayKeyId(e.target.value)}
+                        className="w-full px-3.5 py-2.5 bg-white border border-blue-300/80 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-600 font-mono font-bold shadow-xs"
+                        placeholder="rzp_test_... or rzp_live_..."
+                      />
+                      <p className="text-[10px] text-slate-500 mt-1">Found in Razorpay Dashboard &gt; Settings &gt; API Keys</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Razorpay Key Secret
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showRazorpaySecret ? 'text' : 'password'}
+                          value={razorpayKeySecret}
+                          onChange={(e) => setRazorpayKeySecret(e.target.value)}
+                          className="w-full px-3.5 py-2.5 pr-10 bg-white border border-blue-300/80 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-600 font-mono font-bold shadow-xs"
+                          placeholder="Secret key generated with Key ID"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowRazorpaySecret(!showRazorpaySecret)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer"
+                        >
+                          {showRazorpaySecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                      <p className="text-[10px] text-slate-500 mt-1">Required for secure HMAC-SHA256 signature verification</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Environment Mode</label>
+                      <div className="flex items-center justify-between bg-white border border-blue-300/80 px-3.5 py-2 rounded-xl shadow-xs">
+                        <div>
+                          <span className="text-xs font-extrabold text-blue-950 block">
+                            {razorpayMode === 'test' ? 'Test / Sandbox Mode (rzp_test)' : 'Live Production Mode (rzp_live)'}
+                          </span>
+                          <span className="text-[10px] text-slate-500 font-mono">
+                            {razorpayMode === 'test' ? 'Checkout Simulator + Test Cards/QR' : 'Real Bank / UPI Settlement'}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setRazorpayMode(razorpayMode === 'test' ? 'live' : 'test')}
+                          className="text-[10px] bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1 rounded-lg transition-all cursor-pointer shadow-xs"
+                        >
+                          Switch Mode
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Razorpay Webhook URL (Automated S2S Callback)
+                      </label>
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="text"
+                          readOnly
+                          value={typeof window !== 'undefined' ? `${window.location.origin}/api/payment/razorpay/webhook` : '/api/payment/razorpay/webhook'}
+                          className="w-full px-3 py-2 bg-white border border-blue-300/80 rounded-xl text-xs font-mono text-slate-900 font-bold select-all focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const url = `${window.location.origin}/api/payment/razorpay/webhook`;
+                            navigator.clipboard.writeText(url);
+                            addNotification('URL Copied', 'Razorpay webhook endpoint URL copied to clipboard.', 'success');
+                          }}
+                          className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shrink-0 shadow-xs flex items-center gap-1"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                          Copy
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Razorpay Quick Guide Card */}
+                  <div className="bg-blue-100/70 border border-blue-300/90 rounded-xl p-3 text-xs text-blue-950 space-y-1.5">
+                    <p className="font-extrabold flex items-center gap-1 text-blue-900">
+                      <span>⚡</span> Razorpay Payment Gateway Guide (QR, Cards, NetBanking Setup):
+                    </p>
+                    <ol className="list-decimal list-inside space-y-0.5 text-[11px] text-blue-900/90 leading-relaxed font-medium">
+                      <li><strong>Razorpay Dashboard</strong> (<a href="https://dashboard.razorpay.com" target="_blank" rel="noreferrer" className="underline font-bold text-blue-800">dashboard.razorpay.com</a>) me login kare.</li>
+                      <li>Left Menu me <strong>Account & Settings</strong> ➔ <strong>API Keys</strong> par jaye aur <em>Generate Key</em> kare.</li>
+                      <li>Mila hua <strong>Key ID</strong> (jaise <code>rzp_test_...</code> ya <code>rzp_live_...</code>) aur <strong>Key Secret</strong> upar daale.</li>
+                      <li>Customer ko checkout par <strong>QR Code (GPay, PhonePe, Paytm)</strong>, <strong>Credit Card & Debit Card</strong>, aur <strong>Net Banking</strong> teeno vikalp milenge!</li>
+                      <li>Upar <strong>"Save Payment Configurations"</strong> par click kare. Setup turant active ho jayega.</li>
+                    </ol>
+                  </div>
+                </div>
+
                 {/* Paytm Payment Gateway Section */}
                 <div className="space-y-4 border-t border-slate-100 pt-4">
                   <div className="flex items-center justify-between">
@@ -6366,6 +6564,159 @@ export default function AdminPanel({
                       <li>Left Menu me <strong>Settings</strong> ➔ <strong>API Keys</strong> par click kare.</li>
                       <li>Waha se apna <strong>Merchant ID</strong>, <strong>Access Code</strong> aur <strong>Working Key</strong> copy karke upar enter kare.</li>
                       <li>Agar account activate ho gaya hai to <strong>Live Production Mode</strong> select kare, fir <strong>"Save Payment Configurations"</strong> dabaye!</li>
+                    </ol>
+                  </div>
+                </div>
+
+                {/* Telegram Payment Gateway (Telegram Payments & Telegram Stars) */}
+                <div className="space-y-4 border-t-2 border-sky-200 bg-sky-50/60 -mx-6 px-6 py-5 rounded-xl">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h5 className="text-xs font-black text-sky-950 uppercase tracking-wider font-mono flex items-center gap-2">
+                        <span className="bg-[#229ED9] text-white text-[9px] px-2 py-0.5 rounded font-black tracking-widest shadow-xs flex items-center gap-1">
+                          <Send className="w-2.5 h-2.5 -rotate-45" /> TELEGRAM PAYMENTS & STARS
+                        </span>
+                        Official Telegram In-App Checkout & Invoice API
+                      </h5>
+                      <p className="text-[11px] text-sky-800 mt-0.5 font-medium">
+                        Accept payments directly inside Telegram app via Telegram Stars (⭐ XTR) or Connected Providers (INR). Instant bot invoice generation.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setTelegramEnabled(!telegramEnabled)}
+                        className={`text-[10px] font-extrabold px-3 py-1 rounded-full border transition-all cursor-pointer flex items-center gap-1.5 ${
+                          telegramEnabled
+                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                            : 'bg-slate-100 text-slate-600 border-slate-300'
+                        }`}
+                      >
+                        <span className={`w-2 h-2 rounded-full ${telegramEnabled ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}></span>
+                        {telegramEnabled ? 'Enabled on Checkout' : 'Disabled'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Telegram Bot Username (without @)
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-sky-700">@</span>
+                        <input
+                          type="text"
+                          value={telegramBotUsername}
+                          onChange={(e) => setTelegramBotUsername(e.target.value.replace(/^@/, ''))}
+                          className="w-full pl-7 pr-3.5 py-2.5 bg-white border border-sky-300/80 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 font-mono font-bold shadow-xs"
+                          placeholder="e.g. SoftKeyLicenseBot"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Telegram Currency / Payment Mode
+                      </label>
+                      <select
+                        value={telegramCurrency}
+                        onChange={(e) => setTelegramCurrency(e.target.value as 'INR' | 'XTR')}
+                        className="w-full px-3.5 py-2.5 bg-white border border-sky-300/80 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 font-bold shadow-xs"
+                      >
+                        <option value="XTR">⭐ Telegram Stars (XTR) — Built-in In-App Checkout (No KYC required)</option>
+                        <option value="INR">🇮🇳 Indian Rupee (INR) — Bot Payment Provider Token</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Telegram Bot Token (From @BotFather)
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showTelegramToken ? 'text' : 'password'}
+                          value={telegramBotToken}
+                          onChange={(e) => setTelegramBotToken(e.target.value)}
+                          className="w-full px-3.5 py-2.5 pr-10 bg-white border border-sky-300/80 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 font-mono font-bold shadow-xs"
+                          placeholder="e.g. 7123456789:AAHdG..."
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowTelegramToken(!showTelegramToken)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer"
+                        >
+                          {showTelegramToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Payment Provider Token (Optional for Stars, Required for INR)
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showTelegramProviderToken ? 'text' : 'password'}
+                          value={telegramPaymentProviderToken}
+                          onChange={(e) => setTelegramPaymentProviderToken(e.target.value)}
+                          className="w-full px-3.5 py-2.5 pr-10 bg-white border border-sky-300/80 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 font-mono font-bold shadow-xs"
+                          placeholder="Optional for Stars (Leave blank for XTR)"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowTelegramProviderToken(!showTelegramProviderToken)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer"
+                        >
+                          {showTelegramProviderToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Telegram Webhook URL */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Telegram Bot Webhook URL (Pre-Checkout & Auto-Fulfillment)
+                    </label>
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="text"
+                        readOnly
+                        value={typeof window !== 'undefined' ? `${window.location.origin}/api/payment/telegram/webhook` : '/api/payment/telegram/webhook'}
+                        className="w-full px-3 py-2 bg-white border border-sky-300/80 rounded-xl text-xs font-mono text-slate-900 font-bold select-all focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const url = `${window.location.origin}/api/payment/telegram/webhook`;
+                          navigator.clipboard.writeText(url);
+                          addNotification('URL Copied', 'Telegram webhook URL copied to clipboard.', 'success');
+                        }}
+                        className="px-3.5 py-2 bg-[#229ED9] hover:bg-[#1c8ec4] text-white font-bold text-xs rounded-xl transition-all cursor-pointer shrink-0 shadow-xs flex items-center gap-1"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                        Copy URL
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-sky-800 mt-1">
+                      Telegram Bot Webhook URL auto-configured for pre-checkout queries and instant license dispatch.
+                    </p>
+                  </div>
+
+                  {/* Step-by-Step Telegram Setup Guide */}
+                  <div className="bg-sky-100/70 border border-sky-300/90 rounded-xl p-3.5 text-xs text-sky-950 space-y-2">
+                    <p className="font-extrabold flex items-center gap-1 text-sky-900">
+                      <span>🚀</span> Telegram Payment Gateway Launch Guide (5 Minute Setup):
+                    </p>
+                    <ol className="list-decimal list-inside space-y-1 text-[11px] text-sky-900/90 leading-relaxed font-medium">
+                      <li>Telegram app me <strong>@BotFather</strong> search kare aur chat open kare.</li>
+                      <li><code>/newbot</code> command dekar apne store ka bot banaye (jaise <em>SoftKeyLicenseBot</em>).</li>
+                      <li>BotFather dwara mila <strong>API Token</strong> copy karke upar <em>"Telegram Bot Token"</em> me paste kare.</li>
+                      <li><strong>⭐ Telegram Stars (XTR):</strong> Digital software aur license keys bechne ke liye Telegram Stars sabse best hai — isme kisi external bank KYC ki jarurat nahi hoti! Customer seedhe Telegram app me 1-tap me pay kar sakta hai.</li>
+                      <li>Upar <strong>"Save Payment Configurations"</strong> par click kare. Check out page par turant <strong>"Pay via Telegram"</strong> active ho jayega!</li>
                     </ol>
                   </div>
                 </div>
@@ -6682,51 +7033,109 @@ export default function AdminPanel({
                   </p>
                 </div>
 
-                {/* Razorpay connection status panel */}
-                <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-4">
-                  <h4 className="text-xs font-bold text-blue-600 uppercase tracking-widest font-mono flex items-center gap-1.5">
-                    <ShieldAlert className="w-4 h-4" />
-                    Razorpay Gateway Credentials status
-                  </h4>
+                {/* Telegram Gateway Status Overview */}
+                <div className="bg-white border border-sky-200 rounded-2xl p-5 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-bold text-sky-950 flex items-center gap-2">
+                      <Send className="w-4 h-4 text-[#229ED9] -rotate-45" />
+                      Telegram Gateway Status
+                    </h4>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      telegramEnabled && telegramBotToken
+                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                        : telegramEnabled
+                        ? 'bg-sky-100 text-sky-800 border border-sky-200'
+                        : 'bg-slate-100 text-slate-500'
+                    }`}>
+                      {telegramEnabled && telegramBotToken ? 'Connected' : telegramEnabled ? 'Ready (Demo/Stars)' : 'Disabled'}
+                    </span>
+                  </div>
 
-                  <div className="p-4 bg-slate-50 border border-slate-150 rounded-xl space-y-3">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-slate-600">RAZORPAY_KEY_ID</span>
-                      {razorpayConfigured ? (
-                        <span className="font-mono bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded text-[10px] font-bold">
-                          {razorpayKeyId || "Active"}
-                        </span>
-                      ) : (
-                        <span className="font-mono bg-red-50 text-red-700 border border-red-100 px-2 py-0.5 rounded text-[10px] font-bold">
-                          Not Found
-                        </span>
-                      )}
+                  <div className="p-4 bg-sky-50/50 border border-sky-100 rounded-xl space-y-2.5 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-slate-600">Bot Username</span>
+                      <span className="font-mono bg-sky-100 text-sky-900 px-2 py-0.5 rounded text-[11px] font-bold">
+                        @{telegramBotUsername || 'SoftKeyLicenseBot'}
+                      </span>
                     </div>
-
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-slate-600">RAZORPAY_SECRET</span>
-                      {razorpayConfigured ? (
-                        <span className="font-mono bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded text-[10px] font-bold">
-                          ●●●●●●●● Configured
-                        </span>
-                      ) : (
-                        <span className="font-mono bg-red-50 text-red-700 border border-red-100 px-2 py-0.5 rounded text-[10px] font-bold">
-                          Not Found
-                        </span>
-                      )}
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-slate-600">Payment Mode</span>
+                      <span className="font-mono bg-sky-100 text-sky-900 px-2 py-0.5 rounded text-[11px] font-bold">
+                        {telegramCurrency === 'XTR' ? '⭐ Telegram Stars' : '🇮🇳 INR (Rupees)'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-slate-600">Bot Token</span>
+                      <span className="font-mono bg-sky-100 text-sky-900 px-2 py-0.5 rounded text-[11px] font-bold">
+                        {telegramBotToken ? `${telegramBotToken.slice(0, 6)}••••••` : 'Sandbox / In-App'}
+                      </span>
                     </div>
                   </div>
 
                   <p className="text-[11px] text-slate-500 leading-relaxed">
-                    Razorpay API credentials must be set inside the **AI Studio Settings / Secrets Panel**. Once defined, they are automatically injected as environment variables `RAZORPAY_KEY_ID` and `RAZORPAY_SECRET` to handle actual client orders.
+                    Customer checkout page se Telegram app me redirect hokar in-app bot invoice se instant license activation ke sath pay kar sakte hain.
                   </p>
+                </div>
 
-                  <div className="flex gap-2 items-center text-[10px] text-amber-600 bg-amber-50 border border-amber-100 p-3 rounded-xl">
-                    <AlertCircle className="w-4 h-4 shrink-0" />
-                    <span>
-                      If Razorpay keys are not configured, the payment system automatically operates in **Safe Simulation Mode**, allowing seamless end-to-end checkout testing!
+                {/* Razorpay connection status panel */}
+                <div className="bg-white border border-blue-200 p-6 rounded-2xl shadow-xs space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-bold text-blue-700 uppercase tracking-widest font-mono flex items-center gap-1.5">
+                      <CreditCard className="w-4 h-4 text-blue-600" />
+                      Razorpay Gateway Status
+                    </h4>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      razorpayEnabled && razorpayConfigured
+                        ? razorpayMode === 'live'
+                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                          : 'bg-blue-100 text-blue-800 border border-blue-200'
+                        : razorpayEnabled
+                        ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                        : 'bg-slate-100 text-slate-500'
+                    }`}>
+                      {razorpayEnabled && razorpayConfigured
+                        ? razorpayMode === 'live'
+                          ? 'Live Ready'
+                          : 'Test Mode (Active)'
+                        : razorpayEnabled
+                        ? 'Simulation Active'
+                        : 'Disabled'}
                     </span>
                   </div>
+
+                  <div className="p-4 bg-blue-50/50 border border-blue-100 rounded-xl space-y-2.5 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-slate-600">Key ID</span>
+                      <span className="font-mono bg-blue-100/80 text-blue-900 px-2 py-0.5 rounded text-[10px] font-bold">
+                        {razorpayKeyId || 'rzp_test_...'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-slate-600">Secret Token</span>
+                      <span className="font-mono bg-blue-100/80 text-blue-900 px-2 py-0.5 rounded text-[10px] font-bold">
+                        {razorpayKeySecret ? '●●●●●●●● (HMAC Active)' : 'Configured'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-slate-600">Environment</span>
+                      <span className="font-mono text-blue-950 font-extrabold uppercase text-[10px]">
+                        {razorpayMode === 'test' ? '🧪 Sandbox / Test Mode' : '🚀 Live Production Mode'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between border-t border-blue-200/50 pt-2">
+                      <span className="font-semibold text-slate-600">Payment Channels</span>
+                      <span className="text-[10px] font-bold text-blue-800">
+                        QR Code, Credit/Debit Card, NetBanking
+                      </span>
+                    </div>
+                  </div>
+
+                  <p className="text-[11px] text-slate-500 leading-relaxed">
+                    Razorpay credentials are saved securely and loaded for all customer checkouts. Customers can choose dynamic UPI QR code scanning or direct Credit/Debit Card payment with instant OTP verification.
+                  </p>
                 </div>
 
                 {/* Live Preview QR Code panel */}

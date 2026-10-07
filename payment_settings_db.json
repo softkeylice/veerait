@@ -12,5 +12,14 @@
   "ccavenueAccessCode": "",
   "ccavenueWorkingKey": "",
   "ccavenueMode": "test",
-  "ccavenueEnabled": true
+  "ccavenueEnabled": true,
+  "telegramBotToken": "",
+  "telegramBotUsername": "SoftKeyLicenseBot",
+  "telegramPaymentProviderToken": "",
+  "telegramCurrency": "XTR",
+  "telegramEnabled": true,
+  "razorpayKeyId": "rzp_test_1DP5mmOlF5G5ag",
+  "razorpayKeySecret": "sX78jKLm910aBcDeFgHiJkLm",
+  "razorpayMode": "test",
+  "razorpayEnabled": true
 }
