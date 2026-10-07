@@ -903,6 +903,7 @@ interface PaymentSettings {
   razorpayKeySecret?: string;
   razorpayMode?: 'test' | 'live';
   razorpayEnabled?: boolean;
+  razorpayWebhookSecret?: string;
 }
 
 function readPaymentSettings(): PaymentSettings {
@@ -927,7 +928,8 @@ function readPaymentSettings(): PaymentSettings {
         razorpayKeyId: data.razorpayKeyId || process.env.RAZORPAY_KEY_ID || "rzp_test_1DP5mmOlF5G5ag",
         razorpayKeySecret: data.razorpayKeySecret || process.env.RAZORPAY_SECRET || "sX78jKLm910aBcDeFgHiJkLm",
         razorpayMode: data.razorpayMode || (process.env.RAZORPAY_ENV === "PRODUCTION" ? "live" : "test"),
-        razorpayEnabled: data.razorpayEnabled !== undefined ? data.razorpayEnabled : true
+        razorpayEnabled: data.razorpayEnabled !== undefined ? data.razorpayEnabled : true,
+        razorpayWebhookSecret: data.razorpayWebhookSecret || process.env.RAZORPAY_WEBHOOK_SECRET || "veerait_razorpay_secret"
       };
     }
   } catch (err) {
@@ -956,7 +958,8 @@ function readPaymentSettings(): PaymentSettings {
     razorpayKeyId: process.env.RAZORPAY_KEY_ID || "rzp_test_1DP5mmOlF5G5ag",
     razorpayKeySecret: process.env.RAZORPAY_SECRET || "sX78jKLm910aBcDeFgHiJkLm",
     razorpayMode: process.env.RAZORPAY_ENV === "PRODUCTION" ? "live" : "test",
-    razorpayEnabled: true
+    razorpayEnabled: true,
+    razorpayWebhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET || "veerait_razorpay_secret"
   };
 }
 
@@ -4409,7 +4412,8 @@ app.use(async (req, res, next) => {
 
   const handleRazorpayWebhook = async (req: any, res: any) => {
     const signature = req.headers["x-razorpay-signature"];
-    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || "default_webhook_secret_fallback";
+    const settings = readPaymentSettings();
+    const webhookSecret = settings.razorpayWebhookSecret || process.env.RAZORPAY_WEBHOOK_SECRET || "veerait_razorpay_secret";
 
     if (!signature) {
       console.error("[WEBHOOK SECURITY ERROR] Missing X-Razorpay-Signature header.");
@@ -5403,7 +5407,8 @@ app.use(async (req, res, next) => {
         ? razorpayKeySecret 
         : (currentSettings.razorpayKeySecret || ""),
       razorpayMode: razorpayMode || currentSettings.razorpayMode || "test",
-      razorpayEnabled: razorpayEnabled !== undefined ? razorpayEnabled : (currentSettings.razorpayEnabled ?? true)
+      razorpayEnabled: razorpayEnabled !== undefined ? razorpayEnabled : (currentSettings.razorpayEnabled ?? true),
+      razorpayWebhookSecret: req.body.razorpayWebhookSecret || currentSettings.razorpayWebhookSecret || "veerait_razorpay_secret"
     };
 
     writePaymentSettings(updatedSettings);
