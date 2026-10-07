@@ -8,11 +8,6 @@
   "paytmMid": "OPDDHV86006252156720",
   "paytmMode": "test",
   "upiWebhookSecret": "veerait_upi_secret_2026",
-  "ccavenueMerchantId": "",
-  "ccavenueAccessCode": "",
-  "ccavenueWorkingKey": "",
-  "ccavenueMode": "test",
-  "ccavenueEnabled": true,
   "telegramBotToken": "",
   "telegramBotUsername": "SoftKeyLicenseBot",
   "telegramPaymentProviderToken": "",
@@ -20,6 +15,7 @@
   "telegramEnabled": true,
   "razorpayKeyId": "rzp_test_1DP5mmOlF5G5ag",
   "razorpayKeySecret": "sX78jKLm910aBcDeFgHiJkLm",
+  "razorpayWebhookSecret": "veerait_razorpay_secret",
   "razorpayMode": "test",
   "razorpayEnabled": true
 }

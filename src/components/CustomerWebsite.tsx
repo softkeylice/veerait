@@ -243,22 +243,6 @@ export default function CustomerWebsite({
   const [currentPaytmOrderId, setCurrentPaytmOrderId] = useState('');
   const [currentPaytmTxnId, setCurrentPaytmTxnId] = useState('');
 
-  // CCAvenue Payment Gateway states
-  const [isCcavenueOpen, setIsCcavenueOpen] = useState(false);
-  const [ccavenueStep, setCcavenueStep] = useState<'select_method' | 'processing' | 'otp' | 'success'>('select_method');
-  const [ccavenueSubMethod, setCcavenueSubMethod] = useState<'card' | 'netbanking' | 'upi' | 'wallet' | 'emi'>('card');
-  const [ccavenueOtp, setCcavenueOtp] = useState('123456');
-  const [ccavenueCardNumber, setCcavenueCardNumber] = useState('4532 8921 7384 9920');
-  const [ccavenueCardExpiry, setCcavenueCardExpiry] = useState('08/29');
-  const [ccavenueCardCvv, setCcavenueCardCvv] = useState('382');
-  const [ccavenueCardName, setCcavenueCardName] = useState(user?.name || 'Krishna Salunke');
-  const [ccavenueSelectedBank, setCcavenueSelectedBank] = useState('State Bank of India (SBI)');
-  const [ccavenueUpiVpa, setCcavenueUpiVpa] = useState('krishman08@ybl');
-  const [ccavenueWalletName, setCcavenueWalletName] = useState('Amazon Pay');
-  const [currentCcavenueOrderId, setCurrentCcavenueOrderId] = useState('');
-  const [currentCcavenueTxnId, setCurrentCcavenueTxnId] = useState('');
-  const [ccavenueData, setCcavenueData] = useState<any>(null);
-
   // Telegram Payment Gateway states
   const [isTelegramOpen, setIsTelegramOpen] = useState(false);
   const [telegramStep, setTelegramStep] = useState<'ready' | 'verifying' | 'success'>('ready');
@@ -275,7 +259,7 @@ export default function CustomerWebsite({
   const [telegramSuccessOrder, setTelegramSuccessOrder] = useState<any>(null);
 
   // Payment method and alternative details states
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'razorpay' | 'paytm' | 'ccavenue' | 'telegram' | 'bank_transfer' | 'upi_qr'>('upi_qr');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'razorpay' | 'paytm' | 'telegram' | 'bank_transfer' | 'upi_qr'>('razorpay');
   const [paymentReference, setPaymentReference] = useState('');
   const [uploadedReceipt, setUploadedReceipt] = useState('');
   const [currentUpiOrderId, setCurrentUpiOrderId] = useState('');
@@ -924,49 +908,6 @@ export default function CustomerWebsite({
         console.error(err);
         addNotification('Paytm Gateway Error', err.message || 'Unable to connect to Paytm PG.', 'error');
       }
-    } else if (selectedPaymentMethod === 'ccavenue') {
-      try {
-        addNotification('Initiating CCAvenue PG', 'Connecting to CCAvenue Payment Gateway...', 'info');
-        const response = await fetch('/api/payment/ccavenue/order', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('session_token') || ''}`
-          },
-          body: JSON.stringify({
-            amount: netPayable,
-            currency: 'INR',
-            customerEmail,
-            customerName,
-            customerPhone,
-            cart: cart.map(item => ({ product: item.product, quantity: item.quantity })),
-            shippingAddress,
-            shippingCity,
-            shippingPin,
-            couponCode: appliedCoupon?.code || undefined,
-            discount: discount + walletDeduction,
-            subtotal,
-            total: netPayable,
-            b2bReferralCode: isReferralApplied && appliedReferral 
-              ? appliedReferral.referralCode 
-              : (activeReseller ? activeReseller.referralCode : undefined)
-          })
-        });
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || 'Failed to create CCAvenue order.');
-        }
-
-        setCurrentCcavenueOrderId(data.orderId);
-        setCcavenueData(data);
-        setIsCcavenueOpen(true);
-        setCcavenueStep('select_method');
-        addNotification('CCAvenue Ready', 'Please complete payment in CCAvenue gateway window.', 'info');
-      } catch (err: any) {
-        console.error(err);
-        addNotification('CCAvenue Error', err.message || 'Unable to connect to CCAvenue gateway.', 'error');
-      }
     } else if (selectedPaymentMethod === 'telegram') {
       try {
         addNotification('Connecting Telegram Gateway', 'Creating Telegram invoice and deep-link...', 'info');
@@ -1158,92 +1099,6 @@ export default function CustomerWebsite({
     } catch (popupErr: any) {
       console.warn('Could not launch Razorpay popup:', popupErr);
       addNotification('In-App Checkout Active', 'Using in-app Razorpay checkout interface.', 'info');
-    }
-  };
-
-  // CCAvenue PG Actions
-  const triggerCcavenuePayment = () => {
-    setCcavenueStep('processing');
-    setTimeout(() => {
-      setCcavenueStep('otp');
-      addNotification('3D-Secure Bank OTP Sent', 'CCAvenue authorization code dispatched to registered mobile number.', 'info');
-    }, 1200);
-  };
-
-  const verifyCcavenueOtp = async () => {
-    if (ccavenueOtp.length !== 6) {
-      addNotification('Invalid OTP', 'Please enter a valid 6-digit OTP code (or click Auto-Fill 123456).', 'error');
-      return;
-    }
-    setCcavenueStep('processing');
-
-    try {
-      addNotification('Verifying CCAvenue Transaction', 'Decrypting 128-bit cryptographic response tokens...', 'info');
-      const generatedTxnId = 'CCAV_' + Math.random().toString(36).substring(2, 10).toUpperCase();
-      
-      const verifyRes = await fetch('/api/payment/ccavenue/verify', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('session_token') || ''}`
-        },
-        body: JSON.stringify({
-          orderId: currentCcavenueOrderId,
-          txnId: generatedTxnId,
-          mode: ccavenueSubMethod
-        })
-      });
-
-      const verifyData = await verifyRes.json();
-      if (verifyRes.ok && verifyData.success) {
-        setCurrentCcavenueTxnId(generatedTxnId);
-        setCcavenueStep('success');
-        addNotification('CCAvenue Payment Verified', 'Transaction approved! License keys generated automatically.', 'success');
-        createSuccessfulOrder(generatedTxnId, `CCAvenue PG (${ccavenueSubMethod.toUpperCase()})`, 'paid', verifyData.order);
-      } else {
-        addNotification('CCAvenue Verification Error', verifyData.error || 'Payment verification failed.', 'error');
-        setCcavenueStep('select_method');
-      }
-    } catch (err: any) {
-      console.error(err);
-      addNotification('CCAvenue Network Error', err.message || 'Error communicating with verification endpoint.', 'error');
-      setCcavenueStep('select_method');
-    }
-  };
-
-  const submitCcavenueLiveForm = () => {
-    if (!ccavenueData || !ccavenueData.encRequest || !ccavenueData.accessCode) {
-      addNotification('Gateway Notice', 'CCAvenue live credentials not configured yet. Using interactive 3D Secure simulation.', 'info');
-      triggerCcavenuePayment();
-      return;
-    }
-
-    try {
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = ccavenueData.gatewayUrl || 'https://secure.ccavenue.com/transaction/transaction.do?command=initiateTransaction';
-      form.target = '_blank';
-
-      const encReqInput = document.createElement('input');
-      encReqInput.type = 'hidden';
-      encReqInput.name = 'encRequest';
-      encReqInput.value = ccavenueData.encRequest;
-      form.appendChild(encReqInput);
-
-      const accessCodeInput = document.createElement('input');
-      accessCodeInput.type = 'hidden';
-      accessCodeInput.name = 'access_code';
-      accessCodeInput.value = ccavenueData.accessCode;
-      form.appendChild(accessCodeInput);
-
-      document.body.appendChild(form);
-      form.submit();
-      document.body.removeChild(form);
-
-      addNotification('Redirecting to CCAvenue', 'Opened official CCAvenue payment page in secure window.', 'success');
-    } catch (err: any) {
-      console.error('Failed to submit CCAvenue form:', err);
-      triggerCcavenuePayment();
     }
   };
 
@@ -7504,7 +7359,7 @@ export default function CustomerWebsite({
                     onClick={() => setSelectedPaymentMethod('upi_qr')}
                     className={`p-3.5 border-2 rounded-2xl flex items-center justify-between gap-3 shadow-xs font-bold cursor-pointer transition-all ${
                       selectedPaymentMethod === 'upi_qr'
-                        ? 'border-emerald-500 bg-emerald-50/50 text-emerald-900 shadow-sm'
+                        ? 'border-emerald-500 bg-emerald-50/50 text-emerald-950 shadow-sm'
                         : 'border-slate-200 bg-white hover:border-slate-300 text-slate-700'
                     }`}
                   >
@@ -7523,35 +7378,6 @@ export default function CustomerWebsite({
                       </div>
                     </div>
                     <span className="text-xs font-mono font-bold text-emerald-700 bg-white px-2.5 py-1 rounded-lg border border-emerald-200">
-                      ₹{netPayable.toFixed(2)}
-                    </span>
-                  </button>
-
-                  {/* Option 2: CCAvenue Payment Gateway */}
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPaymentMethod('ccavenue')}
-                    className={`p-3.5 border-2 rounded-2xl flex items-center justify-between gap-3 shadow-xs font-bold cursor-pointer transition-all ${
-                      selectedPaymentMethod === 'ccavenue'
-                        ? 'border-orange-500 bg-orange-50/50 text-orange-950 shadow-sm'
-                        : 'border-slate-200 bg-white hover:border-slate-300 text-slate-700'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-xs ${
-                        selectedPaymentMethod === 'ccavenue' ? 'bg-orange-600 text-white' : 'bg-slate-100 text-slate-600'
-                      }`}>
-                        <CreditCard className="w-5 h-5" />
-                      </div>
-                      <div className="text-left">
-                        <div className="flex items-center gap-1.5">
-                          <strong className="text-xs text-slate-900 font-extrabold">CCAvenue Payment Gateway</strong>
-                          <span className="text-[9px] bg-orange-100 text-orange-800 font-bold px-1.5 py-0.5 rounded-full">AES-128 Encrypted</span>
-                        </div>
-                        <p className="text-[10px] text-slate-500 font-normal">Credit/Debit Card, 58+ Net Banking, EMI, Wallets</p>
-                      </div>
-                    </div>
-                    <span className="text-xs font-mono font-bold text-orange-700 bg-white px-2.5 py-1 rounded-lg border border-orange-200">
                       ₹{netPayable.toFixed(2)}
                     </span>
                   </button>
@@ -7608,8 +7434,6 @@ export default function CustomerWebsite({
                     ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-800 text-white shadow-blue-500/20'
                     : selectedPaymentMethod === 'telegram'
                     ? 'bg-gradient-to-r from-[#229ED9] to-sky-600 hover:from-[#1c8ec4] hover:to-sky-700 text-white'
-                    : selectedPaymentMethod === 'ccavenue'
-                    ? 'bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white'
                     : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white'
                 }`}
               >
@@ -7627,11 +7451,6 @@ export default function CustomerWebsite({
                   <>
                     <Send className="w-4 h-4 -rotate-45" />
                     Pay via Telegram (₹{netPayable.toFixed(2)})
-                  </>
-                ) : selectedPaymentMethod === 'ccavenue' ? (
-                  <>
-                    <Lock className="w-4 h-4" />
-                    Proceed with CCAvenue (₹{netPayable.toFixed(2)})
                   </>
                 ) : (
                   <>
@@ -7922,367 +7741,6 @@ export default function CustomerWebsite({
                   type="button"
                   onClick={() => setIsPaytmOpen(false)}
                   className="px-6 py-2.5 bg-[#002e6e] text-white font-extrabold text-xs rounded-xl hover:bg-[#001d4a] cursor-pointer"
-                >
-                  View My Order & Keys
-                </button>
-              </div>
-            )}
-
-          </div>
-        </div>
-      )}
-
-      {/* CCAvenue Payment Gateway Modal (CCAvenue PG) */}
-      {isCcavenueOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 p-3 sm:p-5 backdrop-blur-md font-sans animate-in fade-in duration-200" id="ccavenue-pg-gateway-modal">
-          <div className="bg-white border border-slate-300 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden text-slate-900 animate-in zoom-in-95 duration-200 flex flex-col max-h-[92vh]">
-            
-            {/* CCAvenue Header */}
-            <div className="bg-gradient-to-r from-[#990000] via-[#c41212] to-[#e62626] text-white p-5 flex items-center justify-between shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="bg-white px-3 py-1.5 rounded-xl flex items-center shadow-xs">
-                  <span className="text-[#c41212] font-black text-base tracking-tighter">CCAvenue</span>
-                </div>
-                <div>
-                  <h3 className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-amber-300" />
-                    Payment Gateway (128-Bit AES)
-                  </h3>
-                  <p className="text-[10px] text-white/80 font-mono">Order: {currentCcavenueOrderId || 'CCAV_ORD_101'}</p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setIsCcavenueOpen(false)}
-                className="p-1.5 hover:bg-white/10 text-white/80 hover:text-white rounded-xl transition-all cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Merchant Info & Payable Amount Bar */}
-            <div className="bg-amber-50/70 px-6 py-3.5 border-b border-amber-200/60 flex items-center justify-between">
-              <div>
-                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Merchant</span>
-                <strong className="text-xs font-black text-amber-950">VeeraIT (Krishna Salunke)</strong>
-              </div>
-              <div className="text-right">
-                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Total Payable</span>
-                <strong className="text-lg font-mono font-black text-red-600">₹{netPayable.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
-              </div>
-            </div>
-
-            {/* Modal Body depending on ccavenueStep */}
-            {ccavenueStep === 'select_method' && (
-              <div className="p-6 space-y-5 overflow-y-auto">
-                {/* Method selector buttons */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-2">Choose Payment Option</label>
-                  <div className="grid grid-cols-4 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setCcavenueSubMethod('card')}
-                      className={`p-2.5 rounded-xl border text-center flex flex-col items-center justify-center transition-all cursor-pointer ${
-                        ccavenueSubMethod === 'card'
-                          ? 'border-red-600 bg-red-50 text-red-700 font-black shadow-xs'
-                          : 'border-slate-200 hover:border-slate-300 text-slate-600 font-semibold'
-                      }`}
-                    >
-                      <CreditCard className="w-4 h-4 mb-1" />
-                      <span className="text-[11px] leading-tight">Card</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setCcavenueSubMethod('netbanking')}
-                      className={`p-2.5 rounded-xl border text-center flex flex-col items-center justify-center transition-all cursor-pointer ${
-                        ccavenueSubMethod === 'netbanking'
-                          ? 'border-red-600 bg-red-50 text-red-700 font-black shadow-xs'
-                          : 'border-slate-200 hover:border-slate-300 text-slate-600 font-semibold'
-                      }`}
-                    >
-                      <Building2 className="w-4 h-4 mb-1" />
-                      <span className="text-[11px] leading-tight">NetBanking</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setCcavenueSubMethod('upi')}
-                      className={`p-2.5 rounded-xl border text-center flex flex-col items-center justify-center transition-all cursor-pointer ${
-                        ccavenueSubMethod === 'upi'
-                          ? 'border-red-600 bg-red-50 text-red-700 font-black shadow-xs'
-                          : 'border-slate-200 hover:border-slate-300 text-slate-600 font-semibold'
-                      }`}
-                    >
-                      <QrCode className="w-4 h-4 mb-1" />
-                      <span className="text-[11px] leading-tight">UPI / QR</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setCcavenueSubMethod('wallet')}
-                      className={`p-2.5 rounded-xl border text-center flex flex-col items-center justify-center transition-all cursor-pointer ${
-                        ccavenueSubMethod === 'wallet'
-                          ? 'border-red-600 bg-red-50 text-red-700 font-black shadow-xs'
-                          : 'border-slate-200 hover:border-slate-300 text-slate-600 font-semibold'
-                      }`}
-                    >
-                      <Wallet className="w-4 h-4 mb-1" />
-                      <span className="text-[11px] leading-tight">Wallets</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Submethod specific input forms */}
-                {ccavenueSubMethod === 'card' && (
-                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <label className="text-xs font-bold text-slate-700">Card Number</label>
-                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400">
-                          <span className="text-blue-600">VISA</span>
-                          <span className="text-red-500">MasterCard</span>
-                          <span className="text-emerald-600">RuPay</span>
-                        </div>
-                      </div>
-                      <input
-                        type="text"
-                        value={ccavenueCardNumber}
-                        onChange={(e) => setCcavenueCardNumber(e.target.value)}
-                        placeholder="16-digit Card Number"
-                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-800 outline-none focus:border-red-600"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Cardholder Name</label>
-                      <input
-                        type="text"
-                        value={ccavenueCardName}
-                        onChange={(e) => setCcavenueCardName(e.target.value)}
-                        placeholder="Name on card"
-                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-800 outline-none focus:border-red-600"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">Expiry Date</label>
-                        <input
-                          type="text"
-                          value={ccavenueCardExpiry}
-                          onChange={(e) => setCcavenueCardExpiry(e.target.value)}
-                          placeholder="MM/YY"
-                          className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-800 outline-none focus:border-red-600"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">CVV / CVC</label>
-                        <input
-                          type="password"
-                          maxLength={4}
-                          value={ccavenueCardCvv}
-                          onChange={(e) => setCcavenueCardCvv(e.target.value)}
-                          placeholder="3 digits"
-                          className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-800 outline-none focus:border-red-600"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {ccavenueSubMethod === 'netbanking' && (
-                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
-                    <label className="block text-xs font-bold text-slate-700">Popular Indian Banks</label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                      {['State Bank of India (SBI)', 'HDFC Bank', 'ICICI Bank', 'Axis Bank', 'Kotak Mahindra Bank', 'Punjab National Bank'].map((b) => (
-                        <button
-                          key={b}
-                          type="button"
-                          onClick={() => setCcavenueSelectedBank(b)}
-                          className={`p-2 rounded-xl border text-[11px] font-bold text-left transition-all cursor-pointer ${
-                            ccavenueSelectedBank === b
-                              ? 'border-red-600 bg-red-50 text-red-900 shadow-xs'
-                              : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
-                          }`}
-                        >
-                          {b}
-                        </button>
-                      ))}
-                    </div>
-
-                    <div className="pt-2">
-                      <label className="block text-[11px] font-bold text-slate-500 mb-1">All 58+ Indian Banks</label>
-                      <select
-                        value={ccavenueSelectedBank}
-                        onChange={(e) => setCcavenueSelectedBank(e.target.value)}
-                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-800 outline-none focus:border-red-600"
-                      >
-                        <option value="State Bank of India (SBI)">State Bank of India (SBI)</option>
-                        <option value="HDFC Bank">HDFC Bank</option>
-                        <option value="ICICI Bank">ICICI Bank</option>
-                        <option value="Axis Bank">Axis Bank</option>
-                        <option value="Kotak Mahindra Bank">Kotak Mahindra Bank</option>
-                        <option value="Punjab National Bank">Punjab National Bank</option>
-                        <option value="Bank of Baroda">Bank of Baroda</option>
-                        <option value="Canara Bank">Canara Bank</option>
-                        <option value="Union Bank of India">Union Bank of India</option>
-                        <option value="IndusInd Bank">IndusInd Bank</option>
-                        <option value="Yes Bank">Yes Bank</option>
-                        <option value="Federal Bank">Federal Bank</option>
-                        <option value="IDBI Bank">IDBI Bank</option>
-                        <option value="Bank of India">Bank of India</option>
-                        <option value="Central Bank of India">Central Bank of India</option>
-                        <option value="Indian Bank">Indian Bank</option>
-                      </select>
-                    </div>
-                  </div>
-                )}
-
-                {ccavenueSubMethod === 'upi' && (
-                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
-                    <label className="block text-xs font-bold text-slate-700">Enter CCAvenue UPI VPA</label>
-                    <input
-                      type="text"
-                      value={ccavenueUpiVpa}
-                      onChange={(e) => setCcavenueUpiVpa(e.target.value)}
-                      placeholder="e.g. mobile@upi or username@okhdfcbank"
-                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-800 outline-none focus:border-red-600"
-                    />
-                    <p className="text-[10px] text-slate-400">Supported: Google Pay, PhonePe, Paytm, BHIM, CRED, Amazon Pay</p>
-                  </div>
-                )}
-
-                {ccavenueSubMethod === 'wallet' && (
-                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
-                    <label className="block text-xs font-bold text-slate-700">Select Digital Wallet</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {['Amazon Pay', 'PhonePe Wallet', 'Mobikwik', 'Airtel Money', 'JioMoney', 'Freecharge'].map((w) => (
-                        <button
-                          key={w}
-                          type="button"
-                          onClick={() => setCcavenueWalletName(w)}
-                          className={`p-2.5 rounded-xl border text-xs font-bold text-left transition-all cursor-pointer ${
-                            ccavenueWalletName === w
-                              ? 'border-red-600 bg-red-50 text-red-900 shadow-xs'
-                              : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
-                          }`}
-                        >
-                          {w}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Primary Action Button */}
-                <div className="space-y-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={triggerCcavenuePayment}
-                    className="w-full py-3.5 bg-gradient-to-r from-[#b80000] via-[#cc0000] to-[#e62626] hover:from-[#990000] hover:to-[#cc0000] text-white font-black rounded-2xl text-xs transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <Lock className="w-4 h-4 text-amber-300" />
-                    <span>Pay ₹{netPayable.toFixed(2)} via CCAvenue Secure</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-
-                  {/* External redirect button if live configured */}
-                  {ccavenueData && ccavenueData.encRequest && (
-                    <button
-                      type="button"
-                      onClick={submitCcavenueLiveForm}
-                      className="w-full py-2.5 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                    >
-                      <Globe className="w-3.5 h-3.5 text-slate-500" />
-                      <span>Open Official Hosted CCAvenue Gateway</span>
-                    </button>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-center gap-2 text-[10px] text-slate-500 font-semibold font-mono border-t border-slate-150 pt-3">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>PCI-DSS Level 1 Certified • 128-Bit AES Encrypted</span>
-                </div>
-
-              </div>
-            )}
-
-            {/* Processing State */}
-            {ccavenueStep === 'processing' && (
-              <div className="p-10 text-center space-y-4">
-                <div className="w-16 h-16 border-4 border-red-600 border-t-transparent rounded-full animate-spin mx-auto" />
-                <div className="space-y-1">
-                  <h4 className="text-base font-extrabold text-red-950">Connecting to CCAvenue Gateway...</h4>
-                  <p className="text-xs text-slate-500">Encrypting payload with 128-bit AES CBC & MD5 key hashing...</p>
-                </div>
-              </div>
-            )}
-
-            {/* OTP Verification Step */}
-            {ccavenueStep === 'otp' && (
-              <div className="p-6 space-y-5 text-left">
-                <div className="p-4 bg-red-50/80 border border-red-200 rounded-2xl space-y-1">
-                  <h4 className="text-xs font-extrabold text-red-950 uppercase tracking-wider flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-red-600" />
-                    Bank 3D Secure / Verified by Visa & MasterCard
-                  </h4>
-                  <p className="text-xs text-slate-600">
-                    A 6-digit confirmation OTP has been sent to your registered mobile number <strong>+91 {customerPhone || '9764528777'}</strong>.
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-xs font-extrabold text-slate-700">Enter Bank OTP Code</label>
-                    <button
-                      type="button"
-                      onClick={() => setCcavenueOtp('123456')}
-                      className="text-[10px] font-bold text-red-600 hover:underline cursor-pointer"
-                    >
-                      ⚡ Auto-Fill Test OTP (123456)
-                    </button>
-                  </div>
-
-                  <input
-                    type="text"
-                    maxLength={6}
-                    value={ccavenueOtp}
-                    onChange={(e) => setCcavenueOtp(e.target.value.replace(/\D/g, ''))}
-                    placeholder="123456"
-                    className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-300 focus:border-red-600 rounded-2xl text-center text-xl font-mono font-black tracking-widest outline-none text-slate-900"
-                  />
-                </div>
-
-                <button
-                  type="button"
-                  onClick={verifyCcavenueOtp}
-                  className="w-full py-3.5 bg-gradient-to-r from-[#b80000] to-[#e62626] hover:from-[#990000] hover:to-[#cc0000] text-white font-extrabold rounded-2xl text-xs transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <CheckCircle2 className="w-4 h-4 text-amber-300" />
-                  <span>Verify CCAvenue Payment (₹{netPayable.toFixed(2)})</span>
-                </button>
-              </div>
-            )}
-
-            {/* Success step */}
-            {ccavenueStep === 'success' && (
-              <div className="p-8 text-center space-y-4">
-                <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
-                  <CheckCircle2 className="w-10 h-10" />
-                </div>
-                <div>
-                  <h4 className="text-xl font-extrabold text-slate-900">CCAvenue Payment Successful!</h4>
-                  <p className="text-xs text-slate-500 font-mono mt-1">Txn ID: {currentCcavenueTxnId}</p>
-                </div>
-                <p className="text-xs text-slate-600">
-                  Your payment of ₹{netPayable.toFixed(2)} has been captured via CCAvenue PG. Genuine license keys and invoice have been dispatched to WhatsApp and email.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setIsCcavenueOpen(false)}
-                  className="px-6 py-2.5 bg-red-600 text-white font-extrabold text-xs rounded-xl hover:bg-red-700 cursor-pointer"
                 >
                   View My Order & Keys
                 </button>

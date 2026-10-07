@@ -889,11 +889,6 @@ interface PaymentSettings {
   paytmMid?: string;
   paytmMode?: 'test' | 'live';
   upiWebhookSecret?: string;
-  ccavenueMerchantId?: string;
-  ccavenueAccessCode?: string;
-  ccavenueWorkingKey?: string;
-  ccavenueMode?: 'test' | 'live';
-  ccavenueEnabled?: boolean;
   telegramBotToken?: string;
   telegramBotUsername?: string;
   telegramPaymentProviderToken?: string;
@@ -915,11 +910,6 @@ function readPaymentSettings(): PaymentSettings {
         paytmMid: data.paytmMid || process.env.PAYTM_MERCHANT_ID || "OPDDHV86006252156720",
         paytmMode: data.paytmMode || (process.env.PAYTM_ENV === "PRODUCTION" ? "live" : "test"),
         upiWebhookSecret: data.upiWebhookSecret || process.env.UPI_WEBHOOK_SECRET || "veerait_upi_secret_2026",
-        ccavenueMerchantId: data.ccavenueMerchantId || process.env.CCAVENUE_MERCHANT_ID || "",
-        ccavenueAccessCode: data.ccavenueAccessCode || process.env.CCAVENUE_ACCESS_CODE || "",
-        ccavenueWorkingKey: data.ccavenueWorkingKey || process.env.CCAVENUE_WORKING_KEY || "",
-        ccavenueMode: data.ccavenueMode || (process.env.CCAVENUE_ENV === "PRODUCTION" ? "live" : "test"),
-        ccavenueEnabled: data.ccavenueEnabled !== undefined ? data.ccavenueEnabled : true,
         telegramBotToken: data.telegramBotToken || process.env.TELEGRAM_BOT_TOKEN || "",
         telegramBotUsername: data.telegramBotUsername || process.env.TELEGRAM_BOT_USERNAME || "SoftKeyLicenseBot",
         telegramPaymentProviderToken: data.telegramPaymentProviderToken || process.env.TELEGRAM_PAYMENT_PROVIDER_TOKEN || "",
@@ -945,11 +935,6 @@ function readPaymentSettings(): PaymentSettings {
     paytmMid: process.env.PAYTM_MERCHANT_ID || "OPDDHV86006252156720",
     paytmMode: process.env.PAYTM_ENV === "PRODUCTION" ? "live" : "test",
     upiWebhookSecret: process.env.UPI_WEBHOOK_SECRET || "veerait_upi_secret_2026",
-    ccavenueMerchantId: process.env.CCAVENUE_MERCHANT_ID || "",
-    ccavenueAccessCode: process.env.CCAVENUE_ACCESS_CODE || "",
-    ccavenueWorkingKey: process.env.CCAVENUE_WORKING_KEY || "",
-    ccavenueMode: process.env.CCAVENUE_ENV === "PRODUCTION" ? "live" : "test",
-    ccavenueEnabled: true,
     telegramBotToken: process.env.TELEGRAM_BOT_TOKEN || "",
     telegramBotUsername: process.env.TELEGRAM_BOT_USERNAME || "SoftKeyLicenseBot",
     telegramPaymentProviderToken: process.env.TELEGRAM_PAYMENT_PROVIDER_TOKEN || "",
@@ -3713,347 +3698,16 @@ app.use(async (req, res, next) => {
   });
 
   // =========================================================================
-  // 9.1C CCAVENUE PAYMENT GATEWAY SYSTEM (AES-128-CBC Encrypted Gateway)
+  // 9.1C CCAVENUE PAYMENT GATEWAY (REMOVED - RAZORPAY SOLE ONLINE GATEWAY)
   // =========================================================================
-
-  // Helper: CCAvenue AES-128-CBC Encryption
-  function ccavenueEncrypt(plainText: string, workingKey: string): string {
-    try {
-      const m = crypto.createHash("md5");
-      m.update(workingKey.trim());
-      const key = m.digest();
-      const iv = Buffer.from([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f]);
-      const cipher = crypto.createCipheriv("aes-128-cbc", key, iv);
-      let encoded = cipher.update(plainText, "utf8", "hex");
-      encoded += cipher.final("hex");
-      return encoded;
-    } catch (err) {
-      console.error("[CCAVENUE-ENCRYPT-ERROR]", err);
-      throw new Error("Failed to encrypt CCAvenue payload: " + (err as Error).message);
+  app.use("/api/payment/ccavenue", (req: any, res: any) => {
+    if (req.method === "GET") {
+      return res.redirect("/?gateway=razorpay");
     }
-  }
-
-  // Helper: CCAvenue AES-128-CBC Decryption
-  function ccavenueDecrypt(encText: string, workingKey: string): string {
-    try {
-      const m = crypto.createHash("md5");
-      m.update(workingKey.trim());
-      const key = m.digest();
-      const iv = Buffer.from([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f]);
-      const decipher = crypto.createDecipheriv("aes-128-cbc", key, iv);
-      let decoded = decipher.update(encText.trim(), "hex", "utf8");
-      decoded += decipher.final("utf8");
-      return decoded;
-    } catch (err) {
-      console.error("[CCAVENUE-DECRYPT-ERROR]", err);
-      throw new Error("Failed to decrypt CCAvenue response: " + (err as Error).message);
-    }
-  }
-
-  // 9.1C.1 INITIATE CCAVENUE ORDER
-  app.post("/api/payment/ccavenue/order", optionalAuthenticateJwt, rateLimiter(1 * 60 * 1000, 20, "Too many checkout requests."), async (req: any, res: any) => {
-    const { amount, currency, customerEmail, customerName, customerPhone, cart, shippingAddress, shippingCity, shippingPin, couponCode, discount, subtotal, total, b2bReferralCode } = req.body;
-
-    if (req.user && req.user.role !== "admin" && customerEmail && customerEmail !== req.user.email) {
-      return res.status(403).json({ error: "Access denied. Checkout email must match logged in user." });
-    }
-
-    // Verify software license stock
-    if (cart && Array.isArray(cart)) {
-      for (const item of cart) {
-        const product = item.product || item;
-        const quantity = item.quantity || 1;
-        if (product.category === "software" || product.hasLicenseKey) {
-          if (isSupabaseConfigured && supabaseServer) {
-            try {
-              const { data: keys, error: keysError } = await supabaseServer
-                .from("license_keys")
-                .select("id")
-                .eq("product_id", product.id)
-                .eq("status", "available");
-              if (!keysError && keys && keys.length < quantity) {
-                return res.status(400).json({ 
-                  error: `No Stock: There are not enough genuine activation keys available in the admin panel for "${product.name}". (Available: ${keys.length}, Requested: ${quantity})` 
-                });
-              }
-            } catch (err: any) {
-              console.error("[STOCK CHECK ERROR]:", err);
-            }
-          }
-        }
-      }
-    }
-
-    try {
-      const settings = readPaymentSettings();
-      const finalAmount = total || amount || 0;
-      const orderId = "CCA_" + Date.now().toString().slice(-6) + "_" + Math.random().toString(36).substring(2, 6).toUpperCase();
-
-      const merchantId = (settings.ccavenueMerchantId || process.env.CCAVENUE_MERCHANT_ID || "").trim();
-      const accessCode = (settings.ccavenueAccessCode || process.env.CCAVENUE_ACCESS_CODE || "").trim();
-      const workingKey = (settings.ccavenueWorkingKey || process.env.CCAVENUE_WORKING_KEY || "").trim();
-      const mode = settings.ccavenueMode || (process.env.CCAVENUE_ENV === "PRODUCTION" ? "live" : "test");
-
-      const isPlaceholderOrMissing = !merchantId || !accessCode || !workingKey ||
-        merchantId.startsWith("YOUR_") || accessCode.startsWith("YOUR_") || workingKey.startsWith("YOUR_");
-
-      const payments = await syncPaymentsFromSupabase();
-      const newPayment: PaymentRecord = {
-        orderId,
-        amount: finalAmount,
-        currency: currency || "INR",
-        status: "created",
-        signatureVerified: false,
-        attempts: 1,
-        customerEmail: customerEmail || "",
-        customerName: customerName || "Customer",
-        customerPhone: customerPhone || "",
-        cart: cart || [],
-        shippingAddress: shippingAddress || "",
-        shippingCity: shippingCity || "",
-        shippingPin: shippingPin || "",
-        couponCode: couponCode || undefined,
-        discount: discount || 0,
-        subtotal: subtotal || finalAmount,
-        b2bReferralCode: b2bReferralCode || undefined,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      payments.push(newPayment);
-      writePaymentsDb(payments);
-      await savePaymentsToSupabase(payments);
-
-      // If credentials missing or in simulation mode
-      if (isPlaceholderOrMissing) {
-        console.log(`[CCAVENUE] Credentials not configured or placeholder. Running in test simulation mode for order ${orderId}.`);
-        return res.json({
-          success: true,
-          simulation: true,
-          orderId,
-          amount: finalAmount,
-          currency: currency || "INR",
-          mode,
-          message: "CCAvenue is in Test Simulation Mode. Configure Merchant ID, Access Code & Working Key in Admin Panel to go live."
-        });
-      }
-
-      // Determine public callback URL based on request headers
-      const protocol = req.headers["x-forwarded-proto"] || req.protocol || "https";
-      const host = req.headers["x-forwarded-host"] || req.get("host");
-      const origin = `${protocol}://${host}`;
-      const redirectUrl = `${origin}/api/payment/ccavenue/callback`;
-      const cancelUrl = `${origin}/api/payment/ccavenue/callback`;
-
-      const gatewayUrl = mode === "live"
-        ? "https://secure.ccavenue.com/transaction/transaction.do?command=initiateTransaction"
-        : "https://test.ccavenue.com/transaction/transaction.do?command=initiateTransaction";
-
-      const merchantData = [
-        `merchant_id=${encodeURIComponent(merchantId)}`,
-        `order_id=${encodeURIComponent(orderId)}`,
-        `currency=INR`,
-        `amount=${encodeURIComponent(Number(finalAmount).toFixed(2))}`,
-        `redirect_url=${encodeURIComponent(redirectUrl)}`,
-        `cancel_url=${encodeURIComponent(cancelUrl)}`,
-        `language=EN`,
-        `billing_name=${encodeURIComponent(customerName || "Customer")}`,
-        `billing_address=${encodeURIComponent(shippingAddress || "Main Street")}`,
-        `billing_city=${encodeURIComponent(shippingCity || "Mumbai")}`,
-        `billing_state=${encodeURIComponent("Maharashtra")}`,
-        `billing_zip=${encodeURIComponent(shippingPin || "400001")}`,
-        `billing_country=India`,
-        `billing_tel=${encodeURIComponent(customerPhone || "9999999999")}`,
-        `billing_email=${encodeURIComponent(customerEmail || "customer@example.com")}`,
-        `merchant_param1=${encodeURIComponent(orderId)}`
-      ].join("&");
-
-      const encRequest = ccavenueEncrypt(merchantData, workingKey);
-
-      return res.json({
-        success: true,
-        simulation: false,
-        orderId,
-        amount: finalAmount,
-        encRequest,
-        accessCode,
-        gatewayUrl,
-        mode
-      });
-    } catch (err: any) {
-      console.error("[CCAVENUE ORDER ERROR]", err);
-      return res.status(500).json({ error: err.message || "Failed to initiate CCAvenue transaction." });
-    }
-  });
-
-  // 9.1C.2 VERIFY / SIMULATE CCAVENUE ORDER
-  app.post("/api/payment/ccavenue/verify", optionalAuthenticateJwt, rateLimiter(1 * 60 * 1000, 20, "Too many verification attempts."), async (req: any, res: any) => {
-    const { orderId, txnId, simulation } = req.body;
-    try {
-      const payments = await syncPaymentsFromSupabase();
-      const paymentIndex = payments.findIndex(p => p.orderId === orderId);
-      if (paymentIndex === -1) {
-        return res.status(404).json({ error: "Pending order not found on server." });
-      }
-      const payment = payments[paymentIndex];
-      payment.attempts += 1;
-      payment.updatedAt = new Date().toISOString();
-
-      const paymentId = txnId || ("CCA_TXN_" + Date.now().toString().slice(-6));
-      payment.status = "paid";
-      payment.paymentId = paymentId;
-      payment.signatureVerified = true;
-      writePaymentsDb(payments);
-      await savePaymentsToSupabase(payments);
-
-      const compiled = await fulfillOrderOnBackend(orderId, paymentId, payment);
-      return res.json({ success: true, verified: true, simulation: !!simulation, order: compiled });
-    } catch (err: any) {
-      console.error("[CCAVENUE VERIFY ERROR]", err);
-      return res.status(500).json({ error: err.message || "Failed to verify CCAvenue transaction." });
-    }
-  });
-
-  // 9.1C.3 CCAVENUE S2S / BROWSER RETURN CALLBACK
-  const handleCcavenueCallback = async (req: any, res: any) => {
-    try {
-      const encResp = req.body?.encResp;
-      if (!encResp) {
-        console.warn("[CCAVENUE CALLBACK] No encResp found in request body:", req.body);
-        return res.status(400).send("<h3>Bad Request: encResp missing from CCAvenue payload.</h3>");
-      }
-
-      const settings = readPaymentSettings();
-      const workingKey = (settings.ccavenueWorkingKey || process.env.CCAVENUE_WORKING_KEY || "").trim();
-
-      if (!workingKey) {
-        console.error("[CCAVENUE CALLBACK] Working key not configured in settings or environment.");
-        return res.status(500).send("<h3>Configuration Error: CCAvenue Working Key is missing on the server.</h3>");
-      }
-
-      const decrypted = ccavenueDecrypt(encResp, workingKey);
-      const params = new URLSearchParams(decrypted);
-
-      const orderId = params.get("order_id") || params.get("merchant_param1") || "";
-      const trackingId = params.get("tracking_id") || `CCA_${Date.now()}`;
-      const orderStatus = (params.get("order_status") || "").trim();
-      const failureMessage = params.get("failure_message") || params.get("status_message") || "";
-
-      console.log(`[CCAVENUE CALLBACK] Order: ${orderId}, Status: ${orderStatus}, Tracking: ${trackingId}`);
-
-      const payments = await syncPaymentsFromSupabase();
-      const paymentIndex = payments.findIndex(p => p.orderId === orderId);
-
-      if (paymentIndex === -1) {
-        console.error(`[CCAVENUE CALLBACK] Order ${orderId} not found in payments DB.`);
-        return res.status(404).send(`<h3>Order not found: ${orderId}</h3>`);
-      }
-
-      const payment = payments[paymentIndex];
-      payment.attempts += 1;
-      payment.updatedAt = new Date().toISOString();
-
-      if (orderStatus.toLowerCase() === "success") {
-        payment.status = "paid";
-        payment.paymentId = trackingId;
-        payment.signatureVerified = true;
-        writePaymentsDb(payments);
-        await savePaymentsToSupabase(payments);
-
-        // Fulfill order, allocate genuine keys, send WhatsApp & Email
-        await fulfillOrderOnBackend(orderId, trackingId, payment);
-
-        const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Payment Successful - VeeraIT</title>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; }
-    .card { background: white; max-width: 440px; width: 100%; border-radius: 24px; padding: 36px 28px; box-shadow: 0 20px 40px rgba(0,0,0,0.06); text-align: center; border: 1px solid #e2e8f0; }
-    .icon-wrap { width: 72px; height: 72px; background: #ecfdf5; border: 2px solid #a7f3d0; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #059669; font-size: 36px; font-weight: bold; }
-    h2 { color: #0f172a; margin: 0 0 8px; font-size: 22px; font-weight: 800; }
-    p { color: #64748b; font-size: 14px; margin: 0 0 24px; line-height: 1.5; }
-    .detail-box { background: #f1f5f9; border-radius: 14px; padding: 14px; margin-bottom: 24px; text-align: left; font-size: 12px; }
-    .detail-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
-    .detail-row:last-child { margin-bottom: 0; font-weight: bold; }
-    .btn { display: block; width: 100%; background: #059669; color: white; text-decoration: none; padding: 14px 20px; border-radius: 14px; font-weight: 700; font-size: 14px; box-sizing: border-box; transition: background 0.2s; }
-    .btn:hover { background: #047857; }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <div class="icon-wrap">✓</div>
-    <h2>Payment Successful!</h2>
-    <p>Your payment via CCAvenue has been verified. Activation keys are delivered to your WhatsApp & Email.</p>
-    <div class="detail-box">
-      <div class="detail-row"><span>Order ID:</span><span style="font-family: monospace;">${orderId}</span></div>
-      <div class="detail-row"><span>CCAvenue Ref:</span><span style="font-family: monospace;">${trackingId}</span></div>
-      <div class="detail-row"><span>Amount Paid:</span><span>₹${Number(payment.amount).toFixed(2)}</span></div>
-    </div>
-    <a class="btn" href="/?payment_status=success&order_id=${encodeURIComponent(orderId)}&gateway=ccavenue">View Order Details</a>
-  </div>
-  <script>
-    setTimeout(function() {
-      window.location.href = "/?payment_status=success&order_id=${encodeURIComponent(orderId)}&gateway=ccavenue";
-    }, 1800);
-  </script>
-</body>
-</html>`;
-        return res.send(html);
-      } else {
-        payment.status = "failed";
-        payment.errorMessage = failureMessage || "Payment declined or cancelled on CCAvenue.";
-        writePaymentsDb(payments);
-        await savePaymentsToSupabase(payments);
-
-        dispatchWhatsAppTemplate("payment_failed", payment.customerPhone, {
-          customerName: payment.customerName,
-          orderId: orderId,
-          amount: `₹${Number(payment.amount).toFixed(2)}`,
-          reason: failureMessage || "Payment cancelled on CCAvenue."
-        }).catch(err => console.error("[WHATSAPP-FAIL] payment_failed dispatch err:", err));
-
-        const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Payment Incomplete - VeeraIT</title>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; }
-    .card { background: white; max-width: 440px; width: 100%; border-radius: 24px; padding: 36px 28px; box-shadow: 0 20px 40px rgba(0,0,0,0.06); text-align: center; border: 1px solid #e2e8f0; }
-    .icon-wrap { width: 72px; height: 72px; background: #fef2f2; border: 2px solid #fecaca; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #dc2626; font-size: 36px; font-weight: bold; }
-    h2 { color: #0f172a; margin: 0 0 8px; font-size: 22px; font-weight: 800; }
-    p { color: #64748b; font-size: 14px; margin: 0 0 24px; line-height: 1.5; }
-    .btn { display: block; width: 100%; background: #0f172a; color: white; text-decoration: none; padding: 14px 20px; border-radius: 14px; font-weight: 700; font-size: 14px; box-sizing: border-box; }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <div class="icon-wrap">✕</div>
-    <h2>Payment Incomplete</h2>
-    <p>${failureMessage || 'Your transaction was cancelled or declined on CCAvenue. No money was deducted.'}</p>
-    <a class="btn" href="/?payment_status=failed&order_id=${encodeURIComponent(orderId)}&reason=${encodeURIComponent(failureMessage || 'Payment cancelled')}">Return to Cart & Try Again</a>
-  </div>
-  <script>
-    setTimeout(function() {
-      window.location.href = "/?payment_status=failed&order_id=${encodeURIComponent(orderId)}&reason=${encodeURIComponent(failureMessage || 'Payment cancelled')}";
-    }, 2500);
-  </script>
-</body>
-</html>`;
-        return res.send(html);
-      }
-    } catch (err: any) {
-      console.error("[CCAVENUE CALLBACK ERROR]", err);
-      return res.status(500).send(`<h3>Callback Processing Error: ${err.message}</h3>`);
-    }
-  };
-
-  app.post("/api/payment/ccavenue/callback", handleCcavenueCallback);
-  app.get("/api/payment/ccavenue/callback", (req, res) => {
-    res.redirect("/");
+    return res.status(410).json({
+      error: "CCAvenue Payment Gateway has been removed. Please use Razorpay Payment Gateway.",
+      activeGateway: "Razorpay"
+    });
   });
 
   // 9.1D TELEGRAM PAYMENT GATEWAY (Telegram Stars XTR & Telegram Bot Invoice API)
@@ -5319,24 +4973,15 @@ app.use(async (req, res, next) => {
         configured: !!(keyId && hasSecret),
         mode: settings.razorpayMode || (keyId.startsWith("rzp_live") ? "live" : "test"),
         enabled: settings.razorpayEnabled ?? true,
-        hasSecret: !!hasSecret
+        hasSecret: !!hasSecret,
+        webhookUrl: "https://veerait.com/api/payment/razorpay/webhook",
+        webhookSecret: settings.razorpayWebhookSecret || "veerait_razorpay_secret"
       },
       paytm: {
         merchantId: paytmMid,
         environment: process.env.PAYTM_ENV || (settings.paytmMode === "live" ? "PRODUCTION" : "TEST"),
         website: process.env.PAYTM_WEBSITE || "WEBSTAGING",
         configured: !!(paytmMid && paytmKey)
-      },
-      ccavenue: {
-        merchantId: settings.ccavenueMerchantId || process.env.CCAVENUE_MERCHANT_ID || "",
-        accessCode: settings.ccavenueAccessCode || process.env.CCAVENUE_ACCESS_CODE || "",
-        mode: settings.ccavenueMode || (process.env.CCAVENUE_ENV === "PRODUCTION" ? "live" : "test"),
-        enabled: settings.ccavenueEnabled ?? true,
-        configured: !!(
-          (settings.ccavenueMerchantId || process.env.CCAVENUE_MERCHANT_ID) &&
-          (settings.ccavenueAccessCode || process.env.CCAVENUE_ACCESS_CODE) &&
-          (settings.ccavenueWorkingKey || process.env.CCAVENUE_WORKING_KEY)
-        )
       },
       telegram: {
         botToken: settings.telegramBotToken ? (settings.telegramBotToken.length > 10 ? `${settings.telegramBotToken.substring(0, 5)}••••••••` : "••••••••") : "",
@@ -5361,11 +5006,6 @@ app.use(async (req, res, next) => {
       paytmMid, 
       paytmMode, 
       upiWebhookSecret,
-      ccavenueMerchantId,
-      ccavenueAccessCode,
-      ccavenueWorkingKey,
-      ccavenueMode,
-      ccavenueEnabled,
       telegramBotToken,
       telegramBotUsername,
       telegramPaymentProviderToken,
@@ -5374,7 +5014,8 @@ app.use(async (req, res, next) => {
       razorpayKeyId,
       razorpayKeySecret,
       razorpayMode,
-      razorpayEnabled
+      razorpayEnabled,
+      razorpayWebhookSecret
     } = req.body;
 
     if (!bankName || !bankAccountName || !bankAccountNumber || !ifscCode || !upiId) {
@@ -5392,11 +5033,6 @@ app.use(async (req, res, next) => {
       paytmMid: paytmMid || process.env.PAYTM_MERCHANT_ID || "OPDDHV86006252156720",
       paytmMode: paytmMode || "test",
       upiWebhookSecret: upiWebhookSecret || currentSettings.upiWebhookSecret || process.env.UPI_WEBHOOK_SECRET || "veerait_upi_secret_2026",
-      ccavenueMerchantId: ccavenueMerchantId !== undefined ? ccavenueMerchantId : (currentSettings.ccavenueMerchantId || ""),
-      ccavenueAccessCode: ccavenueAccessCode !== undefined ? ccavenueAccessCode : (currentSettings.ccavenueAccessCode || ""),
-      ccavenueWorkingKey: ccavenueWorkingKey !== undefined ? ccavenueWorkingKey : (currentSettings.ccavenueWorkingKey || ""),
-      ccavenueMode: ccavenueMode || currentSettings.ccavenueMode || "test",
-      ccavenueEnabled: ccavenueEnabled !== undefined ? ccavenueEnabled : (currentSettings.ccavenueEnabled ?? true),
       telegramBotToken: telegramBotToken !== undefined ? telegramBotToken : (currentSettings.telegramBotToken || ""),
       telegramBotUsername: telegramBotUsername !== undefined ? telegramBotUsername : (currentSettings.telegramBotUsername || "SoftKeyLicenseBot"),
       telegramPaymentProviderToken: telegramPaymentProviderToken !== undefined ? telegramPaymentProviderToken : (currentSettings.telegramPaymentProviderToken || ""),
@@ -5408,7 +5044,7 @@ app.use(async (req, res, next) => {
         : (currentSettings.razorpayKeySecret || ""),
       razorpayMode: razorpayMode || currentSettings.razorpayMode || "test",
       razorpayEnabled: razorpayEnabled !== undefined ? razorpayEnabled : (currentSettings.razorpayEnabled ?? true),
-      razorpayWebhookSecret: req.body.razorpayWebhookSecret || currentSettings.razorpayWebhookSecret || "veerait_razorpay_secret"
+      razorpayWebhookSecret: razorpayWebhookSecret || currentSettings.razorpayWebhookSecret || "veerait_razorpay_secret"
     };
 
     writePaymentSettings(updatedSettings);
@@ -5431,11 +5067,6 @@ app.use(async (req, res, next) => {
       paytmMid: process.env.PAYTM_MERCHANT_ID || "OPDDHV86006252156720",
       paytmMode: process.env.PAYTM_ENV === "PRODUCTION" ? "live" : "test",
       upiWebhookSecret: "veerait_upi_secret_2026",
-      ccavenueMerchantId: "",
-      ccavenueAccessCode: "",
-      ccavenueWorkingKey: "",
-      ccavenueMode: "test",
-      ccavenueEnabled: true,
       telegramBotToken: "",
       telegramBotUsername: "SoftKeyLicenseBot",
       telegramPaymentProviderToken: "",
@@ -5444,7 +5075,8 @@ app.use(async (req, res, next) => {
       razorpayKeyId: "rzp_test_1DP5mmOlF5G5ag",
       razorpayKeySecret: "sX78jKLm910aBcDeFgHiJkLm",
       razorpayMode: "test",
-      razorpayEnabled: true
+      razorpayEnabled: true,
+      razorpayWebhookSecret: "veerait_razorpay_secret"
     };
     writePaymentSettings(defaultSettings);
     return res.json({

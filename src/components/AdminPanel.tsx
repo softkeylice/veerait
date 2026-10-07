@@ -102,12 +102,7 @@ export default function AdminPanel({
   const [paytmMid, setPaytmMid] = useState('OPDDHV86006252156720');
   const [paytmMode, setPaytmMode] = useState<'test' | 'live'>('test');
   const [upiWebhookSecret, setUpiWebhookSecret] = useState('veerait_upi_secret_2026');
-  const [ccavenueMerchantId, setCcavenueMerchantId] = useState('');
-  const [ccavenueAccessCode, setCcavenueAccessCode] = useState('');
-  const [ccavenueWorkingKey, setCcavenueWorkingKey] = useState('');
-  const [ccavenueMode, setCcavenueMode] = useState<'test' | 'live'>('test');
-  const [ccavenueEnabled, setCcavenueEnabled] = useState(true);
-  const [showCcavenueKey, setShowCcavenueKey] = useState(false);
+  const [razorpayWebhookSecret, setRazorpayWebhookSecret] = useState('veerait_razorpay_secret');
   const [telegramBotToken, setTelegramBotToken] = useState('');
   const [telegramBotUsername, setTelegramBotUsername] = useState('SoftKeyLicenseBot');
   const [telegramPaymentProviderToken, setTelegramPaymentProviderToken] = useState('');
@@ -381,20 +376,8 @@ export default function AdminPanel({
           if (data.settings.upiWebhookSecret) {
             setUpiWebhookSecret(data.settings.upiWebhookSecret);
           }
-          if (data.settings.ccavenueMerchantId !== undefined) {
-            setCcavenueMerchantId(data.settings.ccavenueMerchantId);
-          }
-          if (data.settings.ccavenueAccessCode !== undefined) {
-            setCcavenueAccessCode(data.settings.ccavenueAccessCode);
-          }
-          if (data.settings.ccavenueWorkingKey !== undefined) {
-            setCcavenueWorkingKey(data.settings.ccavenueWorkingKey);
-          }
-          if (data.settings.ccavenueMode) {
-            setCcavenueMode(data.settings.ccavenueMode);
-          }
-          if (data.settings.ccavenueEnabled !== undefined) {
-            setCcavenueEnabled(data.settings.ccavenueEnabled);
+          if (data.settings.razorpayWebhookSecret) {
+            setRazorpayWebhookSecret(data.settings.razorpayWebhookSecret);
           }
           if (data.settings.telegramBotToken !== undefined) {
             setTelegramBotToken(data.settings.telegramBotToken);
@@ -411,12 +394,6 @@ export default function AdminPanel({
           if (data.settings.telegramEnabled !== undefined) {
             setTelegramEnabled(data.settings.telegramEnabled);
           }
-        }
-        if (data.ccavenue) {
-          if (data.ccavenue.merchantId) setCcavenueMerchantId(data.ccavenue.merchantId);
-          if (data.ccavenue.accessCode) setCcavenueAccessCode(data.ccavenue.accessCode);
-          if (data.ccavenue.mode) setCcavenueMode(data.ccavenue.mode);
-          if (data.ccavenue.enabled !== undefined) setCcavenueEnabled(data.ccavenue.enabled);
         }
         if (data.telegram) {
           if (data.telegram.botUsername) setTelegramBotUsername(data.telegram.botUsername);
@@ -541,11 +518,7 @@ export default function AdminPanel({
           paytmMid,
           paytmMode,
           upiWebhookSecret,
-          ccavenueMerchantId,
-          ccavenueAccessCode,
-          ccavenueWorkingKey,
-          ccavenueMode,
-          ccavenueEnabled,
+          razorpayWebhookSecret,
           telegramBotToken,
           telegramBotUsername,
           telegramPaymentProviderToken,
@@ -559,7 +532,7 @@ export default function AdminPanel({
       });
       const data = await response.json();
       if (response.ok && data.success) {
-        addNotification('Settings Saved', 'Razorpay Payment Gateway, UPI, CCAvenue & Telegram configurations updated successfully.', 'success');
+        addNotification('Settings Saved', 'Razorpay Payment Gateway, UPI, and Telegram configurations updated successfully.', 'success');
       } else {
         addNotification('Save Failed', data.error || 'Could not update payment configurations.', 'error');
       }
@@ -695,13 +668,9 @@ export default function AdminPanel({
         setIfscCode(data.settings.ifscCode || '');
         setUpiId(data.settings.upiId || '');
         setUpiQrCodeUrl(data.settings.upiQrCodeUrl || '');
-        setCcavenueMerchantId('');
-        setCcavenueAccessCode('');
-        setCcavenueWorkingKey('');
-        setCcavenueMode('test');
-        setCcavenueEnabled(true);
         setRazorpayKeyId('rzp_test_1DP5mmOlF5G5ag');
         setRazorpayKeySecret('sX78jKLm910aBcDeFgHiJkLm');
+        setRazorpayWebhookSecret('veerait_razorpay_secret');
         setRazorpayMode('test');
         setRazorpayEnabled(true);
         addNotification('Settings Reset', 'Store payment options reset to standard defaults successfully.', 'success');
@@ -6343,227 +6312,73 @@ export default function AdminPanel({
 
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Razorpay Webhook URL (Automated S2S Callback)
+                        Razorpay Webhook URL for veerait.com (Official Webhook)
                       </label>
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 mb-1.5">
                         <input
                           type="text"
                           readOnly
-                          value={typeof window !== 'undefined' ? `${window.location.origin}/api/payment/razorpay/webhook` : '/api/payment/razorpay/webhook'}
-                          className="w-full px-3 py-2 bg-white border border-blue-300/80 rounded-xl text-xs font-mono text-slate-900 font-bold select-all focus:outline-none"
+                          value="https://veerait.com/api/payment/razorpay/webhook"
+                          className="w-full px-3 py-2 bg-emerald-50 border border-emerald-300 rounded-xl text-xs font-mono text-emerald-950 font-black select-all focus:outline-none"
                         />
                         <button
                           type="button"
                           onClick={() => {
-                            const url = `${window.location.origin}/api/payment/razorpay/webhook`;
-                            navigator.clipboard.writeText(url);
-                            addNotification('URL Copied', 'Razorpay webhook endpoint URL copied to clipboard.', 'success');
+                            navigator.clipboard.writeText("https://veerait.com/api/payment/razorpay/webhook");
+                            addNotification('Webhook URL Copied', 'https://veerait.com/api/payment/razorpay/webhook copied to clipboard!', 'success');
                           }}
-                          className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shrink-0 shadow-xs flex items-center gap-1"
+                          className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shrink-0 shadow-xs flex items-center gap-1"
                         >
                           <Copy className="w-3.5 h-3.5" />
-                          Copy
+                          Copy Link
                         </button>
                       </div>
+                      <p className="text-[10px] text-slate-500">
+                        Is URL ko apne <strong>Razorpay Dashboard &gt; Account & Settings &gt; Webhooks</strong> me paste kare.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Razorpay Webhook Secret Key
+                      </label>
+                      <input
+                        type="text"
+                        value={razorpayWebhookSecret}
+                        onChange={(e) => setRazorpayWebhookSecret(e.target.value)}
+                        placeholder="e.g. veerait_razorpay_secret"
+                        className="w-full px-3.5 py-2.5 bg-white border border-blue-300/80 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-600 font-mono font-bold shadow-xs"
+                      />
+                      <p className="text-[10px] text-slate-500 mt-1">
+                        Razorpay webhook banate samay Secret me yahi text daale (HMAC SHA-256 verification ke liye).
+                      </p>
                     </div>
                   </div>
 
                   {/* Razorpay Quick Guide Card */}
-                  <div className="bg-blue-100/70 border border-blue-300/90 rounded-xl p-3 text-xs text-blue-950 space-y-1.5">
-                    <p className="font-extrabold flex items-center gap-1 text-blue-900">
-                      <span>⚡</span> Razorpay Payment Gateway Guide (QR, Cards, NetBanking Setup):
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50/70 border border-blue-200/90 rounded-2xl p-4 text-xs text-blue-950 space-y-2.5 shadow-xs">
+                    <p className="font-extrabold flex items-center gap-1.5 text-blue-900 text-xs">
+                      <span>⚡</span> Razorpay Payment Gateway & Webhook Setup Guide:
                     </p>
-                    <ol className="list-decimal list-inside space-y-0.5 text-[11px] text-blue-900/90 leading-relaxed font-medium">
-                      <li><strong>Razorpay Dashboard</strong> (<a href="https://dashboard.razorpay.com" target="_blank" rel="noreferrer" className="underline font-bold text-blue-800">dashboard.razorpay.com</a>) me login kare.</li>
-                      <li>Left Menu me <strong>Account & Settings</strong> ➔ <strong>API Keys</strong> par jaye aur <em>Generate Key</em> kare.</li>
-                      <li>Mila hua <strong>Key ID</strong> (jaise <code>rzp_test_...</code> ya <code>rzp_live_...</code>) aur <strong>Key Secret</strong> upar daale.</li>
-                      <li>Customer ko checkout par <strong>QR Code (GPay, PhonePe, Paytm)</strong>, <strong>Credit Card & Debit Card</strong>, aur <strong>Net Banking</strong> teeno vikalp milenge!</li>
-                      <li>Upar <strong>"Save Payment Configurations"</strong> par click kare. Setup turant active ho jayega.</li>
-                    </ol>
-                  </div>
-                </div>
-
-                {/* Paytm Payment Gateway Section */}
-                <div className="space-y-4 border-t border-slate-100 pt-4">
-                  <div className="flex items-center justify-between">
-                    <h5 className="text-xs font-bold text-[#002e6e] uppercase tracking-wider font-mono flex items-center gap-1.5">
-                      <span className="bg-[#00baf2] text-white text-[9px] px-1.5 py-0.5 rounded font-black">Paytm PG</span>
-                      Paytm Payment Gateway Credentials
-                    </h5>
-                    <span className="text-[10px] bg-[#f0f8ff] text-[#002e6e] border border-[#00baf2]/30 px-2 py-0.5 rounded-full font-extrabold">
-                      Active Merchant Gateway
-                    </span>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-500 mb-1">Paytm Merchant ID (MID)</label>
-                      <input
-                        type="text"
-                        value={paytmMid}
-                        onChange={(e) => setPaytmMid(e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-[#00baf2] font-mono font-bold"
-                        placeholder="e.g. 87885950"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-500 mb-1">Environment Mode</label>
-                      <div className="flex items-center justify-between bg-[#f0f8ff] border border-[#00baf2]/30 px-3 py-2 rounded-xl">
-                        <span className="text-xs font-extrabold text-[#002e6e]">
-                          {paytmMode === 'test' ? 'Test / Staging Mode' : 'Live Production'}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setPaytmMode(paytmMode === 'test' ? 'live' : 'test')}
-                          className="text-[10px] bg-[#00baf2] hover:bg-[#0092bf] text-white font-bold px-2.5 py-1 rounded-lg transition-all cursor-pointer"
-                        >
-                          Switch
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* CCAvenue Payment Gateway Section */}
-                <div className="space-y-4 border-t-2 border-orange-200/60 bg-gradient-to-br from-amber-50/40 via-orange-50/20 to-white -mx-6 px-6 py-5 rounded-2xl shadow-xs">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div>
-                      <h5 className="text-xs font-black text-amber-950 uppercase tracking-wider font-mono flex items-center gap-2">
-                        <span className="bg-orange-600 text-white text-[9px] px-2 py-0.5 rounded font-black tracking-widest shadow-xs">CCAVENUE PG</span>
-                        CCAvenue Payment Gateway Credentials
-                      </h5>
-                      <p className="text-[11px] text-amber-900/80 mt-0.5">
-                        Accept all Credit/Debit Cards, 58+ Net Banking, EMI, and Wallets via official CCAvenue AES-128-CBC encryption.
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => setCcavenueEnabled(!ccavenueEnabled)}
-                        className={`text-[10px] font-extrabold px-3 py-1 rounded-full border transition-all cursor-pointer flex items-center gap-1.5 ${
-                          ccavenueEnabled
-                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                            : 'bg-slate-100 text-slate-600 border-slate-300'
-                        }`}
-                      >
-                        <span className={`w-2 h-2 rounded-full ${ccavenueEnabled ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}></span>
-                        {ccavenueEnabled ? 'Enabled on Checkout' : 'Disabled'}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        CCAvenue Merchant ID (MID)
-                      </label>
-                      <input
-                        type="text"
-                        value={ccavenueMerchantId}
-                        onChange={(e) => setCcavenueMerchantId(e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-white border border-amber-300/80 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-orange-500 font-mono font-bold shadow-xs"
-                        placeholder="e.g. 3298101"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Access Code
-                      </label>
-                      <input
-                        type="text"
-                        value={ccavenueAccessCode}
-                        onChange={(e) => setCcavenueAccessCode(e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-white border border-amber-300/80 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-orange-500 font-mono font-bold shadow-xs"
-                        placeholder="e.g. AVAB92KL20..."
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Working Key (AES-128 Encryption Key)
-                      </label>
-                      <div className="relative">
-                        <input
-                          type={showCcavenueKey ? 'text' : 'password'}
-                          value={ccavenueWorkingKey}
-                          onChange={(e) => setCcavenueWorkingKey(e.target.value)}
-                          className="w-full px-3.5 py-2.5 pr-10 bg-white border border-amber-300/80 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-orange-500 font-mono font-bold shadow-xs"
-                          placeholder="32-character AES working key"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowCcavenueKey(!showCcavenueKey)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer"
-                        >
-                          {showCcavenueKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Environment Mode</label>
-                      <div className="flex items-center justify-between bg-white border border-amber-300/80 px-3.5 py-2 rounded-xl shadow-xs">
-                        <div>
-                          <span className="text-xs font-extrabold text-orange-950 block">
-                            {ccavenueMode === 'test' ? 'Test / Sandbox Mode' : 'Live Production Mode'}
-                          </span>
-                          <span className="text-[10px] text-slate-500 font-mono">
-                            {ccavenueMode === 'test' ? 'test.ccavenue.com' : 'secure.ccavenue.com'}
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setCcavenueMode(ccavenueMode === 'test' ? 'live' : 'test')}
-                          className="text-[10px] bg-orange-600 hover:bg-orange-700 text-white font-bold px-3 py-1 rounded-lg transition-all cursor-pointer shadow-xs"
-                        >
-                          Switch Mode
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* CCAvenue Callback URL */}
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      CCAvenue Redirect & Return Callback URL (Auto-Generated)
-                    </label>
-                    <div className="flex items-center gap-1.5">
-                      <input
-                        type="text"
-                        readOnly
-                        value={typeof window !== 'undefined' ? `${window.location.origin}/api/payment/ccavenue/callback` : '/api/payment/ccavenue/callback'}
-                        className="w-full px-3 py-2 bg-white border border-amber-300/80 rounded-xl text-xs font-mono text-slate-900 font-bold select-all focus:outline-none"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const url = `${window.location.origin}/api/payment/ccavenue/callback`;
-                          navigator.clipboard.writeText(url);
-                          addNotification('URL Copied', 'CCAvenue callback URL copied to clipboard.', 'success');
-                        }}
-                        className="px-3.5 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shrink-0 shadow-xs flex items-center gap-1"
-                      >
-                        <Copy className="w-3.5 h-3.5" />
-                        Copy URL
-                      </button>
-                    </div>
-                    <p className="text-[10px] text-amber-800 mt-1">
-                      Is link ko apne CCAvenue M.A.R.S Merchant Portal me Redirect URL & Cancel URL me save kare.
-                    </p>
-                  </div>
-
-                  {/* Step-by-Step Launch Guide Callout */}
-                  <div className="bg-amber-100/70 border border-amber-300/90 rounded-xl p-3 text-xs text-amber-950 space-y-1.5">
-                    <p className="font-extrabold flex items-center gap-1 text-orange-900">
-                      <span>💡</span> CCAvenue Launch Guide (Kaise Connect Kare):
-                    </p>
-                    <ol className="list-decimal list-inside space-y-0.5 text-[11px] text-amber-900/90 leading-relaxed font-medium">
-                      <li><strong>CCAvenue M.A.R.S</strong> (<a href="https://login.ccavenue.com" target="_blank" rel="noreferrer" className="underline font-bold text-orange-800">login.ccavenue.com</a>) me login kare.</li>
-                      <li>Left Menu me <strong>Settings</strong> ➔ <strong>API Keys</strong> par click kare.</li>
-                      <li>Waha se apna <strong>Merchant ID</strong>, <strong>Access Code</strong> aur <strong>Working Key</strong> copy karke upar enter kare.</li>
-                      <li>Agar account activate ho gaya hai to <strong>Live Production Mode</strong> select kare, fir <strong>"Save Payment Configurations"</strong> dabaye!</li>
+                    <ol className="list-decimal list-inside space-y-1.5 text-[11px] text-blue-900/90 leading-relaxed font-medium">
+                      <li>
+                        <strong>Razorpay Dashboard</strong> (<a href="https://dashboard.razorpay.com" target="_blank" rel="noreferrer" className="underline font-bold text-blue-800">dashboard.razorpay.com</a>) me login kare.
+                      </li>
+                      <li>
+                        <strong>API Keys:</strong> Left Menu ➔ <strong>Account & Settings</strong> ➔ <strong>API Keys</strong> me jaakar Key ID aur Key Secret copy kare aur upar paste kare.
+                      </li>
+                      <li>
+                        <strong>Webhook Link:</strong> Left Menu ➔ <strong>Account & Settings</strong> ➔ <strong>Webhooks</strong> ➔ <em>"Add New Webhook"</em> par click kare.
+                      </li>
+                      <li>
+                        Webhook URL me <code>https://veerait.com/api/payment/razorpay/webhook</code> daale aur Secret me <code>{razorpayWebhookSecret || 'veerait_razorpay_secret'}</code> daale.
+                      </li>
+                      <li>
+                        <strong>Active Events select kare:</strong> <code>payment.captured</code>, <code>order.paid</code>, aur <code>payment.failed</code>.
+                      </li>
+                      <li>
+                        Customer ko checkout par <strong>QR Code (GPay, PhonePe, Paytm)</strong>, <strong>Credit & Debit Cards</strong>, aur <strong>Net Banking</strong> teeno vikalp milenge!
+                      </li>
                     </ol>
                   </div>
                 </div>
@@ -6932,104 +6747,73 @@ export default function AdminPanel({
               {/* Status and QR Preview column */}
               <div className="space-y-6">
                 
-                {/* Paytm PG connection status panel */}
-                <div className="bg-white border border-[#00baf2]/30 p-6 rounded-2xl shadow-xs space-y-4">
-                  <h4 className="text-xs font-bold text-[#002e6e] uppercase tracking-widest font-mono flex items-center gap-1.5">
-                    <span className="bg-[#00baf2] text-white text-[9px] px-1.5 py-0.5 rounded font-black">Paytm PG</span>
-                    Paytm Payment Gateway Status
-                  </h4>
-
-                  <div className="p-4 bg-[#f0f8ff] border border-[#00baf2]/20 rounded-xl space-y-3">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-slate-600">Merchant MID</span>
-                      <span className="font-mono bg-[#00baf2]/10 text-[#002e6e] border border-[#00baf2]/30 px-2 py-0.5 rounded text-[11px] font-extrabold">
-                        {paytmMid || 'OPDDHV86006252156720'}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-slate-600">Merchant Key</span>
-                      <span className="font-mono bg-emerald-100 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded text-[10px] font-bold">
-                        NTDV&8PLRhXJ%soP (Active)
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-slate-600">Gateway Status</span>
-                      <span className="font-mono bg-emerald-100 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded text-[10px] font-bold">
-                        Connected & Active
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-xs border-t border-[#00baf2]/20 pt-2">
-                      <span className="font-semibold text-slate-600">Environment</span>
-                      <span className="font-mono text-[#002e6e] font-bold uppercase text-[10px]">
-                        {paytmMode} Mode
-                      </span>
-                    </div>
+                {/* Razorpay Gateway Connection Status Panel */}
+                <div className="bg-white border-2 border-blue-200 p-6 rounded-2xl shadow-sm space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-bold text-blue-700 uppercase tracking-widest font-mono flex items-center gap-1.5">
+                      <CreditCard className="w-4 h-4 text-blue-600" />
+                      Razorpay Gateway Status
+                    </h4>
+                    <span className="bg-blue-100 text-blue-800 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-blue-200">
+                      Official PG
+                    </span>
                   </div>
 
-                  <p className="text-[11px] text-slate-500 leading-relaxed">
-                    Paytm PG Gateway is configured with MID <strong className="font-mono text-slate-700">{paytmMid}</strong>. Transactions will be processed through Paytm PG modal popup and auto-settled to your bank.
-                  </p>
-                </div>
-
-                {/* CCAvenue connection status panel */}
-                <div className="bg-white border border-orange-200 p-6 rounded-2xl shadow-sm space-y-4">
-                  <h4 className="text-xs font-bold text-orange-600 uppercase tracking-widest font-mono flex items-center gap-1.5">
-                    <ShieldAlert className="w-4 h-4" />
-                    CCAvenue Gateway Status
-                  </h4>
-
-                  <div className="p-4 bg-orange-50/50 border border-orange-100 rounded-xl space-y-3">
+                  <div className="p-4 bg-blue-50/60 border border-blue-100 rounded-xl space-y-3">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-slate-600">Merchant MID</span>
-                      <span className="font-mono bg-orange-100/70 text-orange-900 border border-orange-200 px-2 py-0.5 rounded text-[11px] font-extrabold">
-                        {ccavenueMerchantId || 'Not Configured'}
+                      <span className="font-semibold text-slate-600">Razorpay Key ID</span>
+                      <span className="font-mono bg-blue-100/70 text-blue-900 border border-blue-200 px-2 py-0.5 rounded text-[11px] font-extrabold">
+                        {razorpayKeyId ? `${razorpayKeyId.slice(0, 10)}...` : 'rzp_test_...'}
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-slate-600">Access Code</span>
-                      <span className="font-mono bg-orange-100/70 text-orange-900 border border-orange-200 px-2 py-0.5 rounded text-[10px] font-bold">
-                        {ccavenueAccessCode ? `${ccavenueAccessCode.slice(0, 6)}••••••` : 'Not Set'}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-slate-600">Working Key</span>
-                      <span className="font-mono bg-orange-100/70 text-orange-900 border border-orange-200 px-2 py-0.5 rounded text-[10px] font-bold">
-                        {ccavenueWorkingKey ? '●●●●●●●● (AES-128)' : 'Not Set'}
+                      <span className="font-semibold text-slate-600">Key Secret</span>
+                      <span className="font-mono bg-blue-100/70 text-blue-900 border border-blue-200 px-2 py-0.5 rounded text-[10px] font-bold">
+                        {razorpayKeySecret ? '●●●●●●●● (HMAC SHA-256)' : 'Not Set'}
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between text-xs">
                       <span className="font-semibold text-slate-600">Gateway Status</span>
                       <span className={`font-mono px-2 py-0.5 rounded text-[10px] font-bold ${
-                        ccavenueEnabled && ccavenueMerchantId && ccavenueAccessCode && ccavenueWorkingKey
+                        razorpayEnabled
                           ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                          : ccavenueEnabled
-                          ? 'bg-amber-100 text-amber-800 border border-amber-200'
                           : 'bg-slate-100 text-slate-600'
                       }`}>
-                        {ccavenueEnabled && ccavenueMerchantId && ccavenueAccessCode && ccavenueWorkingKey
-                          ? 'Live Ready'
-                          : ccavenueEnabled
-                          ? 'Test / Incomplete'
-                          : 'Disabled'}
+                        {razorpayEnabled ? (razorpayMode === 'live' ? 'Live Production Active' : 'Test Sandbox Active') : 'Disabled'}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between text-xs border-t border-orange-200/50 pt-2">
-                      <span className="font-semibold text-slate-600">Environment</span>
-                      <span className="font-mono text-orange-900 font-bold uppercase text-[10px]">
-                        {ccavenueMode} Mode
+                    <div className="flex items-center justify-between text-xs border-t border-blue-200/50 pt-2">
+                      <span className="font-semibold text-slate-600">Environment Mode</span>
+                      <span className="font-mono text-blue-900 font-bold uppercase text-[10px]">
+                        {razorpayMode} Mode
                       </span>
+                    </div>
+
+                    <div className="flex flex-col gap-1 text-xs border-t border-blue-200/50 pt-2">
+                      <span className="font-semibold text-slate-600">veerait.com Webhook URL</span>
+                      <div className="flex items-center justify-between gap-1 bg-white p-1.5 rounded-lg border border-blue-200">
+                        <span className="font-mono text-[10px] text-blue-950 font-bold truncate">
+                          https://veerait.com/api/payment/razorpay/webhook
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText('https://veerait.com/api/payment/razorpay/webhook');
+                            addNotification('URL Copied', 'https://veerait.com/api/payment/razorpay/webhook copied to clipboard!', 'success');
+                          }}
+                          className="text-[10px] bg-blue-600 hover:bg-blue-700 text-white font-bold px-2 py-0.5 rounded cursor-pointer shrink-0"
+                        >
+                          Copy
+                        </button>
+                      </div>
                     </div>
                   </div>
 
                   <p className="text-[11px] text-slate-500 leading-relaxed">
-                    CCAvenue secures payments with AES-128 encryption. Supports Credit & Debit cards, 58+ Net Banking, UPI, and Digital Wallets.
+                    Razorpay enables instant payment verification for QR Code (PhonePe, GPay, Paytm), Credit &amp; Debit Cards, Net Banking, and UPI with auto-order fulfillment.
                   </p>
                 </div>
 
@@ -7074,67 +6858,6 @@ export default function AdminPanel({
 
                   <p className="text-[11px] text-slate-500 leading-relaxed">
                     Customer checkout page se Telegram app me redirect hokar in-app bot invoice se instant license activation ke sath pay kar sakte hain.
-                  </p>
-                </div>
-
-                {/* Razorpay connection status panel */}
-                <div className="bg-white border border-blue-200 p-6 rounded-2xl shadow-xs space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-bold text-blue-700 uppercase tracking-widest font-mono flex items-center gap-1.5">
-                      <CreditCard className="w-4 h-4 text-blue-600" />
-                      Razorpay Gateway Status
-                    </h4>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      razorpayEnabled && razorpayConfigured
-                        ? razorpayMode === 'live'
-                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                          : 'bg-blue-100 text-blue-800 border border-blue-200'
-                        : razorpayEnabled
-                        ? 'bg-amber-100 text-amber-800 border border-amber-200'
-                        : 'bg-slate-100 text-slate-500'
-                    }`}>
-                      {razorpayEnabled && razorpayConfigured
-                        ? razorpayMode === 'live'
-                          ? 'Live Ready'
-                          : 'Test Mode (Active)'
-                        : razorpayEnabled
-                        ? 'Simulation Active'
-                        : 'Disabled'}
-                    </span>
-                  </div>
-
-                  <div className="p-4 bg-blue-50/50 border border-blue-100 rounded-xl space-y-2.5 text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-slate-600">Key ID</span>
-                      <span className="font-mono bg-blue-100/80 text-blue-900 px-2 py-0.5 rounded text-[10px] font-bold">
-                        {razorpayKeyId || 'rzp_test_...'}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-slate-600">Secret Token</span>
-                      <span className="font-mono bg-blue-100/80 text-blue-900 px-2 py-0.5 rounded text-[10px] font-bold">
-                        {razorpayKeySecret ? '●●●●●●●● (HMAC Active)' : 'Configured'}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-slate-600">Environment</span>
-                      <span className="font-mono text-blue-950 font-extrabold uppercase text-[10px]">
-                        {razorpayMode === 'test' ? '🧪 Sandbox / Test Mode' : '🚀 Live Production Mode'}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between border-t border-blue-200/50 pt-2">
-                      <span className="font-semibold text-slate-600">Payment Channels</span>
-                      <span className="text-[10px] font-bold text-blue-800">
-                        QR Code, Credit/Debit Card, NetBanking
-                      </span>
-                    </div>
-                  </div>
-
-                  <p className="text-[11px] text-slate-500 leading-relaxed">
-                    Razorpay credentials are saved securely and loaded for all customer checkouts. Customers can choose dynamic UPI QR code scanning or direct Credit/Debit Card payment with instant OTP verification.
                   </p>
                 </div>
 
