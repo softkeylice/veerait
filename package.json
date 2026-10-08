@@ -28,19 +28,18 @@
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "nanoid": "^6.0.1",
-    "nodemailer": "^9.0.1",
+    "nodemailer": "^10.0.15",
     "postcss": "^8.5.26",
     "protobufjs": "^8.7.2",
     "qrcode": "^1.5.4",
     "razorpay": "^2.9.8",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
+    "read-excel-file": "^9.3.10",
     "serverless-http": "^4.0.0",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
-    "vite": "^6.2.3",
-    "xlsx": "^0.18.5"
-  },
-  "devDependencies": {}
+    "vite": "^6.2.3"
+  }
 }

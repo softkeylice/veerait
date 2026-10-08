@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { LayoutDashboard, ShoppingCart, Tag, Smartphone, Layers, Key, Plus, Trash2, Edit, Save, ToggleLeft, ToggleRight, Check, RefreshCw, Eye, EyeOff, MessageSquare, Mail, AlertTriangle, Package, CheckCircle2, IndianRupee, Globe, Image as ImageIcon, Star, Sparkles, ChevronDown, ChevronRight, ExternalLink, HelpCircle, X, Search, Heart, Copy, Upload, AlertCircle, FileSpreadsheet, History, UserCheck, ShieldAlert, CheckSquare, CreditCard, Users, BarChart3, Settings, Sliders, FolderTree, ClipboardList, Send, Compass, Award, Database, MapPin, Printer, Wallet, FileText, Download, ArrowUpRight, ArrowDownRight, Building2 } from 'lucide-react';
 import { Product, Order, Coupon, PromoBanner, LicenseKey, CategoryType, LicenseHistoryEntry, Category, B2BReseller, WalletTransaction } from '../types';
-import * as XLSX from 'xlsx';
+import readXlsxFile from 'read-excel-file/browser';
 import ImageUploader from './ImageUploader';
 import VeeraitLogo from './VeeraitLogo';
 
@@ -1248,86 +1248,78 @@ export default function AdminPanel({
   };
 
   // Excel spreadsheet file parsing
-  const handleExcelUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleExcelUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      try {
-        const bstr = evt.target?.result;
-        const wb = XLSX.read(bstr, { type: 'binary' });
-        const wsname = wb.SheetNames[0];
-        const ws = wb.Sheets[wsname];
-        const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
+    try {
+      const data = (await readXlsxFile(file)) as unknown as any[][];
 
-        if (data.length === 0) {
-          addNotification('Spreadsheet Empty', 'No content detected in Excel file.', 'warning');
-          return;
-        }
+      if (!data || data.length === 0) {
+        addNotification('Spreadsheet Empty', 'No content detected in Excel file.', 'warning');
+        return;
+      }
 
-        const previewRows: any[] = [];
-        const firstRow = data[0];
-        const hasHeader = firstRow && firstRow.some(cell => {
-          const s = String(cell).toLowerCase();
-          return s.includes('product') || s.includes('key') || s.includes('code') || s.includes('status');
-        });
+      const previewRows: any[] = [];
+      const firstRow = data[0];
+      const hasHeader = firstRow && firstRow.some(cell => {
+        const s = String(cell).toLowerCase();
+        return s.includes('product') || s.includes('key') || s.includes('code') || s.includes('status');
+      });
 
-        const startIndex = hasHeader ? 1 : 0;
-        const softwareProducts = products.filter(p => p.category === 'software');
+      const startIndex = hasHeader ? 1 : 0;
+      const softwareProducts = products.filter(p => p.category === 'software');
 
-        for (let i = startIndex; i < data.length; i++) {
-          const row = data[i];
-          if (!row || row.length === 0) continue;
+      for (let i = startIndex; i < data.length; i++) {
+        const row = data[i];
+        if (!row || row.length === 0) continue;
 
-          // support raw key column or full row
-          if (row.length === 1) {
-            const rawKey = row[0] ? String(row[0]).trim() : '';
-            if (rawKey) {
-              previewRows.push({
-                productId: keyPoolProductSelect || softwareProducts[0]?.id || '',
-                key: rawKey,
-                status: 'available'
-              });
-            }
-          } else {
-            const rawProduct = row[0] ? String(row[0]).trim() : '';
-            const rawKey = row[1] ? String(row[1]).trim() : '';
-            const rawStatus = row[2] ? String(row[2]).trim().toLowerCase() : 'available';
-
-            if (!rawKey) continue;
-
-            let matchedProductId = '';
-            const foundById = softwareProducts.find(p => p.id.toLowerCase() === rawProduct.toLowerCase());
-            if (foundById) {
-              matchedProductId = foundById.id;
-            } else {
-              const foundByName = softwareProducts.find(p => p.name.toLowerCase().includes(rawProduct.toLowerCase()));
-              if (foundByName) {
-                matchedProductId = foundByName.id;
-              } else {
-                matchedProductId = softwareProducts[0]?.id || '';
-              }
-            }
-
-            const parsedStatus: 'available' | 'sold' = (rawStatus === 'sold' || rawStatus === 'assigned') ? 'sold' : 'available';
-
+        // support raw key column or full row
+        if (row.length === 1) {
+          const rawKey = row[0] ? String(row[0]).trim() : '';
+          if (rawKey) {
             previewRows.push({
-              productId: matchedProductId,
+              productId: keyPoolProductSelect || softwareProducts[0]?.id || '',
               key: rawKey,
-              status: parsedStatus
+              status: 'available'
             });
           }
-        }
+        } else {
+          const rawProduct = row[0] ? String(row[0]).trim() : '';
+          const rawKey = row[1] ? String(row[1]).trim() : '';
+          const rawStatus = row[2] ? String(row[2]).trim().toLowerCase() : 'available';
 
-        setParsedKeysPreview(previewRows);
-        addNotification('Excel Parsed', `Successfully parsed ${previewRows.length} keys from "${file.name}". Review preview and commit!`, 'success');
-      } catch (err) {
-        console.error(err);
-        addNotification('Excel Error', 'Failed to read spreadsheet file. Ensure valid XLS/XLSX structure.', 'error');
+          if (!rawKey) continue;
+
+          let matchedProductId = '';
+          const foundById = softwareProducts.find(p => p.id.toLowerCase() === rawProduct.toLowerCase());
+          if (foundById) {
+            matchedProductId = foundById.id;
+          } else {
+            const foundByName = softwareProducts.find(p => p.name.toLowerCase().includes(rawProduct.toLowerCase()));
+            if (foundByName) {
+              matchedProductId = foundByName.id;
+            } else {
+              matchedProductId = softwareProducts[0]?.id || '';
+            }
+          }
+
+          const parsedStatus: 'available' | 'sold' = (rawStatus === 'sold' || rawStatus === 'assigned') ? 'sold' : 'available';
+
+          previewRows.push({
+            productId: matchedProductId,
+            key: rawKey,
+            status: parsedStatus
+          });
+        }
       }
-    };
-    reader.readAsBinaryString(file);
+
+      setParsedKeysPreview(previewRows);
+      addNotification('Excel Parsed', `Successfully parsed ${previewRows.length} keys from "${file.name}". Review preview and commit!`, 'success');
+    } catch (err) {
+      console.error(err);
+      addNotification('Excel Error', 'Failed to read spreadsheet file. Ensure valid XLS/XLSX structure.', 'error');
+    }
   };
 
   // Commit bulk parsed keys to pool
