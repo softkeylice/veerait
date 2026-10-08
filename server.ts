@@ -916,7 +916,7 @@ function readPaymentSettings(): PaymentSettings {
         telegramCurrency: data.telegramCurrency || "XTR",
         telegramEnabled: data.telegramEnabled !== undefined ? data.telegramEnabled : true,
         razorpayKeyId: data.razorpayKeyId || process.env.RAZORPAY_KEY_ID || "rzp_test_1DP5mmOlF5G5ag",
-        razorpayKeySecret: data.razorpayKeySecret || process.env.RAZORPAY_SECRET || "sX78jKLm910aBcDeFgHiJkLm",
+        razorpayKeySecret: data.razorpayKeySecret || process.env.RAZORPAY_KEY_SECRET || process.env.RAZORPAY_SECRET || "sX78jKLm910aBcDeFgHiJkLm",
         razorpayMode: data.razorpayMode || (process.env.RAZORPAY_ENV === "PRODUCTION" ? "live" : "test"),
         razorpayEnabled: data.razorpayEnabled !== undefined ? data.razorpayEnabled : true,
         razorpayWebhookSecret: data.razorpayWebhookSecret || process.env.RAZORPAY_WEBHOOK_SECRET || "veerait_razorpay_secret"
@@ -941,7 +941,7 @@ function readPaymentSettings(): PaymentSettings {
     telegramCurrency: "XTR",
     telegramEnabled: true,
     razorpayKeyId: process.env.RAZORPAY_KEY_ID || "rzp_test_1DP5mmOlF5G5ag",
-    razorpayKeySecret: process.env.RAZORPAY_SECRET || "sX78jKLm910aBcDeFgHiJkLm",
+    razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET || process.env.RAZORPAY_SECRET || "sX78jKLm910aBcDeFgHiJkLm",
     razorpayMode: process.env.RAZORPAY_ENV === "PRODUCTION" ? "live" : "test",
     razorpayEnabled: true,
     razorpayWebhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET || "veerait_razorpay_secret"
@@ -3388,7 +3388,7 @@ app.use(async (req, res, next) => {
     try {
       const settings = readPaymentSettings();
       const keyId = settings.razorpayKeyId || process.env.RAZORPAY_KEY_ID || "";
-      const keySecret = settings.razorpayKeySecret || process.env.RAZORPAY_SECRET || "";
+      const keySecret = settings.razorpayKeySecret || process.env.RAZORPAY_KEY_SECRET || process.env.RAZORPAY_SECRET || "";
 
       const isPlaceholder = !keyId || !keySecret || 
                             keyId.startsWith("YOUR_") || 
@@ -3500,7 +3500,7 @@ app.use(async (req, res, next) => {
       payment.updatedAt = new Date().toISOString();
 
       const settings = readPaymentSettings();
-      const keySecret = settings.razorpayKeySecret || process.env.RAZORPAY_SECRET || "";
+      const keySecret = settings.razorpayKeySecret || process.env.RAZORPAY_KEY_SECRET || process.env.RAZORPAY_SECRET || "";
       
       // Handle simulated payment, test mode, or client simulation signature
       if (
@@ -4961,7 +4961,7 @@ app.use(async (req, res, next) => {
   app.get("/api/payment/settings", (req, res) => {
     const settings = readPaymentSettings();
     const keyId = settings.razorpayKeyId || process.env.RAZORPAY_KEY_ID || "";
-    const keySecret = settings.razorpayKeySecret || process.env.RAZORPAY_SECRET || "";
+    const keySecret = settings.razorpayKeySecret || process.env.RAZORPAY_KEY_SECRET || process.env.RAZORPAY_SECRET || "";
     const hasSecret = !!keySecret;
     const paytmMid = process.env.PAYTM_MERCHANT_ID || settings.paytmMid || "OPDDHV86006252156720";
     const paytmKey = process.env.PAYTM_MERCHANT_KEY || "NTDV&8PLRhXJ%soP";
