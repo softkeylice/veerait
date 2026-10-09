@@ -27,20 +27,29 @@ jobs:
       - name: 🏗️ Build React Project
         run: npm run build
 
-      - name: ⚙️ Prepare FTP Server Host
-        id: ftp_host
+      - name: ⚙️ Check FTP Credentials and Host
+        id: ftp_check
         run: |
-          SERVER="${{ secrets.FTP_SERVER }}"
-          if [ -z "$SERVER" ]; then
-            SERVER="82.112.239.166"
+          if [ -z "${{ secrets.FTP_USERNAME }}" ] || [ -z "${{ secrets.FTP_PASSWORD }}" ]; then
+            echo "has_ftp_creds=false" >> $GITHUB_OUTPUT
+            echo "⚠️ Notice: FTP_USERNAME or FTP_PASSWORD secret is not configured in GitHub Repository Settings."
+            echo "ℹ️ If using Hostinger Node.js Application, Hostinger deploys directly from GitHub without FTP."
+            echo "ℹ️ To enable FTP upload: Go to GitHub Repo -> Settings -> Secrets and variables -> Actions -> Add FTP_USERNAME and FTP_PASSWORD."
+          else
+            echo "has_ftp_creds=true" >> $GITHUB_OUTPUT
+            SERVER="${{ secrets.FTP_SERVER }}"
+            if [ -z "$SERVER" ]; then
+              SERVER="82.112.239.166"
+            fi
+            CLEAN_SERVER=$(echo "$SERVER" | sed -e 's|^ftp://||' -e 's|^ftps://||' -e 's|/*$||')
+            echo "server=$CLEAN_SERVER" >> $GITHUB_OUTPUT
           fi
-          CLEAN_SERVER=$(echo "$SERVER" | sed -e 's|^ftp://||' -e 's|^ftps://||' -e 's|/*$||')
-          echo "server=$CLEAN_SERVER" >> $GITHUB_OUTPUT
 
       - name: 🚀 Sync files to Hostinger
+        if: steps.ftp_check.outputs.has_ftp_creds == 'true'
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ steps.ftp_host.outputs.server }}
+          server: ${{ steps.ftp_check.outputs.server }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT || 21 }}

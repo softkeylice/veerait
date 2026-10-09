@@ -6444,28 +6444,33 @@ export default function AdminPanel({
                   </div>
 
                   {/* Razorpay Quick Guide Card */}
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50/70 border border-blue-200/90 rounded-2xl p-4 text-xs text-blue-950 space-y-2.5 shadow-xs">
-                    <p className="font-extrabold flex items-center gap-1.5 text-blue-900 text-xs">
-                      <span>⚡</span> Razorpay Payment Gateway & Webhook Setup Guide:
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50/70 border border-blue-200/90 rounded-2xl p-4 text-xs text-blue-950 space-y-3 shadow-xs">
+                    <p className="font-extrabold flex items-center justify-between text-blue-900 text-xs">
+                      <span className="flex items-center gap-1.5">⚡ Razorpay Test & Live API Key Kaha Se Milega?</span>
+                      <a
+                        href="https://dashboard.razorpay.com/app/keys"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[11px] font-bold text-blue-700 bg-blue-100 hover:bg-blue-200 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1"
+                      >
+                        Direct Keys Page ↗
+                      </a>
                     </p>
-                    <ol className="list-decimal list-inside space-y-1.5 text-[11px] text-blue-900/90 leading-relaxed font-medium">
+                    <ol className="list-decimal list-inside space-y-2 text-[11px] text-blue-900/90 leading-relaxed font-medium">
                       <li>
-                        <strong>Razorpay Dashboard</strong> (<a href="https://dashboard.razorpay.com" target="_blank" rel="noreferrer" className="underline font-bold text-blue-800">dashboard.razorpay.com</a>) me login kare.
+                        <strong>Step 1 - Razorpay Login:</strong> Apne browser me <a href="https://dashboard.razorpay.com" target="_blank" rel="noreferrer" className="underline font-bold text-blue-800">dashboard.razorpay.com</a> open karke login kare.
                       </li>
                       <li>
-                        <strong>API Keys:</strong> Left Menu ➔ <strong>Account & Settings</strong> ➔ <strong>API Keys</strong> me jaakar Key ID aur Key Secret copy kare aur upar paste kare.
+                        <strong>Step 2 - Test Mode Switch:</strong> Dashboard ke <strong>Top-Left ya Top-Right</strong> par ek toggle switch hota hai — <code>[ Live Mode / Test Mode ]</code>. Waha par <strong>"Test Mode"</strong> select kare (warna Live keys dikhengi jisme KYC mangta hai).
                       </li>
                       <li>
-                        <strong>Webhook Link:</strong> Left Menu ➔ <strong>Account & Settings</strong> ➔ <strong>Webhooks</strong> ➔ <em>"Add New Webhook"</em> par click kare.
+                        <strong>Step 3 - API Keys Section:</strong> Left Sidebar me <strong>Account & Settings</strong> (Settings icon ⚙️) par click kare ➔ phir <strong>Website and app settings</strong> section ke andar <strong>"API Keys"</strong> par click kare (Direct link: <a href="https://dashboard.razorpay.com/app/keys" target="_blank" rel="noreferrer" className="underline font-bold text-blue-800">dashboard.razorpay.com/app/keys</a>).
                       </li>
                       <li>
-                        Webhook URL me <code>https://veerait.com/api/payment/razorpay/webhook</code> daale aur Secret me <code>{razorpayWebhookSecret || 'veerait_razorpay_secret'}</code> daale.
+                        <strong>Step 4 - Key Generate Kare:</strong> Blue color ke <strong>"Generate Test Key"</strong> button par click kare.
                       </li>
                       <li>
-                        <strong>Active Events select kare:</strong> <code>payment.captured</code>, <code>order.paid</code>, aur <code>payment.failed</code>.
-                      </li>
-                      <li>
-                        Customer ko checkout par <strong>QR Code (GPay, PhonePe, Paytm)</strong>, <strong>Credit & Debit Cards</strong>, aur <strong>Net Banking</strong> teeno vikalp milenge!
+                        <strong>Step 5 - Copy Key ID & Secret:</strong> Screen par ek popup aayega jisme <code>Key ID</code> (e.g. <code>rzp_test_...</code>) aur <code>Key Secret</code> dikhega. Dono ko copy karke yaha paste kare aur niche <strong>"Save Payment Settings"</strong> par click kare!
                       </li>
                     </ol>
                   </div>
