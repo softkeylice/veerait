@@ -214,21 +214,6 @@ export default function App() {
     }
   });
 
-  const setUser = (newUser: { email: string; name: string; phone?: string; id?: string; address?: string; role?: string; gstNo?: string; company?: string; alternateMobile?: string; city?: string; state?: string; pin?: string } | null | ((prev: any) => any)) => {
-    setUserState(prev => {
-      const updated = typeof newUser === 'function' ? newUser(prev) : newUser;
-      if (updated) {
-        localStorage.setItem('supabase_user_session', JSON.stringify(updated));
-      } else {
-        localStorage.removeItem('supabase_user_session');
-        localStorage.removeItem('session_token');
-        localStorage.removeItem('customer_session_token');
-        localStorage.removeItem('admin_session_token');
-      }
-      return updated;
-    });
-  };
-
   const [cart, setCart] = useState<{ product: Product; quantity: number }[]>(() => {
     try {
       const saved = localStorage.getItem('supabase_cart');
@@ -238,6 +223,35 @@ export default function App() {
     }
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
+
+  const setUser = (newUser: { email: string; name: string; phone?: string; id?: string; address?: string; role?: string; gstNo?: string; company?: string; alternateMobile?: string; city?: string; state?: string; pin?: string } | null | ((prev: any) => any)) => {
+    if (newUser === null) {
+      localStorage.removeItem('supabase_user_session');
+      localStorage.removeItem('session_token');
+      localStorage.removeItem('customer_session_token');
+      localStorage.removeItem('admin_session_token');
+      localStorage.removeItem('supabase_cart');
+      setCart([]);
+      setIsCartOpen(false);
+      setUserState(null);
+      return;
+    }
+    setUserState(prev => {
+      const updated = typeof newUser === 'function' ? newUser(prev) : newUser;
+      if (updated) {
+        localStorage.setItem('supabase_user_session', JSON.stringify(updated));
+      } else {
+        localStorage.removeItem('supabase_user_session');
+        localStorage.removeItem('session_token');
+        localStorage.removeItem('customer_session_token');
+        localStorage.removeItem('admin_session_token');
+        localStorage.removeItem('supabase_cart');
+        setCart([]);
+        setIsCartOpen(false);
+      }
+      return updated;
+    });
+  };
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'software' | 'hardware'>(() => {
     return initialParsed.category;
@@ -1300,7 +1314,11 @@ export default function App() {
   // Synchronize cart changes to database and local storage when user session is active (debounced)
   useEffect(() => {
     try {
-      localStorage.setItem('supabase_cart', JSON.stringify(cart));
+      if (cart.length > 0) {
+        localStorage.setItem('supabase_cart', JSON.stringify(cart));
+      } else {
+        localStorage.removeItem('supabase_cart');
+      }
     } catch (e) {
       console.error('Failed to save cart to localStorage', e);
     }
@@ -1651,6 +1669,9 @@ export default function App() {
         currentScreen={currentScreen}
         setCurrentScreen={setCurrentScreen}
         cart={cart}
+        setCart={setCart}
+        isCartOpen={isCartOpen}
+        setIsCartOpen={setIsCartOpen}
         toggleCart={() => setIsCartOpen(!isCartOpen)}
         user={user}
         setUser={setUser}

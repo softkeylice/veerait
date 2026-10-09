@@ -13,6 +13,9 @@ interface CustomerHeaderProps {
   currentScreen: 'store' | 'dashboard' | 'admin' | 'tracking' | 'about' | 'contact' | 'privacy' | 'shipping' | 'terms' | 'return' | 'refund';
   setCurrentScreen: (screen: 'store' | 'dashboard' | 'admin' | 'tracking' | 'about' | 'contact' | 'privacy' | 'shipping' | 'terms' | 'return' | 'refund') => void;
   cart: { product: Product; quantity: number }[];
+  setCart?: (cart: { product: Product; quantity: number }[]) => void;
+  isCartOpen?: boolean;
+  setIsCartOpen?: (isOpen: boolean) => void;
   toggleCart: () => void;
   user: { email: string; name: string; phone?: string; role?: string } | null;
   setUser: (user: { email: string; name: string; phone?: string; role?: string } | null) => void;
@@ -33,6 +36,9 @@ export default function CustomerHeader({
   currentScreen,
   setCurrentScreen,
   cart,
+  setCart,
+  isCartOpen,
+  setIsCartOpen,
   toggleCart,
   user,
   setUser,
@@ -68,10 +74,13 @@ export default function CustomerHeader({
 
   const handleLogout = () => {
     setUser(null);
+    if (setCart) setCart([]);
+    if (setIsCartOpen) setIsCartOpen(false);
     setCurrentScreen('store');
     localStorage.removeItem('session_token');
     localStorage.removeItem('admin_session_token');
     localStorage.removeItem('customer_session_token');
+    localStorage.removeItem('supabase_cart');
     addNotification('Signed Out', 'You have been securely signed out.', 'info');
   };
 
