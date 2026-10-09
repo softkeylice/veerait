@@ -1434,51 +1434,48 @@ app.use(async (req, res, next) => {
           password
         });
 
-        if (authError) {
-          return res.status(401).json({ error: authError.message });
-        }
+        if (!authError && authData.user) {
+          const supabaseUser = authData.user;
+          const email = supabaseUser?.email || resolvedEmail;
+          const name = supabaseUser?.user_metadata?.full_name || usernameOrEmail;
 
-        const supabaseUser = authData.user;
-        const email = supabaseUser?.email || resolvedEmail;
-        const name = supabaseUser?.user_metadata?.full_name || usernameOrEmail;
+          const { data: profile } = await supabaseServer
+            .from("profiles")
+            .select("role, full_name, phone_number, username")
+            .eq("email", email)
+            .single();
 
-        const { data: profile } = await supabaseServer
-          .from("profiles")
-          .select("role, full_name, phone_number, username")
-          .eq("email", email)
-          .single();
-
-        const role = profile?.role || "customer";
-        if (role !== "admin") {
-          return res.status(403).json({ error: "Access denied. Admin role required." });
-        }
-
-        const token = signJwt({
-          id: supabaseUser?.id || "usr-admin-" + Math.random().toString(36).substring(2, 11),
-          username: profile?.username || usernameOrEmail.split("@")[0],
-          email,
-          role: "admin"
-        });
-
-        res.setHeader("Set-Cookie", [
-          `admin_session_token=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=7200`
-        ]);
-
-        return res.json({
-          success: true,
-          token,
-          user: {
-            id: supabaseUser?.id,
-            username: profile?.username || usernameOrEmail.split("@")[0],
-            name: profile?.full_name || name,
-            email,
-            phone: profile?.phone_number || "",
-            role: "admin"
+          const role = profile?.role || "customer";
+          if (role !== "admin") {
+            return res.status(403).json({ error: "Access denied. Admin role required." });
           }
-        });
+
+          const token = signJwt({
+            id: supabaseUser?.id || "usr-admin-" + Math.random().toString(36).substring(2, 11),
+            username: profile?.username || usernameOrEmail.split("@")[0],
+            email,
+            role: "admin"
+          });
+
+          res.setHeader("Set-Cookie", [
+            `admin_session_token=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=7200`
+          ]);
+
+          return res.json({
+            success: true,
+            token,
+            user: {
+              id: supabaseUser?.id,
+              username: profile?.username || usernameOrEmail.split("@")[0],
+              name: profile?.full_name || name,
+              email,
+              phone: profile?.phone_number || "",
+              role: "admin"
+            }
+          });
+        }
       } catch (err: any) {
-        const errMsg = typeof err === "object" && err !== null ? (err.message || err.error_description || JSON.stringify(err)) : String(err);
-        return res.status(500).json({ error: errMsg || "Admin login failed." });
+        console.warn("[SUPABASE-ADMIN-LOGIN] Supabase auth attempt bypassed to local admin check:", err?.message || err);
       }
     }
 
@@ -2264,10 +2261,6 @@ app.use(async (req, res, next) => {
           loggedInUser = profile;
         }
 
-        if (!loggedInUser) {
-          return res.status(404).json({ error: "No account found with this email/mobile number. Please register first." });
-        }
-
         if (loggedInUser) {
           const role = loggedInUser.role || "customer";
           if (role === "admin") {
@@ -2300,7 +2293,7 @@ app.use(async (req, res, next) => {
           });
         }
       } catch (err: any) {
-        console.error("[SUPABASE CUSTOMER OTP VERIFY] error:", err);
+        console.error("[SUPABASE CUSTOMER OTP VERIFY] error, falling back to local user store:", err?.message || err);
       }
     }
 

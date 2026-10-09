@@ -853,22 +853,25 @@ export default function CustomerWebsite({
         setRazorpayOrderData(data);
         setIsCheckoutOpen(false);
 
-        // Auto-launch official Razorpay Checkout popup if script is ready and order is live
-        if (typeof (window as any).Razorpay === 'function' && !data.simulation) {
+        // Auto-launch official Razorpay Checkout popup
+        if (typeof (window as any).Razorpay === 'function') {
           launchOfficialRazorpayPopup(data);
         } else {
-          setIsRazorpayOpen(true);
-          setRazorpayStep('checkout');
-          setRazorpayTab('qr');
+          const script = document.createElement('script');
+          script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+          script.onload = () => {
+            launchOfficialRazorpayPopup(data);
+          };
+          script.onerror = () => {
+            addNotification('Payment Gateway Error', 'Unable to load Razorpay checkout script. Please check your internet connection.', 'error');
+            setIsCheckoutOpen(true);
+          };
+          document.body.appendChild(script);
         }
       } catch (err: any) {
         console.warn('Razorpay order fallback:', err);
-        const fallbackSimId = 'sim_order_' + Math.floor(100000 + Math.random() * 900000);
-        setCurrentRazorpayOrderId(fallbackSimId);
-        setIsCheckoutOpen(false);
-        setIsRazorpayOpen(true);
-        setRazorpayStep('checkout');
-        setRazorpayTab('qr');
+        addNotification('Payment Gateway Error', err?.message || 'Unable to connect to Razorpay. Please try again.', 'error');
+        setIsCheckoutOpen(true);
       }
       return;
     } else if (selectedPaymentMethod === 'paytm') {
@@ -1054,8 +1057,16 @@ export default function CustomerWebsite({
     const orderId = activeData?.orderId || currentRazorpayOrderId;
 
     if (typeof (window as any).Razorpay !== 'function') {
-      addNotification('Razorpay Checkout', 'Using in-app Razorpay checkout interface.', 'info');
-      setIsRazorpayOpen(true);
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => {
+        launchOfficialRazorpayPopup(orderDataOverride);
+      };
+      script.onerror = () => {
+        addNotification('Payment Gateway Error', 'Unable to load Razorpay checkout script. Please check your internet connection.', 'error');
+        setIsRazorpayOpen(false);
+      };
+      document.body.appendChild(script);
       return;
     }
     try {
@@ -1113,21 +1124,21 @@ export default function CustomerWebsite({
         },
         modal: {
           ondismiss: function () {
-            addNotification('Payment Pending', 'Razorpay checkout window closed. You can re-open or switch payment method.', 'info');
-            setIsRazorpayOpen(true);
+            addNotification('Payment Cancelled', 'Razorpay checkout window was closed. Payment was cancelled.', 'info');
+            setIsRazorpayOpen(false);
           }
         }
       };
       const rzp = new (window as any).Razorpay(options);
       rzp.on('payment.failed', function (resp: any) {
         addNotification('Payment Failed', resp.error?.description || 'Payment was not completed on Razorpay.', 'error');
-        setIsRazorpayOpen(true);
+        setIsRazorpayOpen(false);
       });
       rzp.open();
     } catch (popupErr: any) {
       console.warn('Could not launch Razorpay popup:', popupErr);
-      addNotification('In-App Checkout Active', 'Using in-app Razorpay checkout interface.', 'info');
-      setIsRazorpayOpen(true);
+      addNotification('Payment Cancelled', 'Razorpay checkout window was closed.', 'info');
+      setIsRazorpayOpen(false);
     }
   };
 
@@ -7349,96 +7360,33 @@ export default function CustomerWebsite({
                 </div>
               )}
 
-              {/* Payment Method Selection */}
+              {/* Payment Method Selection - ONLY Razorpay */}
               <div className="space-y-3 pt-3 border-t border-slate-150">
-                <label className="block text-xs font-bold text-slate-700">Select Payment Gateway</label>
+                <label className="block text-xs font-bold text-slate-700">Payment Gateway</label>
                 <div className="grid grid-cols-1 gap-2.5">
-                  {/* Option 1: Razorpay Payment Gateway (QR Code, Cards, NetBanking, UPI) */}
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPaymentMethod('razorpay')}
-                    className={`p-3.5 border-2 rounded-2xl flex items-center justify-between gap-3 shadow-xs font-bold cursor-pointer transition-all ${
-                      selectedPaymentMethod === 'razorpay'
-                        ? 'border-blue-600 bg-blue-50/70 text-blue-950 shadow-sm'
-                        : 'border-slate-200 bg-white hover:border-slate-300 text-slate-700'
-                    }`}
+                  {/* Official Razorpay Payment Gateway */}
+                  <div
+                    className="p-4 border-2 border-blue-600 bg-blue-50/70 text-blue-950 rounded-2xl flex items-center justify-between gap-3 shadow-xs font-bold"
                   >
-                    <div className="flex items-center gap-2.5">
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-xs ${
-                        selectedPaymentMethod === 'razorpay' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'
-                      }`}>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs shrink-0">
                         <CreditCard className="w-5 h-5" />
                       </div>
                       <div className="text-left">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <strong className="text-xs text-slate-900 font-extrabold">Razorpay Payment Gateway</strong>
-                          <span className="text-[9px] bg-blue-100 text-blue-800 font-bold px-1.5 py-0.5 rounded-full">QR Code • Cards • NetBanking</span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <strong className="text-sm text-slate-900 font-extrabold">Razorpay Payment Gateway</strong>
+                          <span className="text-[10px] bg-blue-600 text-white font-black px-2 py-0.5 rounded-full">Official & Verified</span>
+                          <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded-full">PCI-DSS Level 1</span>
                         </div>
-                        <p className="text-[10px] text-slate-500 font-normal">Scan UPI QR (PhonePe/GPay/Paytm), Credit & Debit Cards (Visa/RuPay), 50+ Banks</p>
+                        <p className="text-[11px] text-slate-600 mt-1 font-normal">
+                          UPI (GPay / PhonePe / Paytm / BHIM), Credit & Debit Cards (Visa / Mastercard / RuPay), 50+ NetBanking Banks & Wallets
+                        </p>
                       </div>
                     </div>
-                    <span className="text-xs font-mono font-bold text-blue-700 bg-white px-2.5 py-1 rounded-lg border border-blue-200">
+                    <span className="text-xs font-mono font-bold text-blue-700 bg-white px-2.5 py-1.5 rounded-xl border border-blue-200 shrink-0 shadow-xs">
                       ₹{netPayable.toFixed(2)}
                     </span>
-                  </button>
-
-                  {/* Option 2: Instant UPI QR Code */}
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPaymentMethod('upi_qr')}
-                    className={`p-3.5 border-2 rounded-2xl flex items-center justify-between gap-3 shadow-xs font-bold cursor-pointer transition-all ${
-                      selectedPaymentMethod === 'upi_qr'
-                        ? 'border-emerald-500 bg-emerald-50/50 text-emerald-950 shadow-sm'
-                        : 'border-slate-200 bg-white hover:border-slate-300 text-slate-700'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-xs ${
-                        selectedPaymentMethod === 'upi_qr' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'
-                      }`}>
-                        <QrCode className="w-5 h-5" />
-                      </div>
-                      <div className="text-left">
-                        <div className="flex items-center gap-1.5">
-                          <strong className="text-xs text-slate-900 font-extrabold">Instant UPI QR Code</strong>
-                          <span className="text-[9px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded-full">0% Fee • Direct</span>
-                        </div>
-                        <p className="text-[10px] text-slate-500 font-normal">GPay, PhonePe, Paytm, BHIM, CRED or any UPI app</p>
-                      </div>
-                    </div>
-                    <span className="text-xs font-mono font-bold text-emerald-700 bg-white px-2.5 py-1 rounded-lg border border-emerald-200">
-                      ₹{netPayable.toFixed(2)}
-                    </span>
-                  </button>
-
-                  {/* Option 3: Pay via Telegram (Telegram Payments & Telegram Stars) */}
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPaymentMethod('telegram')}
-                    className={`p-3.5 border-2 rounded-2xl flex items-center justify-between gap-3 shadow-xs font-bold cursor-pointer transition-all ${
-                      selectedPaymentMethod === 'telegram'
-                        ? 'border-sky-500 bg-sky-50/70 text-sky-950 shadow-sm'
-                        : 'border-slate-200 bg-white hover:border-slate-300 text-slate-700'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-xs ${
-                        selectedPaymentMethod === 'telegram' ? 'bg-[#229ED9] text-white' : 'bg-slate-100 text-slate-600'
-                      }`}>
-                        <Send className="w-5 h-5 -rotate-45" />
-                      </div>
-                      <div className="text-left">
-                        <div className="flex items-center gap-1.5">
-                          <strong className="text-xs text-slate-900 font-extrabold">Pay via Telegram</strong>
-                          <span className="text-[9px] bg-sky-100 text-sky-800 font-bold px-1.5 py-0.5 rounded-full">Telegram Stars ⭐ & Bot Pay</span>
-                        </div>
-                        <p className="text-[10px] text-slate-500 font-normal">Official in-app checkout • 1-Click Bot Invoice • Instant Key Dispatch</p>
-                      </div>
-                    </div>
-                    <span className="text-xs font-mono font-bold text-sky-700 bg-white px-2.5 py-1 rounded-lg border border-sky-200">
-                      ₹{netPayable.toFixed(2)}
-                    </span>
-                  </button>
+                  </div>
                 </div>
               </div>
 
@@ -7458,33 +7406,17 @@ export default function CustomerWebsite({
               
               <button
                 type="submit"
-                className={`px-6 py-2.5 font-bold rounded-xl text-xs transition-all shadow-md flex items-center gap-2 cursor-pointer ${
-                  selectedPaymentMethod === 'razorpay'
-                    ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-800 text-white shadow-blue-500/20'
-                    : selectedPaymentMethod === 'telegram'
-                    ? 'bg-gradient-to-r from-[#229ED9] to-sky-600 hover:from-[#1c8ec4] hover:to-sky-700 text-white'
-                    : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white'
-                }`}
+                className="px-6 py-2.5 font-bold rounded-xl text-xs transition-all shadow-md flex items-center gap-2 cursor-pointer bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-800 text-white shadow-blue-500/20"
               >
                 {netPayable === 0 ? (
                   <>
                     <Wallet className="w-4 h-4" />
                     Pay ₹0.00 via Wallet Balance
                   </>
-                ) : selectedPaymentMethod === 'razorpay' ? (
+                ) : (
                   <>
                     <CreditCard className="w-4 h-4" />
                     Proceed with Razorpay (₹{netPayable.toFixed(2)})
-                  </>
-                ) : selectedPaymentMethod === 'telegram' ? (
-                  <>
-                    <Send className="w-4 h-4 -rotate-45" />
-                    Pay via Telegram (₹{netPayable.toFixed(2)})
-                  </>
-                ) : (
-                  <>
-                    <QrCode className="w-4 h-4" />
-                    Scan & Pay (₹{netPayable.toFixed(2)})
                   </>
                 )}
               </button>
@@ -7780,8 +7712,8 @@ export default function CustomerWebsite({
         </div>
       )}
 
-      {/* Razorpay Payment Gateway Modal (QR Code, Credit Card, Debit Card, Net Banking) */}
-      {isRazorpayOpen && (
+      {/* Razorpay Payment Status & Key Delivery Modal (Only for Success & Verification) */}
+      {isRazorpayOpen && (razorpayStep === 'success' || razorpayStep === 'processing') && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 p-3 sm:p-5 backdrop-blur-md font-sans animate-in fade-in duration-200" id="razorpay-pg-gateway-modal">
           <div className="bg-white border border-slate-300 rounded-3xl w-full max-w-xl shadow-2xl overflow-hidden text-slate-900 animate-in zoom-in-95 duration-200 flex flex-col max-h-[92vh]">
             
