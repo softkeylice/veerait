@@ -852,9 +852,15 @@ export default function CustomerWebsite({
         setCurrentRazorpayOrderId(orderId);
         setRazorpayOrderData(data);
         setIsCheckoutOpen(false);
-        setIsRazorpayOpen(true);
-        setRazorpayStep('checkout');
-        setRazorpayTab('qr');
+
+        // Auto-launch official Razorpay Checkout popup if script is ready and order is live
+        if (typeof (window as any).Razorpay === 'function' && !data.simulation) {
+          launchOfficialRazorpayPopup(data);
+        } else {
+          setIsRazorpayOpen(true);
+          setRazorpayStep('checkout');
+          setRazorpayTab('qr');
+        }
       } catch (err: any) {
         console.warn('Razorpay order fallback:', err);
         const fallbackSimId = 'sim_order_' + Math.floor(100000 + Math.random() * 900000);
@@ -1042,22 +1048,29 @@ export default function CustomerWebsite({
     }
   };
 
-  const launchOfficialRazorpayPopup = () => {
+  const launchOfficialRazorpayPopup = (orderDataOverride?: any) => {
+    const activeData = orderDataOverride || razorpayOrderData;
+    const key = activeData?.keyId || razorpayPublicId || 'rzp_test_1DP5mmOlF5G5ag';
+    const orderId = activeData?.orderId || currentRazorpayOrderId;
+
     if (typeof (window as any).Razorpay !== 'function') {
       addNotification('Razorpay Checkout', 'Using in-app Razorpay checkout interface.', 'info');
+      setIsRazorpayOpen(true);
       return;
     }
     try {
-      const key = razorpayOrderData?.keyId || razorpayPublicId || 'rzp_test_1DP5mmOlF5G5ag';
       const options = {
         key: key,
         amount: Math.round(netPayable * 100),
         currency: 'INR',
-        name: 'Veerait Sales & Licensing',
-        description: 'Software & Digital Licenses Purchase',
-        order_id: currentRazorpayOrderId?.startsWith('order_') ? currentRazorpayOrderId : undefined,
+        name: 'VeeraIT Sales & Licensing',
+        description: 'Software & Digital License Purchase',
+        image: 'https://veerait.com/favicon.ico',
+        order_id: (orderId && orderId.startsWith('order_')) ? orderId : undefined,
         handler: async function (paymentResponse: any) {
-          addNotification('Payment Success', 'Razorpay checkout completed. Verifying signatures...', 'info');
+          setIsRazorpayOpen(true);
+          setRazorpayStep('processing');
+          addNotification('Payment Success', 'Razorpay checkout completed. Verifying signature and allocating license...', 'info');
           try {
             const verifyRes = await fetch('/api/payment/razorpay/verify', {
               method: 'POST',
@@ -1066,7 +1079,7 @@ export default function CustomerWebsite({
                 'Authorization': `Bearer ${localStorage.getItem('session_token') || ''}`
               },
               body: JSON.stringify({
-                razorpay_order_id: paymentResponse.razorpay_order_id || currentRazorpayOrderId,
+                razorpay_order_id: paymentResponse.razorpay_order_id || orderId,
                 razorpay_payment_id: paymentResponse.razorpay_payment_id,
                 razorpay_signature: paymentResponse.razorpay_signature || 'simulated_signature_verification_token'
               })
@@ -1076,6 +1089,7 @@ export default function CustomerWebsite({
               setRazorpaySuccessOrder(verifyData.order);
               setRazorpayStep('success');
               createSuccessfulOrder(paymentResponse.razorpay_payment_id, 'Razorpay Secure', 'paid', verifyData.order);
+              addNotification('License Delivered', 'Your purchase is verified and license keys are active!', 'success');
             } else {
               createSuccessfulOrder(paymentResponse.razorpay_payment_id, 'Razorpay Secure', 'paid');
               setRazorpayStep('success');
@@ -1090,15 +1104,30 @@ export default function CustomerWebsite({
           email: customerEmail,
           contact: customerPhone
         },
+        notes: {
+          store: 'VeeraIT SoftKey Store',
+          customer_phone: customerPhone
+        },
         theme: {
           color: '#2563eb'
+        },
+        modal: {
+          ondismiss: function () {
+            addNotification('Payment Pending', 'Razorpay checkout window closed. You can re-open or switch payment method.', 'info');
+            setIsRazorpayOpen(true);
+          }
         }
       };
       const rzp = new (window as any).Razorpay(options);
+      rzp.on('payment.failed', function (resp: any) {
+        addNotification('Payment Failed', resp.error?.description || 'Payment was not completed on Razorpay.', 'error');
+        setIsRazorpayOpen(true);
+      });
       rzp.open();
     } catch (popupErr: any) {
       console.warn('Could not launch Razorpay popup:', popupErr);
       addNotification('In-App Checkout Active', 'Using in-app Razorpay checkout interface.', 'info');
+      setIsRazorpayOpen(true);
     }
   };
 
@@ -7798,21 +7827,24 @@ export default function CustomerWebsite({
             <div className="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1">
               {razorpayStep === 'checkout' ? (
                 <>
-                  {/* Official Popup Banner if supported */}
-                  {razorpayOrderData && !razorpayOrderData.simulation && (
-                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-2xl flex items-center justify-between gap-3">
+                  {/* Official Razorpay Checkout Launcher */}
+                  {typeof (window as any).Razorpay === 'function' && (
+                    <div className="p-4 bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-100/70 border-2 border-blue-300 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
                       <div className="text-xs text-blue-950">
-                        <strong className="font-bold flex items-center gap-1 text-[11px]">
-                          <Zap className="w-3.5 h-3.5 text-blue-600" /> Official Razorpay Popup Ready
+                        <strong className="font-extrabold flex items-center gap-1.5 text-xs text-blue-900">
+                          <Zap className="w-4 h-4 text-blue-600 fill-blue-600" /> Official Razorpay Checkout
                         </strong>
-                        <p className="text-[10px] text-blue-800">Directly open official Razorpay checkout window</p>
+                        <p className="text-[11px] text-blue-800 mt-0.5">
+                          Pay securely with Dynamic UPI QR, Google Pay, PhonePe, Paytm, RuPay/Visa Cards, or 50+ Banks.
+                        </p>
                       </div>
                       <button
                         type="button"
-                        onClick={launchOfficialRazorpayPopup}
-                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-xs shrink-0"
+                        onClick={() => launchOfficialRazorpayPopup(razorpayOrderData)}
+                        className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs rounded-xl transition-all cursor-pointer shadow-md flex items-center justify-center gap-2 shrink-0"
                       >
-                        Launch Popup
+                        <CreditCard className="w-4 h-4" />
+                        Open Official Razorpay
                       </button>
                     </div>
                   )}

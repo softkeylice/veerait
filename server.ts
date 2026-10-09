@@ -901,10 +901,46 @@ interface PaymentSettings {
   razorpayWebhookSecret?: string;
 }
 
+function getEffectiveRazorpayKeys(data?: any) {
+  const envKeyId = (process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID || "").trim();
+  const envSecret = (process.env.RAZORPAY_KEY_SECRET || process.env.RAZORPAY_SECRET || "").trim();
+  const fileKeyId = (data?.razorpayKeyId || "").trim();
+  const fileSecret = (data?.razorpayKeySecret || "").trim();
+
+  const isDummy = (str: string) => !str || str === "rzp_test_1DP5mmOlF5G5ag" || str === "sX78jKLm910aBcDeFgHiJkLm" || str.startsWith("YOUR_") || str.includes("mock");
+
+  // Pick best keyId: prioritize real env variable, then real file setting, then fallback
+  let activeKeyId = "";
+  if (!isDummy(envKeyId)) {
+    activeKeyId = envKeyId;
+  } else if (!isDummy(fileKeyId)) {
+    activeKeyId = fileKeyId;
+  } else {
+    activeKeyId = envKeyId || fileKeyId || "rzp_test_1DP5mmOlF5G5ag";
+  }
+
+  // Pick best secret
+  let activeSecret = "";
+  if (!isDummy(envSecret)) {
+    activeSecret = envSecret;
+  } else if (!isDummy(fileSecret)) {
+    activeSecret = fileSecret;
+  } else {
+    activeSecret = envSecret || fileSecret || "sX78jKLm910aBcDeFgHiJkLm";
+  }
+
+  const mode: 'test' | 'live' = activeKeyId.startsWith("rzp_live") 
+    ? "live" 
+    : (data?.razorpayMode || (process.env.RAZORPAY_ENV === "PRODUCTION" ? "live" : "test"));
+
+  return { keyId: activeKeyId, keySecret: activeSecret, mode };
+}
+
 function readPaymentSettings(): PaymentSettings {
   try {
     if (fs.existsSync(PAYMENT_SETTINGS_FILE)) {
       const data = JSON.parse(fs.readFileSync(PAYMENT_SETTINGS_FILE, "utf-8"));
+      const rzp = getEffectiveRazorpayKeys(data);
       return {
         ...data,
         paytmMid: data.paytmMid || process.env.PAYTM_MERCHANT_ID || "OPDDHV86006252156720",
@@ -915,16 +951,17 @@ function readPaymentSettings(): PaymentSettings {
         telegramPaymentProviderToken: data.telegramPaymentProviderToken || process.env.TELEGRAM_PAYMENT_PROVIDER_TOKEN || "",
         telegramCurrency: data.telegramCurrency || "XTR",
         telegramEnabled: data.telegramEnabled !== undefined ? data.telegramEnabled : true,
-        razorpayKeyId: data.razorpayKeyId || process.env.RAZORPAY_KEY_ID || "rzp_test_1DP5mmOlF5G5ag",
-        razorpayKeySecret: data.razorpayKeySecret || process.env.RAZORPAY_KEY_SECRET || process.env.RAZORPAY_SECRET || "sX78jKLm910aBcDeFgHiJkLm",
-        razorpayMode: data.razorpayMode || (process.env.RAZORPAY_ENV === "PRODUCTION" ? "live" : "test"),
+        razorpayKeyId: rzp.keyId,
+        razorpayKeySecret: rzp.keySecret,
+        razorpayMode: rzp.mode,
         razorpayEnabled: data.razorpayEnabled !== undefined ? data.razorpayEnabled : true,
-        razorpayWebhookSecret: data.razorpayWebhookSecret || process.env.RAZORPAY_WEBHOOK_SECRET || "veerait_razorpay_secret"
+        razorpayWebhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET || data.razorpayWebhookSecret || "veerait_razorpay_secret"
       };
     }
   } catch (err) {
     console.error("Error reading payment settings:", err);
   }
+  const rzp = getEffectiveRazorpayKeys();
   return {
     bankName: "State Bank of India",
     bankAccountName: "Krishna Salunke",
@@ -940,9 +977,9 @@ function readPaymentSettings(): PaymentSettings {
     telegramPaymentProviderToken: process.env.TELEGRAM_PAYMENT_PROVIDER_TOKEN || "",
     telegramCurrency: "XTR",
     telegramEnabled: true,
-    razorpayKeyId: process.env.RAZORPAY_KEY_ID || "rzp_test_1DP5mmOlF5G5ag",
-    razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET || process.env.RAZORPAY_SECRET || "sX78jKLm910aBcDeFgHiJkLm",
-    razorpayMode: process.env.RAZORPAY_ENV === "PRODUCTION" ? "live" : "test",
+    razorpayKeyId: rzp.keyId,
+    razorpayKeySecret: rzp.keySecret,
+    razorpayMode: rzp.mode,
     razorpayEnabled: true,
     razorpayWebhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET || "veerait_razorpay_secret"
   };
@@ -4962,18 +4999,23 @@ app.use(async (req, res, next) => {
     const settings = readPaymentSettings();
     const keyId = settings.razorpayKeyId || process.env.RAZORPAY_KEY_ID || "";
     const keySecret = settings.razorpayKeySecret || process.env.RAZORPAY_KEY_SECRET || process.env.RAZORPAY_SECRET || "";
-    const hasSecret = !!keySecret;
+    const isRealKey = !!keyId && keyId !== "rzp_test_1DP5mmOlF5G5ag" && !keyId.startsWith("YOUR_");
+    const hasSecret = !!keySecret && keySecret !== "sX78jKLm910aBcDeFgHiJkLm" && !keySecret.startsWith("YOUR_");
     const paytmMid = process.env.PAYTM_MERCHANT_ID || settings.paytmMid || "OPDDHV86006252156720";
     const paytmKey = process.env.PAYTM_MERCHANT_KEY || "NTDV&8PLRhXJ%soP";
 
     return res.json({
-      settings,
+      settings: {
+        ...settings,
+        razorpayKeySecret: settings.razorpayKeySecret ? (isRealKey ? `${settings.razorpayKeySecret.substring(0, 4)}••••••••` : "••••••••") : ""
+      },
       razorpay: {
         keyId: keyId,
-        configured: !!(keyId && hasSecret),
+        configured: !!(isRealKey && hasSecret),
         mode: settings.razorpayMode || (keyId.startsWith("rzp_live") ? "live" : "test"),
         enabled: settings.razorpayEnabled ?? true,
         hasSecret: !!hasSecret,
+        fromEnv: !!(process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_SECRET),
         webhookUrl: "https://veerait.com/api/payment/razorpay/webhook",
         webhookSecret: settings.razorpayWebhookSecret || "veerait_razorpay_secret"
       },
@@ -4992,6 +5034,46 @@ app.use(async (req, res, next) => {
         configured: !!(settings.telegramBotToken || process.env.TELEGRAM_BOT_TOKEN)
       }
     });
+  });
+
+  // 9.3B TEST RAZORPAY API KEYS CONNECTION
+  app.post("/api/admin/razorpay/test-keys", authenticateJwt, requireAdmin, async (req, res) => {
+    try {
+      const settings = readPaymentSettings();
+      const keyId = (req.body.keyId || settings.razorpayKeyId || process.env.RAZORPAY_KEY_ID || "").trim();
+      let keySecret = (req.body.keySecret || "").trim();
+      if (!keySecret || keySecret.includes("••••")) {
+        keySecret = (settings.razorpayKeySecret || process.env.RAZORPAY_KEY_SECRET || process.env.RAZORPAY_SECRET || "").trim();
+      }
+
+      if (!keyId || !keySecret || keyId === "rzp_test_1DP5mmOlF5G5ag") {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Please enter your valid Razorpay Key ID and Secret Key to test connection." 
+        });
+      }
+
+      const rzp = new Razorpay({ key_id: keyId, key_secret: keySecret });
+      const testOrder = await rzp.orders.create({
+        amount: 100, // 100 paise = 1 INR test order
+        currency: "INR",
+        receipt: `test_ping_${Date.now()}`
+      });
+
+      return res.json({
+        success: true,
+        message: `Razorpay API authenticated successfully! Test order (${testOrder.id}) generated in ${keyId.startsWith("rzp_live") ? "LIVE PRODUCTION" : "TEST"} mode.`,
+        mode: keyId.startsWith("rzp_live") ? "live" : "test",
+        orderId: testOrder.id
+      });
+    } catch (err: any) {
+      console.error("[RAZORPAY TEST ERROR]:", err);
+      const desc = err.error?.description || err.message || "Failed to authenticate with Razorpay.";
+      return res.status(400).json({
+        success: false,
+        error: `Razorpay Error: ${desc}`
+      });
+    }
   });
 
   // 9.4 SAVE STORE PAYMENT CONFIGURATION

@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, ShoppingCart, Tag, Smartphone, Layers, Key, Plus, Trash2, Edit, Save, ToggleLeft, ToggleRight, Check, RefreshCw, Eye, EyeOff, MessageSquare, Mail, AlertTriangle, Package, CheckCircle2, IndianRupee, Globe, Image as ImageIcon, Star, Sparkles, ChevronDown, ChevronRight, ExternalLink, HelpCircle, X, Search, Heart, Copy, Upload, AlertCircle, FileSpreadsheet, History, UserCheck, ShieldAlert, CheckSquare, CreditCard, Users, BarChart3, Settings, Sliders, FolderTree, ClipboardList, Send, Compass, Award, Database, MapPin, Printer, Wallet, FileText, Download, ArrowUpRight, ArrowDownRight, Building2 } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Tag, Smartphone, Layers, Key, Plus, Trash2, Edit, Save, ToggleLeft, ToggleRight, Check, RefreshCw, Eye, EyeOff, MessageSquare, Mail, AlertTriangle, Package, CheckCircle2, IndianRupee, Globe, Image as ImageIcon, Star, Sparkles, ChevronDown, ChevronRight, ExternalLink, HelpCircle, X, Search, Heart, Copy, Upload, AlertCircle, FileSpreadsheet, History, UserCheck, ShieldAlert, CheckSquare, CreditCard, Users, BarChart3, Settings, Sliders, FolderTree, ClipboardList, Send, Compass, Award, Database, MapPin, Printer, Wallet, FileText, Download, ArrowUpRight, ArrowDownRight, Building2, Zap } from 'lucide-react';
 import { Product, Order, Coupon, PromoBanner, LicenseKey, CategoryType, LicenseHistoryEntry, Category, B2BReseller, WalletTransaction } from '../types';
 import readXlsxFile from 'read-excel-file/browser';
 import ImageUploader from './ImageUploader';
@@ -113,6 +113,8 @@ export default function AdminPanel({
   const [isSavingPaymentSettings, setIsSavingPaymentSettings] = useState(false);
   const [isTestingUpiWebhook, setIsTestingUpiWebhook] = useState(false);
   const [upiTestResult, setUpiTestResult] = useState<{ success: boolean; message: string; details?: any } | null>(null);
+  const [isTestingRazorpay, setIsTestingRazorpay] = useState(false);
+  const [razorpayTestResult, setRazorpayTestResult] = useState<{ success: boolean; message: string; mode?: string } | null>(null);
 
   // Product Manager Display Configuration
   const [productViewMode, setProductViewMode] = useState<'list' | 'gallery'>('list');
@@ -587,6 +589,49 @@ export default function AdminPanel({
       addNotification('Webhook Test Error', err.message || 'Failed to ping webhook endpoint.', 'error');
     } finally {
       setIsTestingUpiWebhook(false);
+    }
+  };
+
+  const handleTestRazorpayKeys = async () => {
+    setIsTestingRazorpay(true);
+    setRazorpayTestResult(null);
+    try {
+      const response = await fetch('/api/admin/razorpay/test-keys', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('session_token') || ''}`
+        },
+        body: JSON.stringify({
+          keyId: razorpayKeyId,
+          keySecret: razorpayKeySecret
+        })
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setRazorpayTestResult({
+          success: true,
+          message: data.message,
+          mode: data.mode
+        });
+        if (data.mode) setRazorpayMode(data.mode);
+        setRazorpayConfigured(true);
+        addNotification('Razorpay Verified', data.message, 'success');
+      } else {
+        setRazorpayTestResult({
+          success: false,
+          message: data.error || 'Razorpay authentication failed.'
+        });
+        addNotification('Razorpay Verification Failed', data.error || 'Authentication error', 'error');
+      }
+    } catch (err: any) {
+      setRazorpayTestResult({
+        success: false,
+        message: err.message || 'Network exception testing Razorpay keys.'
+      });
+      addNotification('Network Error', err.message || 'Failed to ping Razorpay API.', 'error');
+    } finally {
+      setIsTestingRazorpay(false);
     }
   };
 
@@ -6279,6 +6324,57 @@ export default function AdminPanel({
                       <p className="text-[10px] text-slate-500 mt-1">Required for secure HMAC-SHA256 signature verification</p>
                     </div>
                   </div>
+
+                  {/* Test Connection Button and Status Bar */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleTestRazorpayKeys}
+                        disabled={isTestingRazorpay}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-xs flex items-center gap-2"
+                      >
+                        {isTestingRazorpay ? (
+                          <>
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            Testing Connection...
+                          </>
+                        ) : (
+                          <>
+                            <Zap className="w-3.5 h-3.5" />
+                            Test Razorpay API Keys Connection
+                          </>
+                        )}
+                      </button>
+                      <span className="text-[11px] text-slate-500">
+                        Pings Razorpay API with Key ID & Secret
+                      </span>
+                    </div>
+
+                    {razorpayConfigured && (
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-xl">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        Razorpay Gateway Active
+                      </span>
+                    )}
+                  </div>
+
+                  {razorpayTestResult && (
+                    <div className={`p-3 rounded-xl border text-xs flex items-start gap-2.5 ${
+                      razorpayTestResult.success
+                        ? 'bg-emerald-50 border-emerald-300 text-emerald-900 font-bold'
+                        : 'bg-rose-50 border-rose-300 text-rose-900 font-medium'
+                    }`}>
+                      {razorpayTestResult.success ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                      ) : (
+                        <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                      )}
+                      <div>
+                        <p>{razorpayTestResult.message}</p>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
