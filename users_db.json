@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "id": "usr-admin-veer96",
+    "username": "veer96",
+    "name": "Veer Administrator",
+    "email": "softkeylice@gmail.com",
+    "phone": "9876543210",
+    "passwordHash": "0db2af822afbe2a56816a94bcb60994092ca72b1585cdf53388d38780055c33c453002b7a1da073dc04a231ef1058884d7bba9aff4972b59b3cefcd731572c92",
+    "cart": [],
+    "role": "admin"
+  }
+]

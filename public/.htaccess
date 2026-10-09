@@ -5,6 +5,12 @@
   RewriteEngine On
   RewriteBase /
   
+  # Forward API requests to Node.js backend if reverse proxy is active
+  <IfModule mod_proxy.c>
+    RewriteCond %{REQUEST_URI} ^/api/ [NC]
+    RewriteRule ^api/(.*)$ http://127.0.0.1:3000/api/$1 [P,L]
+  </IfModule>
+
   # Do not rewrite real files or directories
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
